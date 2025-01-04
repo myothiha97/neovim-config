@@ -1,2 +1,2 @@
 require("myothiha-nvim.remap")
-print("Hello from my folder")
+-- print("Hello from my folder")
