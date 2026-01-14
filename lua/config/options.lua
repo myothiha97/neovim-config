@@ -4,3 +4,14 @@
 
 vim.o.number = true
 vim.o.scrolloff = 10
+vim.g.material_style = "deep ocean"
+
+vim.diagnostic.config({
+  float = {
+    border = "rounded",
+    max_width = 60, -- Forces the window to wrap after 60 characters
+    source = "always",
+    header = "",
+    prefix = "",
+  },
+})

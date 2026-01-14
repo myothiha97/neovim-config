@@ -2,6 +2,7 @@ return {
   "stevearc/oil.nvim",
   ---@module 'oil'
   ---@type oil.SetupOpts
+ commit = "963c8d2",
   keys = {
     { "<leader>e", "<cmd>lua require('oil').toggle_float()<CR>", desc = "Open Oil (Float)" },
   },
