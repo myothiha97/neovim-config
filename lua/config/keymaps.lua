@@ -21,7 +21,6 @@ vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
 
 -- keymaps for quick save actions
-vim.keymap.set({ "n", "v", "i" }, "<leader>w", "<cmd>w<CR>", { desc = "Save current buffer" })
 
 -- terminal mode
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true })
@@ -58,3 +57,47 @@ vim.keymap.set("n", "gp", function()
     float = error_only_config.float,
   })
 end, { desc = "Prev Error" })
+
+-- 1. Global Indicator
+local logIndicator = " -> "
+
+-- 2. Define Templates (Grouped for flexibility)
+local log_templates = {
+  javascript = "console.log('%s" .. logIndicator .. "', %s);",
+  typescript = "console.log('%s" .. logIndicator .. "', %s);",
+  javascriptreact = "console.log('%s" .. logIndicator .. "', %s);", -- For .jsx
+  typescriptreact = "console.log('%s" .. logIndicator .. "', %s);", -- For .tsx
+  python = "print(f'{%s=}')",
+  lua = "print('%s" .. logIndicator .. "', vim.inspect(%s))",
+  rust = 'println!("{}" .. logIndicator .. "{:?}", "%s", %s);',
+  go = 'fmt.Printf("%s' .. logIndicator .. '%%+v\\n", %s)',
+  cpp = 'std::cout << "%s' .. logIndicator .. '" << %s << std::endl;',
+}
+
+-- 3. Dynamic logging function
+local function log_visual_selection()
+  -- Yank the current visual selection to register 'v'
+  vim.cmd('noautocmd normal! "vy')
+  local selection = vim.fn.getreg("v"):gsub("\n", "")
+
+  -- Get current filetype
+  local ft = vim.bo.filetype
+
+  -- UNCOMMENT THE LINE BELOW TO DEBUG:
+  -- print("Current Filetype detected as: " .. ft)
+
+  -- Lookup template
+  local template = log_templates[ft]
+
+  -- If not found in our table, use a generic print fallback
+  if not template then
+    template = "print('%s" .. logIndicator .. "', %s)"
+  end
+
+  -- Format and insert
+  local log_line = string.format(template, selection, selection)
+  vim.api.nvim_put({ log_line }, "l", true, true)
+end
+
+-- 4. Mapping
+vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
