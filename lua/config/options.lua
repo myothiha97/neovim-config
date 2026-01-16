@@ -16,3 +16,22 @@ vim.diagnostic.config({
     prefix = "",
   },
 })
+
+vim.opt.clipboard = "unnamedplus"
+
+-- Or use this for async clipboard (less laggy)
+vim.g.clipboard = {
+  name = "macOS-clipboard",
+  copy = {
+    ["+"] = "pbcopy",
+    ["*"] = "pbcopy",
+  },
+  paste = {
+    ["+"] = "pbpaste",
+    ["*"] = "pbpaste",
+  },
+  cache_enabled = 1,
+}
+
+vim.g.matchparen_timeout = 20
+vim.g.matchparen_insert_timeout = 20
