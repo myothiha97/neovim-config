@@ -5,6 +5,7 @@
 vim.o.number = true
 vim.o.scrolloff = 10
 vim.g.material_style = "deep ocean"
+vim.opt.list = false
 
 vim.diagnostic.config({
   float = {
