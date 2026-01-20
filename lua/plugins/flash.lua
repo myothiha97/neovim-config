@@ -1,4 +1,18 @@
 return {
-  -- Disable flash.nvim
-  { "folke/flash.nvim", enabled = false }, -- if want to re-enabled, then set enabled to true
+  "folke/flash.nvim",
+  enabled = false,
+  event = "VeryLazy",
+  ---@type Flash.Config
+
+  -- opts = {
+  --   modes = {
+  --     char = {
+  --       enabled = true,
+  --     },
+  --   },
+  -- },
+  -- keys = {
+  --   { "s", mode = { "n", "x", "o" }, false },
+  --   { "S", mode = { "n", "x", "o" }, false },
+  -- },
 }

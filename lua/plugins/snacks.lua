@@ -1,5 +1,6 @@
 return {
   "folke/snacks.nvim",
+  ---@type snacks.Config
   priority = 1000,
   lazy = false,
   opts = {
@@ -20,9 +21,9 @@ return {
     {
       "<leader><leader>",
       function()
-        require("snacks").picker.files({ cwd = vim.fn.expand("%:p:h") })
+        require("snacks").picker.smart()
       end,
-      desc = "Find Files (current file dir)",
+      desc = "Find Files smart (both recent and open buffers)",
     },
     {
       "<leader>ff",
@@ -30,6 +31,14 @@ return {
         require("snacks").picker.files()
       end,
       desc = "Find Files (root)",
+    },
+
+    {
+      "<leader>fi",
+      function()
+        require("snacks").picker.files({ cwd = vim.fn.expand("%:p:h") })
+      end,
+      desc = "Find Files (current file dir)",
     },
     { "<leader>e", false },
   },

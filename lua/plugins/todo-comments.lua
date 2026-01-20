@@ -3,7 +3,13 @@ return {
     "folke/todo-comments.nvim",
     opts = {
       keywords = {
-        todo = { alt = { "todo" } },
+        TODO = { icon = " ", alt = { "TODO", "Todo", "Issue", "Bug" } },
+        PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE", "Perf", "Opt" } },
+        REFACTOR = { icon = " ", color = "default", alt = { "Refactor", "Ref", "REFACTOR" } },
+        HACK = { icon = " ", color = "warning" },
+        WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+        NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+        TEST = { icon = "⏲ ", color = "test", alt = { "TESTING", "PASSED", "FAILED" } },
       },
     },
     keys = {

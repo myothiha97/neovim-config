@@ -3,7 +3,7 @@
 -- Add any additional keymaps here
 --
 
-local comment_key = "<leader>c"
+local comment_key = "<M-/>"
 
 vim.keymap.set("n", "<leader>va", "ggVG", { desc = "Select all the text in the current file" })
 vim.keymap.set("n", "<leader>ya", "ggyG", { desc = "Yank all text" })
@@ -20,7 +20,11 @@ vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recente
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
 
--- keymaps for quick save actions
+-- Hover docs in normal mode (Cmd+i via Alacritty)
+vim.keymap.set("n", "<M-k>", vim.lsp.buf.hover, { desc = "Hover Documentation" })
+
+-- Signature help for insert mode and normal mode  (Cmd+i via Alacritty)
+vim.keymap.set({ "i", "n" }, "<M-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
 
 -- terminal mode
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true })
