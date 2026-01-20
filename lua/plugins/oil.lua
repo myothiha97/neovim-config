@@ -91,11 +91,20 @@ return {
   },
   opts = {
     default_file_explorer = true,
+    skip_confirm_for_simple_edits = true,
     view_options = { show_hidden = true },
     float = {
       max_width = 0.8,
       max_height = 0.8,
       border = "rounded",
+    },
+    confirmation = {
+      keymaps = {
+        ["<CR>"] = "actions.confirm",
+        ["y"] = "actions.confirm", -- keep y as well
+        ["n"] = "actions.close",
+        ["<Esc>"] = "actions.close",
+      },
     },
   },
   config = function(_, opts)
