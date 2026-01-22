@@ -29,6 +29,9 @@ vim.keymap.set({ "i", "n" }, "<C-i>", vim.lsp.buf.signature_help, { desc = "Sign
 -- terminal mode
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true })
 
+vim.keymap.set("i", "<Tab>", "<Tab>", { desc = "Indent" })
+vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "Outdent" })
+
 -- map(mode, key, result, options)
 vim.keymap.set("n", "gi", function()
   vim.diagnostic.open_float({
@@ -38,9 +41,9 @@ vim.keymap.set("n", "gi", function()
   })
 end, { desc = "Line Diagnostics (Focusable)" })
 
--- Configuration to only target Errors
+-- Configuration to only target Errors (min and max both set to ERROR for exact match)
 local error_only_config = {
-  severity = vim.diagnostic.severity.ERROR,
+  severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
   float = { border = "rounded", source = "always" },
 }
 
