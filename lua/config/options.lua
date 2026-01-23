@@ -9,8 +9,8 @@ vim.opt.list = false
 
 -- Create gap at top by adding empty winbar (pushes content down)
 vim.opt.winbar = " " -- Single space creates 1 line of padding
-vim.api.nvim_set_hl(0, "WinBar", { bg = "NONE", sp = "NONE" })
-vim.api.nvim_set_hl(0, "WinBarNC", { bg = "NONE", sp = "NONE" })
+-- vim.api.nvim_set_hl(0, "WinBar", { bg = "NONE", sp = "NONE" })
+-- vim.api.nvim_set_hl(0, "WinBarNC", { bg = "NONE", sp = "NONE" })
 
 vim.diagnostic.config({
   float = {

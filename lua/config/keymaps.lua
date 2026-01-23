@@ -21,7 +21,7 @@ vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
 
 -- Hover docs in normal mode (Cmd+i via Alacritty)
-vim.keymap.set("n", "<C-k>", vim.lsp.buf.hover, { desc = "Hover Documentation" })
+vim.keymap.set("n", "<Tab>", vim.lsp.buf.hover, { desc = "Hover Documentation" })
 
 -- Signature help for insert mode and normal mode  (Cmd+i via Alacritty)
 vim.keymap.set({ "i", "n" }, "<C-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
