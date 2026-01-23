@@ -5,7 +5,7 @@ return {
       keywords = {
         TODO = { icon = " ", alt = { "TODO", "Todo", "Issue", "Bug" } },
         PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE", "Perf", "Opt" } },
-        REFACTOR = { icon = " ", color = "default", alt = { "Refactor", "Ref", "REFACTOR" } },
+        REFACTOR = { icon = " ", color = "default", alt = { "Refactor", "REF", "REFACTOR" } },
         HACK = { icon = " ", color = "warning" },
         WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
         NOTE = { icon = " ", color = "hint", alt = { "INFO" } },

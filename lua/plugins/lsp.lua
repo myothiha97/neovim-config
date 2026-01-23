@@ -22,6 +22,9 @@ return {
           settings = {
             run = "onSave",
             workingDirectory = { mode = "location" },
+            rulesCustomizations = {
+              { rule = "*", severity = "warn" },
+            },
           },
         },
       },
