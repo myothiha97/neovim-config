@@ -20,10 +20,11 @@ vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recente
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
 
--- Hover docs in normal mode (Cmd+i via Alacritty)
+-- Hover docs in normal mode
 vim.keymap.set("n", "<Tab>", vim.lsp.buf.hover, { desc = "Hover Documentation" })
 
--- Signature help for insert mode and normal mode  (Cmd+i via Alacritty)
+-- Signature help for insert mode and normal mode
+-- Ghostty/Kitty keyboard protocol allows distinguishing Tab from Ctrl+I
 vim.keymap.set({ "i", "n" }, "<C-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
 
 -- terminal mode
@@ -77,7 +78,7 @@ end, { desc = "Prev Error" })
 -- vim.keymap.set("n", "<S-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
 -- vim.keymap.set("n", "<S-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
 
--- Resize window using Command + arrow keys (via the Alacritty tunnel)
+-- Resize window using Shift + arrow keys
 vim.keymap.set("n", "<S-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
 vim.keymap.set("n", "<S-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
 vim.keymap.set("n", "<S-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
@@ -126,3 +127,10 @@ end
 
 -- 4. Mapping
 vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
+
+-- Snacks picker: grep within current file
+vim.keymap.set("n", "<leader>sl", function()
+  Snacks.picker.grep({
+    dirs = { vim.api.nvim_buf_get_name(0) },
+  })
+end, { desc = "Grep in Current File" })

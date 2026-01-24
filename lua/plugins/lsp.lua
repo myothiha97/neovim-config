@@ -51,8 +51,16 @@ return {
 
                 if #items == 1 then
                   local item = items[1]
-                  vim.cmd("edit " .. item.filename)
-                  vim.api.nvim_win_set_cursor(0, { item.lnum, item.col - 1 })
+                  vim.cmd("edit " .. vim.fn.fnameescape(item.filename))
+                  vim.schedule(function()
+                    local lnum = item.lnum or 1
+                    local col = (item.col or 1) - 1
+                    local line_count = vim.api.nvim_buf_line_count(0)
+                    if lnum > line_count then
+                      lnum = line_count
+                    end
+                    vim.api.nvim_win_set_cursor(0, { lnum, math.max(0, col) })
+                  end)
                 else
                   vim.fn.setqflist({}, " ", { title = "LSP Definitions", items = items })
                   vim.cmd("copen")
