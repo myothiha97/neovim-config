@@ -1,0 +1,643 @@
+" ============================================================================
+" IdeaVim Configuration - Complete Neovim/LazyVim Keybindings
+" Synced from: ~/.config/nvim (personal) + LazyVim defaults
+" ============================================================================
+
+" --- Basic Settings (matching Neovim options) ---
+set number
+set relativenumber
+set scrolloff=8
+set sidescrolloff=8
+set clipboard+=unnamedplus
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+set showmode
+set showcmd
+set visualbell
+set ideajoin
+set idearefactormode=keep
+
+" Leader key
+let mapleader = " "
+
+" --- IdeaVim Plugins ---
+set surround          " ys, cs, ds commands (vim-surround)
+set commentary        " gcc, gc commands (vim-commentary)
+set highlightedyank   " Brief highlight on yank
+set easymotion        " <leader><leader> motions
+set NERDTree          " j/k navigation in Project View
+set multiple-cursors  " Multi-cursor support
+set argtextobj        " aa, ia for function arguments
+set textobj-entire    " ae, ie for entire file
+set matchit           " Extended % matching
+set exchange          " cx, cxx for exchange
+set ReplaceWithRegister " gr to replace with register
+
+" Which-key support (shows keybinding hints)
+set which-key
+set notimeout
+let g:WhichKey_ShowVimActions = "true"
+
+" ============================================================================
+" PERSONAL CONFIG: lua/config/keymaps.lua
+" ============================================================================
+
+" --- Select/Yank All ---
+nnoremap <leader>va ggVG
+nnoremap <leader>ya ggyG
+
+" --- Comment Toggle (Alt+/) ---
+nmap <A-/> gcc
+vmap <A-/> gc
+
+" --- Scroll and Recenter ---
+nnoremap <C-d> <C-d>zz
+nnoremap <C-u> <C-u>zz
+nnoremap <C-f> <C-f>zz
+nnoremap <C-b> <C-b>zz
+vnoremap <C-d> <C-d>zz
+vnoremap <C-u> <C-u>zz
+vnoremap <C-f> <C-f>zz
+vnoremap <C-b> <C-b>zz
+
+" --- Hover Documentation (Tab in normal mode) ---
+nmap <Tab> <Action>(QuickJavaDoc)
+
+" --- Signature Help (Ctrl+I) ---
+imap <C-i> <Action>(ParameterInfo)
+nmap <C-i> <Action>(ParameterInfo)
+
+" --- Line Diagnostics (gi) ---
+nmap gi <Action>(ShowErrorDescription)
+
+" --- Navigate Errors (ge/gp - your personal mappings) ---
+nmap ge <Action>(GotoNextError)
+nmap gp <Action>(GotoPreviousError)
+
+" --- Window Resize with Shift+Arrow ---
+nmap <S-Up> <Action>(StretchSplitToTop)
+nmap <S-Down> <Action>(StretchSplitToBottom)
+nmap <S-Left> <Action>(StretchSplitToLeft)
+nmap <S-Right> <Action>(StretchSplitToRight)
+
+" --- Console Log Helper (visual mode) ---
+vmap <leader>l yoconsole.log('<C-r>" -> ', <C-r>");<Esc>
+
+" --- Grep in Current File ---
+nmap <leader>sl <Action>(Find)
+
+" --- Todo Navigation (from todo-comments.lua) ---
+nmap tt <Action>(FindNext)
+nmap tp <Action>(FindPrevious)
+
+" ============================================================================
+" LAZYVIM DEFAULTS: Core Keymaps
+" ============================================================================
+
+" --- Better j/k movement (wrapped lines) ---
+nnoremap j gj
+nnoremap k gk
+vnoremap j gj
+vnoremap k gk
+
+" --- Window Navigation (Ctrl+hjkl) - Tool Windows ---
+" Global navigation between tool windows (works from anywhere!)
+" Configured in IDE keymap (not IdeaVim) so it works from Project View & Terminal too
+" Ctrl+h = Project View (left)
+" Ctrl+l = Editor (center)
+" Ctrl+j = Terminal (bottom)
+" Ctrl+k = Editor (from bottom)
+" NOTE: These are handled by IDE keymap, not IdeaVim (see sethandler below)
+
+" --- Window Resize (Ctrl+Arrow) ---
+nmap <C-Up> <Action>(StretchSplitToTop)
+nmap <C-Down> <Action>(StretchSplitToBottom)
+nmap <C-Left> <Action>(StretchSplitToLeft)
+nmap <C-Right> <Action>(StretchSplitToRight)
+
+" --- Line Movement (Alt+j/k) ---
+nmap <A-j> <Action>(MoveLineDown)
+nmap <A-k> <Action>(MoveLineUp)
+imap <A-j> <Esc><Action>(MoveLineDown)i
+imap <A-k> <Esc><Action>(MoveLineUp)i
+vmap <A-j> <Action>(MoveLineDown)
+vmap <A-k> <Action>(MoveLineUp)
+
+" --- Buffer/Tab Navigation ---
+nmap <S-h> <Action>(PreviousTab)
+nmap <S-l> <Action>(NextTab)
+nmap [b <Action>(PreviousTab)
+nmap ]b <Action>(NextTab)
+nmap <leader>bb <Action>(RecentFiles)
+nmap <leader>` <Action>(RecentFiles)
+nmap <leader>bd <Action>(CloseContent)
+nmap <leader>bo <Action>(CloseAllEditorsButActive)
+nmap <leader>bD <Action>(CloseContent)
+nmap <leader>bp <Action>(PinActiveEditorTab)
+nmap <leader>bP <Action>(CloseAllUnpinnedEditors)
+nmap <leader>br <Action>(CloseAllToTheRight)
+nmap <leader>bl <Action>(CloseAllToTheLeft)
+
+" --- Split Windows ---
+nmap <leader>- <Action>(SplitHorizontally)
+nmap <leader>\| <Action>(SplitVertically)
+nmap <leader>wv <Action>(SplitVertically)
+nmap <leader>ws <Action>(SplitHorizontally)
+nmap <leader>wd <Action>(Unsplit)
+nmap <leader>wc <Action>(Unsplit)
+nmap <leader>ww <Action>(NextSplitter)
+nmap <leader>wm <Action>(MaximizeEditorInSplit)
+
+" --- Better Indenting (stay in visual mode) ---
+vnoremap < <gv
+vnoremap > >gv
+
+" --- Add Comment Below/Above ---
+nmap gco <Action>(CommentByLineComment)j
+nmap gcO k<Action>(CommentByLineComment)
+
+" --- Save File (Ctrl+s) ---
+nmap <C-s> :w<CR>
+imap <C-s> <Esc>:w<CR>a
+vmap <C-s> <Esc>:w<CR>gv
+
+" --- New File ---
+nmap <leader>fn <Action>(NewFile)
+
+" --- Escape and Clear Search ---
+" Use :noh to clear search, but don't override Esc (breaks multi-cursor exit)
+nmap <leader>h :noh<CR>
+" Esc handled natively for multi-cursor exit
+
+" --- Diagnostics Navigation ---
+nmap <leader>cd <Action>(ShowErrorDescription)
+nmap ]d <Action>(GotoNextError)
+nmap [d <Action>(GotoPreviousError)
+nmap ]e <Action>(GotoNextError)
+nmap [e <Action>(GotoPreviousError)
+nmap ]w <Action>(GotoNextError)
+nmap [w <Action>(GotoPreviousError)
+
+" --- Quickfix/Location List ---
+nmap <leader>xl <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>xq <Action>(ActivateProblemsViewToolWindow)
+nmap [q <Action>(GotoPreviousError)
+nmap ]q <Action>(GotoNextError)
+
+" --- Formatting ---
+nmap <leader>cf <Action>(ReformatCode)
+vmap <leader>cf <Action>(ReformatCode)
+nmap <leader>cF <Action>(ReformatCode)
+
+" --- Terminal ---
+nmap <C-/> <Action>(ActivateTerminalToolWindow)
+nmap <leader>ft <Action>(ActivateTerminalToolWindow)
+nmap <leader>fT <Action>(ActivateTerminalToolWindow)
+
+" --- Tabs ---
+nmap <leader><tab>l <Action>(GoToLastTab)
+nmap <leader><tab>o <Action>(CloseAllEditorsButActive)
+nmap <leader><tab>f <Action>(GoToTab1)
+nmap <leader><tab><tab> <Action>(NewFile)
+nmap <leader><tab>] <Action>(NextTab)
+nmap <leader><tab>d <Action>(CloseContent)
+nmap <leader><tab>[ <Action>(PreviousTab)
+
+" --- Lazy/Plugin Manager ---
+nmap <leader>l <Action>(WelcomeScreen.Plugins)
+
+" --- Quit All ---
+nmap <leader>qq <Action>(Exit)
+
+" --- Inspect ---
+nmap <leader>ui <Action>(QuickTypeDefinition)
+nmap <leader>uI <Action>(ExpressionTypeInfo)
+
+" --- Git (Lazygit style) ---
+nmap <leader>gg <Action>(ActivateVersionControlToolWindow)
+nmap <leader>gG <Action>(ActivateVersionControlToolWindow)
+nmap <leader>gL <Action>(Vcs.ShowTabbedFileHistory)
+nmap <leader>gb <Action>(Annotate)
+nmap <leader>gf <Action>(Vcs.ShowTabbedFileHistory)
+nmap <leader>gl <Action>(Vcs.Show.Log)
+nmap <leader>gB <Action>(Git.Branches)
+nmap <leader>gc <Action>(CheckinProject)
+nmap <leader>gp <Action>(Vcs.Push)
+
+" --- Toggle Options ---
+nmap <leader>uf <Action>(ToggleRenderedDocPresentation)
+nmap <leader>us <Action>(ToggleSpelling)
+nmap <leader>uw <Action>(EditorToggleUseSoftWraps)
+nmap <leader>uL <Action>(EditorToggleShowLineNumbers)
+nmap <leader>ul <Action>(EditorToggleShowLineNumbers)
+nmap <leader>ud <Action>(ToggleDistractionFreeMode)
+nmap <leader>uz <Action>(ToggleZenMode)
+
+" ============================================================================
+" LAZYVIM: LSP Keybindings
+" ============================================================================
+
+nmap <leader>cl <Action>(ActivateLSPConsoleToolWindow)
+nmap gd <Action>(GotoDeclaration)
+nmap gr <Action>(FindUsages)
+nmap gI <Action>(GotoImplementation)
+nmap gy <Action>(GotoTypeDeclaration)
+nmap gD <Action>(GotoDeclaration)
+nmap K <Action>(QuickJavaDoc)
+nmap gK <Action>(ParameterInfo)
+imap <C-k> <Action>(ParameterInfo)
+nmap <leader>ca <Action>(ShowIntentionActions)
+vmap <leader>ca <Action>(ShowIntentionActions)
+nmap <leader>cc <Action>(RunClass)
+nmap <leader>cC <Action>(RunClass)
+nmap <leader>cR <Action>(RenameFile)
+nmap <leader>cr <Action>(RenameElement)
+nmap <leader>cA <Action>(ShowIntentionActions)
+nmap ]] <Action>(GotoNextElementUnderCaretUsage)
+nmap [[ <Action>(GotoPrevElementUnderCaretUsage)
+nmap <A-n> <Action>(GotoNextElementUnderCaretUsage)
+nmap <A-p> <Action>(GotoPrevElementUnderCaretUsage)
+nmap <leader>cm <Action>(WelcomeScreen.Plugins)
+
+" ============================================================================
+" LAZYVIM: Flash/Motion (using EasyMotion)
+" ============================================================================
+
+" Flash jump
+nmap s <Plug>(easymotion-s2)
+vmap s <Plug>(easymotion-s2)
+nmap S <Plug>(easymotion-sn)
+vmap S <Plug>(easymotion-sn)
+
+" ============================================================================
+" LAZYVIM: Trouble (Diagnostics)
+" ============================================================================
+
+nmap <leader>xx <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>xX <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>cs <Action>(FileStructurePopup)
+nmap <leader>cS <Action>(GotoSymbol)
+nmap <leader>xL <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>xQ <Action>(ActivateProblemsViewToolWindow)
+
+" ============================================================================
+" LAZYVIM: Todo Comments
+" ============================================================================
+
+nmap ]t <Action>(FindNext)
+nmap [t <Action>(FindPrevious)
+nmap <leader>xt <Action>(ActivateTODOToolWindow)
+nmap <leader>xT <Action>(ActivateTODOToolWindow)
+nmap <leader>st <Action>(ActivateTODOToolWindow)
+nmap <leader>sT <Action>(ActivateTODOToolWindow)
+
+" ============================================================================
+" LAZYVIM: Git Signs (Hunks)
+" ============================================================================
+
+nmap ]h <Action>(VcsShowNextChangeMarker)
+nmap [h <Action>(VcsShowPrevChangeMarker)
+nmap ]H <Action>(VcsShowNextChangeMarker)
+nmap [H <Action>(VcsShowPrevChangeMarker)
+nmap <leader>ghs <Action>(Vcs.RollbackChangedLines)
+nmap <leader>ghr <Action>(Vcs.RollbackChangedLines)
+nmap <leader>ghS <Action>(Git.Add)
+nmap <leader>ghu <Action>(Vcs.RollbackChangedLines)
+nmap <leader>ghR <Action>(Vcs.RollbackChangedLines)
+nmap <leader>ghp <Action>(VcsShowCurrentChangeMarker)
+nmap <leader>ghb <Action>(Annotate)
+nmap <leader>ghB <Action>(Annotate)
+nmap <leader>ghd <Action>(Compare.SameVersion)
+nmap <leader>ghD <Action>(Compare.SameVersion)
+
+" ============================================================================
+" LAZYVIM: Which-key
+" ============================================================================
+
+nmap <leader>? <Action>(ShowUsages)
+
+" ============================================================================
+" LAZYVIM: Notifications (Snacks)
+" ============================================================================
+
+nmap <leader>. <Action>(Scratch.ShowFilesPopup)
+nmap <leader>S <Action>(Scratch.ShowFilesPopup)
+nmap <leader>n <Action>(ActivateNotificationsToolWindow)
+nmap <leader>un <Action>(ClearAllNotifications)
+
+" ============================================================================
+" LAZYVIM: File/Find Operations (Pickers)
+" ============================================================================
+
+nmap <leader><space> <Action>(GotoFile)
+nmap <leader>, <Action>(RecentFiles)
+nmap <leader>fb <Action>(RecentFiles)
+nmap <leader>fB <Action>(RecentFiles)
+nmap <leader>fc <Action>(GotoAction)
+nmap <leader>ff <Action>(GotoFile)
+nmap <leader>fF <Action>(GotoFile)
+nmap <leader>fg <Action>(FindInPath)
+nmap <leader>fr <Action>(RecentFiles)
+nmap <leader>fR <Action>(RecentFiles)
+nmap <leader>fp <Action>(ManageRecentProjects)
+
+" ============================================================================
+" LAZYVIM: Search Operations
+" ============================================================================
+
+nmap <leader>/ <Action>(FindInPath)
+nmap <leader>: <Action>(GotoAction)
+nmap <leader>sb <Action>(Find)
+nmap <leader>sB <Action>(FindInPath)
+nmap <leader>sg <Action>(FindInPath)
+nmap <leader>sG <Action>(FindInPath)
+nmap <leader>sp <Action>(WelcomeScreen.Plugins)
+nmap <leader>sw <Action>(FindWordAtCaret)
+vmap <leader>sw <Action>(FindWordAtCaret)
+nmap <leader>sW <Action>(FindWordAtCaret)
+vmap <leader>sW <Action>(FindWordAtCaret)
+nmap <leader>s" <Action>(PasteMultiple)
+nmap <leader>s/ <Action>(FindInPath)
+nmap <leader>sa <Action>(GotoAction)
+nmap <leader>sc <Action>(GotoAction)
+nmap <leader>sC <Action>(GotoClass)
+nmap <leader>sd <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>sD <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>sh <Action>(HelpTopics)
+nmap <leader>sH <Action>(HighlightUsagesInFile)
+nmap <leader>si <Action>(SelectIn)
+nmap <leader>sj <Action>(ShowNavBar)
+nmap <leader>sk <Action>(GotoAction)
+nmap <leader>sm <Action>(ShowBookmarks)
+nmap <leader>sM <Action>(ActivateBookmarksToolWindow)
+nmap <leader>sR <Action>(RecentFiles)
+nmap <leader>sq <Action>(ActivateProblemsViewToolWindow)
+nmap <leader>su <Action>(LocalHistory.ShowHistory)
+nmap <leader>sr <Action>(ReplaceInPath)
+vmap <leader>sr <Action>(ReplaceInPath)
+nmap <leader>ss <Action>(GotoSymbol)
+nmap <leader>sS <Action>(GotoSymbol)
+
+" ============================================================================
+" LAZYVIM: Git Picker Operations
+" ============================================================================
+
+nmap <leader>gd <Action>(Compare.SameVersion)
+nmap <leader>gD <Action>(Compare.SameVersion)
+nmap <leader>gs <Action>(ActivateVersionControlToolWindow)
+nmap <leader>gS <Action>(Git.Stash)
+
+" ============================================================================
+" LAZYVIM: Session Management
+" ============================================================================
+
+nmap <leader>qs <Action>(ManageRecentProjects)
+nmap <leader>qS <Action>(ManageRecentProjects)
+nmap <leader>ql <Action>(ManageRecentProjects)
+nmap <leader>qd <Action>(CloseProject)
+
+" ============================================================================
+" LAZYVIM: Testing
+" ============================================================================
+
+nmap <leader>tt <Action>(RunClass)
+nmap <leader>tT <Action>(RunAllTests)
+nmap <leader>tr <Action>(RunClass)
+nmap <leader>tl <Action>(Rerun)
+nmap <leader>ts <Action>(ActivateRunToolWindow)
+nmap <leader>to <Action>(ActivateRunToolWindow)
+nmap <leader>tO <Action>(ActivateRunToolWindow)
+nmap <leader>tS <Action>(Stop)
+nmap <leader>td <Action>(DebugClass)
+
+" ============================================================================
+" LAZYVIM: Debugging
+" ============================================================================
+
+nmap <leader>dB <Action>(AddConditionalBreakpoint)
+nmap <leader>db <Action>(ToggleLineBreakpoint)
+nmap <leader>dc <Action>(Resume)
+nmap <leader>da <Action>(DebugClass)
+nmap <leader>dC <Action>(RunToCursor)
+nmap <leader>di <Action>(StepInto)
+nmap <leader>dj <Action>(StepOver)
+nmap <leader>dk <Action>(StepOut)
+nmap <leader>dl <Action>(Rerun)
+nmap <leader>do <Action>(StepOut)
+nmap <leader>dO <Action>(StepOver)
+nmap <leader>dP <Action>(Pause)
+nmap <leader>dr <Action>(ActivateDebugToolWindow)
+nmap <leader>ds <Action>(ActivateDebugToolWindow)
+nmap <leader>dt <Action>(Stop)
+nmap <leader>dw <Action>(Debugger.AddToWatch)
+nmap <leader>du <Action>(ActivateDebugToolWindow)
+nmap <leader>de <Action>(EvaluateExpression)
+vmap <leader>de <Action>(EvaluateExpression)
+
+" ============================================================================
+" LAZYVIM: Text Objects & Motion (using Treesitter equivalents)
+" ============================================================================
+
+nmap ]f <Action>(MethodDown)
+nmap [f <Action>(MethodUp)
+nmap ]c <Action>(GotoNextError)
+nmap [c <Action>(GotoPreviousError)
+
+" ============================================================================
+" LAZYVIM: Run/Debug
+" ============================================================================
+
+nmap <leader>rr <Action>(Run)
+nmap <leader>rd <Action>(Debug)
+nmap <leader>rs <Action>(Stop)
+nmap <leader>rc <Action>(RunConfiguration)
+
+" ============================================================================
+" LAZYVIM: File Explorer + Neo-tree Style Keybindings
+" ============================================================================
+
+" Toggle file explorer (use HideActiveWindow to toggle off)
+nmap <leader>e <Action>(SelectInProjectView)
+nmap <leader>E <Action>(SelectInProjectView)
+nmap <leader>fe <Action>(ActivateProjectToolWindow)
+nmap <leader>fE <Action>(SelectInProjectView)
+
+" ============================================================================
+" PROJECT VIEW - NERDTree Keybindings
+" ============================================================================
+
+" NERDTree mappings (these ONLY work in Project View, not editor)
+let g:NERDTreeMapActivateNode = 'l'
+let g:NERDTreeMapOpenSplit = 'i'
+let g:NERDTreeMapOpenVSplit = 's'
+let g:NERDTreeMapPreview = 'go'
+let g:NERDTreeMapCloseDir = 'h'
+let g:NERDTreeMapCloseChildren = 'X'
+let g:NERDTreeMapJumpParent = 'p'
+let g:NERDTreeMapJumpRoot = 'P'
+let g:NERDTreeMapRefresh = 'r'
+let g:NERDTreeMapRefreshRoot = 'R'
+let g:NERDTreeMapMenu = 'a'
+let g:NERDTreeMapQuit = 'q'
+let g:NERDTreeMapToggleZoom = 'Z'
+
+" Navigation (in Project View):
+"   j/k          - Move up/down
+"   l or Enter   - Open file / expand folder
+"   h            - Collapse folder
+"   O            - Recursively open
+"   s            - Open in vertical split
+"   i            - Open in horizontal split
+"   go           - Preview (open without focus)
+"   X            - Close all children
+"   p            - Go to parent
+"   P            - Go to root
+"   q            - Close/back to editor
+"   r            - Refresh
+"   R            - Refresh root
+"   Z            - Zoom/maximize
+"
+" File Operations:
+"   a            - Open menu (Add/Delete/Rename/Copy/Move)
+"                  Then select: (a)dd, (d)elete, (r)ename, (c)opy, (m)ove
+"
+" Tool Window Navigation (configure in Keymap settings):
+"   Ctrl+h       - Focus Project View (left)
+"   Ctrl+l       - Focus Editor (center)
+"   Ctrl+j       - Focus Terminal (bottom)
+"   Ctrl+k       - Focus Editor (from bottom)
+
+" ============================================================================
+" Folding
+" ============================================================================
+
+nmap za <Action>(ExpandCollapseToggleAction)
+nmap zA <Action>(ExpandCollapseToggleAction)
+nmap zc <Action>(CollapseRegion)
+nmap zC <Action>(CollapseRegionRecursively)
+nmap zo <Action>(ExpandRegion)
+nmap zO <Action>(ExpandRegionRecursively)
+nmap zM <Action>(CollapseAllRegions)
+nmap zR <Action>(ExpandAllRegions)
+nmap zm <Action>(CollapseAllRegions)
+nmap zr <Action>(ExpandAllRegions)
+nmap zj <Action>(NextFoldRegion)
+nmap zk <Action>(PreviousFoldRegion)
+
+" ============================================================================
+" Additional Convenience Mappings
+" ============================================================================
+
+" Better paste in visual mode (don't yank replaced text)
+vnoremap p "_dP
+
+" Quick escape alternatives
+inoremap jk <Esc>
+inoremap jj <Esc>
+
+" Quick save
+nmap <leader>w :w<CR>
+
+" Keep IDE handling for certain keys
+sethandler <C-n> a:ide
+sethandler <C-p> a:ide
+sethandler <C-c> a:ide
+sethandler <C-v> a:ide
+sethandler <C-a> a:ide
+sethandler <C-x> a:ide
+
+" Let IDE handle Ctrl+h/j/k/l globally (works from Project View, Terminal, Editor)
+sethandler <C-h> a:ide
+sethandler <C-j> a:ide
+sethandler <C-k> a:ide
+sethandler <C-l> a:ide
+
+" ============================================================================
+" WHICH-KEY GROUP LABELS
+" ============================================================================
+
+let g:WhichKeyDesc_leader = "<leader> Leader"
+let g:WhichKeyDesc_b = "<leader>b Buffer"
+let g:WhichKeyDesc_c = "<leader>c Code"
+let g:WhichKeyDesc_d = "<leader>d Debug"
+let g:WhichKeyDesc_f = "<leader>f File/Find"
+let g:WhichKeyDesc_g = "<leader>g Git"
+let g:WhichKeyDesc_gh = "<leader>gh Git Hunks"
+let g:WhichKeyDesc_q = "<leader>q Quit/Session"
+let g:WhichKeyDesc_r = "<leader>r Run"
+let g:WhichKeyDesc_s = "<leader>s Search"
+let g:WhichKeyDesc_t = "<leader>t Test"
+let g:WhichKeyDesc_u = "<leader>u UI/Toggle"
+let g:WhichKeyDesc_w = "<leader>w Window"
+let g:WhichKeyDesc_x = "<leader>x Diagnostics"
+let g:WhichKeyDesc_tab = "<leader><tab> Tab"
+
+
+ " Disable speed search in tree views
+   set idearefactormode=keep
+
+" ============================================================================
+" Quick Reference (matches your muscle memory):
+"
+" PERSONAL MAPPINGS:
+"   <leader>va    - Select all
+"   <leader>ya    - Yank all
+"   Alt+/         - Toggle comment
+"   Tab           - Hover docs (normal mode)
+"   Ctrl+I        - Signature help
+"   gi            - Line diagnostics
+"   ge/gp         - Next/prev error
+"   Shift+Arrows  - Resize window
+"   <leader>l     - Console.log (visual)
+"   <leader>sl    - Find in current file
+"   tt/tp         - Next/prev todo
+"
+" LAZYVIM NAVIGATION:
+"   <leader><space> - Find files
+"   <leader>ff      - Find files
+"   <leader>/       - Grep
+"   <leader>sg      - Grep
+"   <leader>fb      - Buffers
+"   <leader>fr      - Recent files
+"   gd              - Go to definition
+"   gr              - Find usages
+"   gI              - Go to implementation
+"   K               - Hover docs
+"
+" LAZYVIM EDITING:
+"   gcc             - Toggle comment line
+"   <leader>ca      - Code actions
+"   <leader>cr      - Rename
+"   <leader>cf      - Format
+"   Alt+j/k         - Move lines
+"   s/S             - Flash jump (EasyMotion)
+"
+" TOOL WINDOWS:
+"   Ctrl+h          - Project View (left)
+"   Ctrl+l          - Editor (center)
+"   Ctrl+j          - Terminal (bottom)
+"   Ctrl+k          - Editor (from bottom)
+"   Shift+h/l       - Prev/next tab
+"   <leader>e       - Toggle Project View
+"
+" LAZYVIM GIT:
+"   <leader>gg      - Git panel
+"   <leader>gb      - Git blame
+"   <leader>gd      - Git diff
+"   ]h/[h           - Next/prev hunk
+"   <leader>ghs     - Stage hunk
+"
+" LAZYVIM DEBUG:
+"   <leader>db      - Toggle breakpoint
+"   <leader>dc      - Continue
+"   <leader>di      - Step into
+"   <leader>do      - Step out
+"   <leader>dO      - Step over
+"
+" LAZYVIM TEST:
+"   <leader>tt      - Run test file
+"   <leader>tr      - Run nearest test
+"   <leader>ts      - Test summary
+" ============================================================================
