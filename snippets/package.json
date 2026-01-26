@@ -1,0 +1,11 @@
+{
+  "name": "custom-snippets",
+  "contributes": {
+    "snippets": [
+      {
+        "language": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+        "path": "./es6-javascript.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "Promise": {
+    "prefix": "prom",
+    "body": "return new Promise((resolve, reject) => {\n\t${0}\n});",
+    "description": "Creates a new Promise"
+  },
+  "Then Catch": {
+    "prefix": "thenc",
+    "body": ".then((${1:res}) => {\n\t${2}\n}).catch((${3:err}) => {\n\t${4}\n});",
+    "description": "Adds then and catch declaration to a promise"
+  },
+  "Console Assert": {
+    "prefix": "cas",
+    "body": "console.assert(${1:expression}, ${2:object});",
+    "description": "console.assert"
+  },
+  "Console Clear": {
+    "prefix": "ccl",
+    "body": "console.clear();",
+    "description": "console.clear"
+  },
+  "Console Count": {
+    "prefix": "cco",
+    "body": "console.count(${1:label});",
+    "description": "console.count"
+  },
+  "Console Debug": {
+    "prefix": "cdb",
+    "body": "console.debug(${1:object});",
+    "description": "console.debug"
+  },
+  "Console Dir": {
+    "prefix": "cdi",
+    "body": "console.dir(${1:object});",
+    "description": "console.dir"
+  },
+  "Console Error": {
+    "prefix": "cer",
+    "body": "console.error(${1:object});",
+    "description": "console.error"
+  },
+  "Console Group": {
+    "prefix": "cgr",
+    "body": "console.group(${1:label});",
+    "description": "console.group"
+  },
+  "Console Group End": {
+    "prefix": "cge",
+    "body": "console.groupEnd();",
+    "description": "console.groupEnd"
+  },
+  "Console Log": {
+    "prefix": "clg",
+    "body": "console.log(${1:object});",
+    "description": "console.log"
+  },
+  "Console Log Object": {
+    "prefix": "clo",
+    "body": "console.log('${1:object} :>> ', ${1:object});",
+    "description": "console.log with object name"
+  },
+  "Console Trace": {
+    "prefix": "ctr",
+    "body": "console.trace(${1:object});",
+    "description": "console.trace"
+  },
+  "Console Table": {
+    "prefix": "cta",
+    "body": "console.table(${1:object});",
+    "description": "console.table"
+  },
+  "Console Time": {
+    "prefix": "cti",
+    "body": "console.time(${1:label});",
+    "description": "console.time"
+  },
+  "Console Time End": {
+    "prefix": "cte",
+    "body": "console.timeEnd(${1:label});",
+    "description": "console.timeEnd"
+  },
+  "Console Warn": {
+    "prefix": "cwa",
+    "body": "console.warn(${1:object});",
+    "description": "console.warn"
+  },
+  "Console Info": {
+    "prefix": "cin",
+    "body": "console.info(${1:object});",
+    "description": "console.info"
+  },
+  "Destructuring Assignment": {
+    "prefix": "dob",
+    "body": "const { ${2:propertyName} } = ${1:objectToDestruct};",
+    "description": "Destructuring assignment"
+  },
+  "Destructuring Array": {
+    "prefix": "dar",
+    "body": "const [${2:propertyName}] = ${1:arrayToDestruct};",
+    "description": "Destructuring array"
+  },
+  "Export Default": {
+    "prefix": "exp",
+    "body": "export default ${1:moduleName};",
+    "description": "Export default module"
+  },
+  "Export Named": {
+    "prefix": "exn",
+    "body": "export { ${1:moduleName} };",
+    "description": "Export named module"
+  },
+  "Import": {
+    "prefix": "imp",
+    "body": "import ${2:moduleName} from '${1:module}';",
+    "description": "Import module"
+  },
+  "Import Destructured": {
+    "prefix": "imd",
+    "body": "import { ${2:moduleName} } from '${1:module}';",
+    "description": "Import destructured module"
+  },
+  "Import All": {
+    "prefix": "ima",
+    "body": "import * as ${2:alias} from '${1:module}';",
+    "description": "Import all from module"
+  },
+  "Arrow Function": {
+    "prefix": "af",
+    "body": "(${1:params}) => {\n\t${2}\n}",
+    "description": "Arrow function"
+  },
+  "Arrow Function Inline": {
+    "prefix": "afi",
+    "body": "(${1:params}) => ${2:statement}",
+    "description": "Arrow function inline"
+  },
+  "Named Function": {
+    "prefix": "nfn",
+    "body": "const ${1:name} = (${2:params}) => {\n\t${3}\n};",
+    "description": "Named arrow function"
+  },
+  "Async Arrow Function": {
+    "prefix": "anfn",
+    "body": "const ${1:name} = async (${2:params}) => {\n\t${3}\n};",
+    "description": "Async named arrow function"
+  },
+  "For Of Loop": {
+    "prefix": "fof",
+    "body": "for (const ${1:item} of ${2:object}) {\n\t${3}\n}",
+    "description": "For of loop"
+  },
+  "For In Loop": {
+    "prefix": "fin",
+    "body": "for (const ${1:key} in ${2:object}) {\n\t${3}\n}",
+    "description": "For in loop"
+  },
+  "For Each": {
+    "prefix": "fea",
+    "body": "${1:array}.forEach((${2:item}) => {\n\t${3}\n});",
+    "description": "forEach loop"
+  },
+  "Map": {
+    "prefix": "map",
+    "body": "${1:array}.map((${2:item}) => {\n\t${3}\n});",
+    "description": "Array map"
+  },
+  "Filter": {
+    "prefix": "fil",
+    "body": "${1:array}.filter((${2:item}) => {\n\t${3}\n});",
+    "description": "Array filter"
+  },
+  "Reduce": {
+    "prefix": "red",
+    "body": "${1:array}.reduce((${2:acc}, ${3:item}) => {\n\t${4}\n}, ${5:initialValue});",
+    "description": "Array reduce"
+  },
+  "Find": {
+    "prefix": "fnd",
+    "body": "${1:array}.find((${2:item}) => {\n\t${3}\n});",
+    "description": "Array find"
+  },
+  "Try Catch": {
+    "prefix": "tc",
+    "body": "try {\n\t${1}\n} catch (${2:error}) {\n\t${3}\n}",
+    "description": "Try catch block"
+  },
+  "Try Catch Finally": {
+    "prefix": "tcf",
+    "body": "try {\n\t${1}\n} catch (${2:error}) {\n\t${3}\n} finally {\n\t${4}\n}",
+    "description": "Try catch finally block"
+  },
+  "Set Timeout": {
+    "prefix": "sto",
+    "body": "setTimeout(() => {\n\t${2}\n}, ${1:delay});",
+    "description": "setTimeout"
+  },
+  "Set Interval": {
+    "prefix": "sti",
+    "body": "setInterval(() => {\n\t${2}\n}, ${1:interval});",
+    "description": "setInterval"
+  }
+}

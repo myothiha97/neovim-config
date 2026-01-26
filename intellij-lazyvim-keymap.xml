@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  IntelliJ IDEA / WebStorm Keymap - LazyVim Style
+
+  Import Instructions:
+  1. Open IntelliJ IDEA / WebStorm
+  2. Go to: Settings → Keymap
+  3. Click the gear icon → Import Keymap
+  4. Select this file
+  5. Name it "LazyVim" or similar
+
+  Note: This keymap is designed to work alongside IdeaVim.
+  Most keybindings are handled by ~/.ideavimrc, but these
+  native IDE shortcuts complement them.
+-->
+<keymap version="1" name="LazyVim" parent="$default">
+  <!-- ============================================================ -->
+  <!-- NAVIGATION - Matching LazyVim/Neovim -->
+  <!-- ============================================================ -->
+
+  <!-- Go to File (Cmd+P style, like <leader>ff) -->
+  <action id="GotoFile">
+    <keyboard-shortcut first-keystroke="meta P"/>
+  </action>
+
+  <!-- Go to Symbol (like <leader>ss) -->
+  <action id="GotoSymbol">
+    <keyboard-shortcut first-keystroke="meta shift O"/>
+  </action>
+
+  <!-- Go to Class (like <leader>sC) -->
+  <action id="GotoClass">
+    <keyboard-shortcut first-keystroke="meta O"/>
+  </action>
+
+  <!-- Find in Path / Grep (like <leader>sg or <leader>/) -->
+  <action id="FindInPath">
+    <keyboard-shortcut first-keystroke="meta shift F"/>
+  </action>
+
+  <!-- Replace in Path (like <leader>sr) -->
+  <action id="ReplaceInPath">
+    <keyboard-shortcut first-keystroke="meta shift H"/>
+  </action>
+
+  <!-- Recent Files (like <leader>fb) -->
+  <action id="RecentFiles">
+    <keyboard-shortcut first-keystroke="meta E"/>
+  </action>
+
+  <!-- Go to Action / Command Palette (like <leader>:) -->
+  <action id="GotoAction">
+    <keyboard-shortcut first-keystroke="meta shift P"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- CODE ACTIONS - Matching LazyVim LSP -->
+  <!-- ============================================================ -->
+
+  <!-- Quick Fix / Code Actions (like <leader>ca) -->
+  <action id="ShowIntentionActions">
+    <keyboard-shortcut first-keystroke="meta ."/>
+    <keyboard-shortcut first-keystroke="alt ENTER"/>
+  </action>
+
+  <!-- Rename (like <leader>cr) -->
+  <action id="RenameElement">
+    <keyboard-shortcut first-keystroke="F2"/>
+    <keyboard-shortcut first-keystroke="shift F6"/>
+  </action>
+
+  <!-- Reformat Code (like <leader>cf) -->
+  <action id="ReformatCode">
+    <keyboard-shortcut first-keystroke="meta alt L"/>
+    <keyboard-shortcut first-keystroke="shift alt F"/>
+  </action>
+
+  <!-- Quick Documentation (like K) -->
+  <action id="QuickJavaDoc">
+    <keyboard-shortcut first-keystroke="F1"/>
+    <keyboard-shortcut first-keystroke="meta J"/>
+  </action>
+
+  <!-- Parameter Info / Signature Help (like Ctrl+I) -->
+  <action id="ParameterInfo">
+    <keyboard-shortcut first-keystroke="meta shift SPACE"/>
+  </action>
+
+  <!-- Show Error Description (like gi) -->
+  <action id="ShowErrorDescription">
+    <keyboard-shortcut first-keystroke="meta F1"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- NAVIGATION - Go to -->
+  <!-- ============================================================ -->
+
+  <!-- Go to Definition (like gd) -->
+  <action id="GotoDeclaration">
+    <keyboard-shortcut first-keystroke="F12"/>
+    <keyboard-shortcut first-keystroke="meta B"/>
+  </action>
+
+  <!-- Find Usages / References (like gr) -->
+  <action id="FindUsages">
+    <keyboard-shortcut first-keystroke="alt F7"/>
+    <keyboard-shortcut first-keystroke="meta shift U"/>
+  </action>
+
+  <!-- Go to Implementation (like gI) -->
+  <action id="GotoImplementation">
+    <keyboard-shortcut first-keystroke="meta alt B"/>
+  </action>
+
+  <!-- Go to Type Definition (like gy) -->
+  <action id="GotoTypeDeclaration">
+    <keyboard-shortcut first-keystroke="meta shift B"/>
+  </action>
+
+  <!-- Next Error (like ]d or ge) -->
+  <action id="GotoNextError">
+    <keyboard-shortcut first-keystroke="F2"/>
+    <keyboard-shortcut first-keystroke="meta alt DOWN"/>
+  </action>
+
+  <!-- Previous Error (like [d or gp) -->
+  <action id="GotoPreviousError">
+    <keyboard-shortcut first-keystroke="shift F2"/>
+    <keyboard-shortcut first-keystroke="meta alt UP"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- EDITOR - Tabs/Buffers -->
+  <!-- ============================================================ -->
+
+  <!-- Previous Tab (like Shift+H or [b) -->
+  <action id="PreviousTab">
+    <keyboard-shortcut first-keystroke="meta shift OPEN_BRACKET"/>
+    <keyboard-shortcut first-keystroke="alt LEFT"/>
+  </action>
+
+  <!-- Next Tab (like Shift+L or ]b) -->
+  <action id="NextTab">
+    <keyboard-shortcut first-keystroke="meta shift CLOSE_BRACKET"/>
+    <keyboard-shortcut first-keystroke="alt RIGHT"/>
+  </action>
+
+  <!-- Close Tab (like <leader>bd) -->
+  <action id="CloseContent">
+    <keyboard-shortcut first-keystroke="meta W"/>
+  </action>
+
+  <!-- Close Other Tabs (like <leader>bo) -->
+  <action id="CloseAllEditorsButActive">
+    <keyboard-shortcut first-keystroke="meta alt W"/>
+  </action>
+
+  <!-- Pin Tab (like <leader>bp) -->
+  <action id="PinActiveEditorTab">
+    <keyboard-shortcut first-keystroke="meta alt P"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- EDITOR - Splits/Windows -->
+  <!-- ============================================================ -->
+
+  <!-- Split Vertically (like <leader>wv or <leader>|) -->
+  <action id="SplitVertically">
+    <keyboard-shortcut first-keystroke="meta BACK_SLASH"/>
+  </action>
+
+  <!-- Split Horizontally (like <leader>ws or <leader>-) -->
+  <action id="SplitHorizontally">
+    <keyboard-shortcut first-keystroke="meta MINUS"/>
+  </action>
+
+  <!-- Unsplit / Close Split (like <leader>wd) -->
+  <action id="Unsplit">
+    <keyboard-shortcut first-keystroke="meta shift BACK_SLASH"/>
+  </action>
+
+  <!-- Next Splitter (like <leader>ww) -->
+  <action id="NextSplitter">
+    <keyboard-shortcut first-keystroke="meta alt RIGHT"/>
+  </action>
+
+  <!-- Maximize Editor (like <leader>wm) -->
+  <action id="MaximizeEditorInSplit">
+    <keyboard-shortcut first-keystroke="meta shift QUOTE"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- COMMENTING (like gcc / Alt+/) -->
+  <!-- ============================================================ -->
+
+  <action id="CommentByLineComment">
+    <keyboard-shortcut first-keystroke="meta SLASH"/>
+    <keyboard-shortcut first-keystroke="alt SLASH"/>
+  </action>
+
+  <action id="CommentByBlockComment">
+    <keyboard-shortcut first-keystroke="meta shift SLASH"/>
+    <keyboard-shortcut first-keystroke="alt shift SLASH"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- LINE MOVEMENT (like Alt+j/k) -->
+  <!-- ============================================================ -->
+
+  <action id="MoveLineDown">
+    <keyboard-shortcut first-keystroke="alt DOWN"/>
+  </action>
+
+  <action id="MoveLineUp">
+    <keyboard-shortcut first-keystroke="alt UP"/>
+  </action>
+
+  <action id="MoveStatementDown">
+    <keyboard-shortcut first-keystroke="meta shift DOWN"/>
+  </action>
+
+  <action id="MoveStatementUp">
+    <keyboard-shortcut first-keystroke="meta shift UP"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- TOOL WINDOWS - Matching LazyVim -->
+  <!-- Global Ctrl+h/j/k/l navigation (works from anywhere) -->
+  <!-- ============================================================ -->
+
+  <!-- Ctrl+h = Focus Project View (left) -->
+  <action id="ActivateProjectToolWindow">
+    <keyboard-shortcut first-keystroke="meta 1"/>
+    <keyboard-shortcut first-keystroke="ctrl H"/>
+  </action>
+
+  <!-- Ctrl+l = Focus Editor (center) -->
+  <!-- Ctrl+k = Focus Editor (from bottom) -->
+  <action id="FocusEditor">
+    <keyboard-shortcut first-keystroke="ctrl L"/>
+    <keyboard-shortcut first-keystroke="ctrl K"/>
+  </action>
+
+  <!-- Ctrl+j = Focus Terminal (bottom) -->
+  <action id="ActivateTerminalToolWindow">
+    <keyboard-shortcut first-keystroke="meta BACK_QUOTE"/>
+    <keyboard-shortcut first-keystroke="ctrl BACK_QUOTE"/>
+    <keyboard-shortcut first-keystroke="ctrl J"/>
+  </action>
+
+  <!-- Problems / Diagnostics (like <leader>xx) -->
+  <action id="ActivateProblemsViewToolWindow">
+    <keyboard-shortcut first-keystroke="meta 6"/>
+  </action>
+
+  <!-- Git / Version Control (like <leader>gg) -->
+  <action id="ActivateVersionControlToolWindow">
+    <keyboard-shortcut first-keystroke="meta 9"/>
+  </action>
+
+  <!-- TODO Window (like <leader>xt) -->
+  <action id="ActivateTODOToolWindow">
+    <keyboard-shortcut first-keystroke="meta 5"/>
+  </action>
+
+  <!-- Run Window (like <leader>ts) -->
+  <action id="ActivateRunToolWindow">
+    <keyboard-shortcut first-keystroke="meta 4"/>
+  </action>
+
+  <!-- Debug Window (like <leader>du) -->
+  <action id="ActivateDebugToolWindow">
+    <keyboard-shortcut first-keystroke="meta 8"/>
+  </action>
+
+  <!-- Structure (like <leader>cs) -->
+  <action id="FileStructurePopup">
+    <keyboard-shortcut first-keystroke="meta F12"/>
+    <keyboard-shortcut first-keystroke="meta 7"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- GIT (like LazyVim git bindings) -->
+  <!-- ============================================================ -->
+
+  <!-- Git Commit (like <leader>gc) -->
+  <action id="CheckinProject">
+    <keyboard-shortcut first-keystroke="meta K"/>
+  </action>
+
+  <!-- Git Push (like <leader>gp) -->
+  <action id="Vcs.Push">
+    <keyboard-shortcut first-keystroke="meta shift K"/>
+  </action>
+
+  <!-- Git Pull -->
+  <action id="Vcs.UpdateProject">
+    <keyboard-shortcut first-keystroke="meta T"/>
+  </action>
+
+  <!-- Git Branches (like <leader>gB) -->
+  <action id="Git.Branches">
+    <keyboard-shortcut first-keystroke="ctrl shift G"/>
+  </action>
+
+  <!-- Git Blame / Annotate (like <leader>gb) -->
+  <action id="Annotate">
+    <keyboard-shortcut first-keystroke="ctrl alt shift A"/>
+  </action>
+
+  <!-- Git Log (like <leader>gl) -->
+  <action id="Vcs.Show.Log">
+    <keyboard-shortcut first-keystroke="ctrl shift L"/>
+  </action>
+
+  <!-- Next Change / Hunk (like ]h) -->
+  <action id="VcsShowNextChangeMarker">
+    <keyboard-shortcut first-keystroke="ctrl alt shift DOWN"/>
+  </action>
+
+  <!-- Previous Change / Hunk (like [h) -->
+  <action id="VcsShowPrevChangeMarker">
+    <keyboard-shortcut first-keystroke="ctrl alt shift UP"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- RUN/DEBUG (like LazyVim) -->
+  <!-- ============================================================ -->
+
+  <!-- Run (like <leader>rr) -->
+  <action id="Run">
+    <keyboard-shortcut first-keystroke="ctrl R"/>
+    <keyboard-shortcut first-keystroke="F5"/>
+  </action>
+
+  <!-- Debug (like <leader>rd) -->
+  <action id="Debug">
+    <keyboard-shortcut first-keystroke="ctrl D"/>
+    <keyboard-shortcut first-keystroke="shift F5"/>
+  </action>
+
+  <!-- Stop (like <leader>rs) -->
+  <action id="Stop">
+    <keyboard-shortcut first-keystroke="meta F2"/>
+    <keyboard-shortcut first-keystroke="shift F5"/>
+  </action>
+
+  <!-- Toggle Breakpoint (like <leader>db) -->
+  <action id="ToggleLineBreakpoint">
+    <keyboard-shortcut first-keystroke="meta F8"/>
+    <keyboard-shortcut first-keystroke="F9"/>
+  </action>
+
+  <!-- Step Over (like <leader>dO) -->
+  <action id="StepOver">
+    <keyboard-shortcut first-keystroke="F10"/>
+    <keyboard-shortcut first-keystroke="meta QUOTE"/>
+  </action>
+
+  <!-- Step Into (like <leader>di) -->
+  <action id="StepInto">
+    <keyboard-shortcut first-keystroke="F11"/>
+    <keyboard-shortcut first-keystroke="meta SEMICOLON"/>
+  </action>
+
+  <!-- Step Out (like <leader>do) -->
+  <action id="StepOut">
+    <keyboard-shortcut first-keystroke="shift F11"/>
+    <keyboard-shortcut first-keystroke="meta shift SEMICOLON"/>
+  </action>
+
+  <!-- Resume (like <leader>dc) -->
+  <action id="Resume">
+    <keyboard-shortcut first-keystroke="meta F5"/>
+    <keyboard-shortcut first-keystroke="F8"/>
+  </action>
+
+  <!-- Evaluate Expression (like <leader>de) -->
+  <action id="EvaluateExpression">
+    <keyboard-shortcut first-keystroke="alt F8"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- FOLDING (like z commands) -->
+  <!-- ============================================================ -->
+
+  <action id="ExpandCollapseToggleAction">
+    <keyboard-shortcut first-keystroke="meta PERIOD"/>
+  </action>
+
+  <action id="CollapseAllRegions">
+    <keyboard-shortcut first-keystroke="meta shift MINUS"/>
+  </action>
+
+  <action id="ExpandAllRegions">
+    <keyboard-shortcut first-keystroke="meta shift EQUALS"/>
+  </action>
+
+  <!-- ============================================================ -->
+  <!-- PROJECT VIEW KEYBINDINGS -->
+  <!-- NOTE: Single-letter shortcuts removed - they conflict with typing -->
+  <!-- Use IntelliJ defaults in Project View instead: -->
+  <!--   Enter     = Open file -->
+  <!--   Delete    = Delete -->
+  <!--   F2        = Rename -->
+  <!--   Ctrl+C    = Copy -->
+  <!--   Ctrl+X    = Cut -->
+  <!--   Ctrl+V    = Paste -->
+  <!--   Alt+Ins   = New file/folder -->
+  <!--   Escape    = Back to editor -->
+  <!-- ============================================================ -->
+
+  <!-- ============================================================ -->
+  <!-- MISC -->
+  <!-- ============================================================ -->
+
+  <!-- Save All (like Ctrl+S) -->
+  <action id="SaveAll">
+    <keyboard-shortcut first-keystroke="meta S"/>
+  </action>
+
+  <!-- Select All (like <leader>va) -->
+  <action id="$SelectAll">
+    <keyboard-shortcut first-keystroke="meta A"/>
+  </action>
+
+  <!-- New File (like <leader>fn) -->
+  <action id="NewFile">
+    <keyboard-shortcut first-keystroke="meta N"/>
+  </action>
+
+  <!-- Zen Mode / Distraction Free (like <leader>uz) -->
+  <action id="ToggleZenMode">
+    <keyboard-shortcut first-keystroke="ctrl alt Z"/>
+  </action>
+
+  <!-- Toggle Soft Wrap (like <leader>uw) -->
+  <action id="EditorToggleUseSoftWraps">
+    <keyboard-shortcut first-keystroke="ctrl alt W"/>
+  </action>
+
+</keymap>

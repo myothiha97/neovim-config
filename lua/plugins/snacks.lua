@@ -1,7 +1,6 @@
 return {
   "folke/snacks.nvim",
   ---@type snacks.Config
-  priority = 1000,
   lazy = false,
   opts = {
     explorer = { enabled = false },

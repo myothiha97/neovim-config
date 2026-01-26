@@ -105,7 +105,6 @@ local function log_visual_selection()
   -- Yank the current visual selection to register 'v'
   vim.cmd('noautocmd normal! "vy')
   local selection = vim.fn.getreg("v"):gsub("\n", "")
-
   -- Get current filetype
   local ft = vim.bo.filetype
 
