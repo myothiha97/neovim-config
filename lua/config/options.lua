@@ -89,3 +89,20 @@ vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
+
+-- Auto-clear command line messages after inactivity (lightweight)
+local msg_clear_timer
+vim.api.nvim_create_autocmd("CursorHold", {
+  callback = function()
+    if msg_clear_timer then
+      pcall(vim.fn.timer_stop, msg_clear_timer)
+    end
+    msg_clear_timer = vim.fn.timer_start(2000, function()
+      vim.schedule(function()
+        if vim.fn.mode() == "n" then
+          vim.cmd("echo ''")
+        end
+      end)
+    end)
+  end,
+})
