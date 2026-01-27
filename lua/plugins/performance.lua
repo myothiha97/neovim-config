@@ -6,8 +6,24 @@ return {
   -- Disable treesitter-context (not in default LazyVim)
   { "nvim-treesitter/nvim-treesitter-context", enabled = false },
 
-  -- HIGH: Disable noice.nvim (intercepts all messages, major runtime impact)
-  { "folke/noice.nvim", enabled = false },
+  -- noice.nvim: Only cmdline enabled if u want fancy interface for cmdline (fancy : / ? interface)
+  -- All heavy features disabled for performance
+  {
+    "folke/noice.nvim",
+    enabled = false,
+    opts = {
+      cmdline = { enabled = false },
+      messages = { enabled = false },
+      popupmenu = { enabled = false },
+      notify = { enabled = false },
+      lsp = {
+        progress = { enabled = false },
+        hover = { enabled = false },
+        signature = { enabled = false },
+        message = { enabled = false },
+      },
+    },
+  },
 
   -- MEDIUM: Disable nvim-lint (use ESLint LSP only, avoids duplicate linting)
   { "mfussenegger/nvim-lint", enabled = false },
