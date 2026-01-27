@@ -5,6 +5,11 @@ return {
       inlay_hints = {
         enabled = false,
       },
+      -- Performance: Don't update diagnostics in insert mode
+      diagnostics = {
+        update_in_insert = false,
+        severity_sort = true,
+      },
       servers = {
         emmet_ls = {
           filetypes = {
@@ -17,6 +22,10 @@ return {
             "less",
             "eruby",
           },
+          -- Debounce LSP requests
+          flags = {
+            debounce_text_changes = 200,
+          },
         },
         eslint = {
           settings = {
@@ -25,6 +34,16 @@ return {
             rulesCustomizations = {
               { rule = "*", severity = "warn" },
             },
+          },
+          -- Debounce LSP requests
+          flags = {
+            debounce_text_changes = 200,
+          },
+        },
+        -- TypeScript LSP optimization
+        vtsls = {
+          flags = {
+            debounce_text_changes = 200,
           },
         },
       },

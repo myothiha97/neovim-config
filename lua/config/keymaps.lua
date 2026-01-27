@@ -66,18 +66,6 @@ vim.keymap.set("n", "gp", function()
   })
 end, { desc = "Prev Error" })
 
--- Resize window using <Alt> arrow keys
--- vim.keymap.set("n", "<A-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
--- vim.keymap.set("n", "<A-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
--- vim.keymap.set("n", "<A-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
--- vim.keymap.set("n", "<A-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
-
--- Resize window using <Shift> + arrow keys
--- vim.keymap.set("n", "<S-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
--- vim.keymap.set("n", "<S-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
--- vim.keymap.set("n", "<S-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
--- vim.keymap.set("n", "<S-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
-
 -- Resize window using Shift + arrow keys
 vim.keymap.set("n", "<S-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
 vim.keymap.set("n", "<S-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
@@ -133,3 +121,108 @@ vim.keymap.set("n", "<leader>sl", function()
     dirs = { vim.api.nvim_buf_get_name(0) },
   })
 end, { desc = "Grep in Current File" })
+
+-- =============================================
+-- TREESITTER FUNCTION NAVIGATION
+-- =============================================
+
+-- Helper: Get treesitter node at cursor and find parent function
+local function get_function_node()
+  -- Use built-in vim.treesitter API (modern approach)
+  local node = vim.treesitter.get_node()
+  if not node then
+    return nil
+  end
+
+  -- Function node types for different languages
+  local function_types = {
+    "function_declaration", -- JS/TS/Go/Lua
+    "function_definition", -- Python/C/C++
+    "arrow_function", -- JS/TS
+    "method_definition", -- JS/TS class methods
+    "function_expression", -- JS/TS
+    "function_item", -- Rust
+    "func_literal", -- Go
+    "lambda_expression", -- Python
+    "lexical_declaration", -- const fn = () => {} wrapper
+  }
+
+  -- Walk up the tree to find function node
+  while node do
+    local node_type = node:type()
+    for _, fn_type in ipairs(function_types) do
+      if node_type == fn_type then
+        return node
+      end
+    end
+    -- Special case: variable declaration containing arrow function
+    if node_type == "lexical_declaration" or node_type == "variable_declaration" then
+      for child in node:iter_children() do
+        if child:type() == "variable_declarator" then
+          for subchild in child:iter_children() do
+            local subtype = subchild:type()
+            if subtype == "arrow_function" or subtype == "function_expression" then
+              return node
+            end
+          end
+        end
+      end
+    end
+    node = node:parent()
+  end
+  return nil
+end
+
+-- Jump to start of current function
+vim.keymap.set("n", "[f", function()
+  local node = get_function_node()
+  if node then
+    local start_row, start_col = node:start()
+    vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+    vim.cmd("normal! zz") -- Center the screen
+  else
+    -- Fallback to built-in motion
+    vim.cmd("normal! [m")
+  end
+end, { desc = "Jump to Function Start (Treesitter)" })
+
+-- Jump to end of current function
+vim.keymap.set("n", "]f", function()
+  local node = get_function_node()
+  if node then
+    local end_row, end_col = node:end_()
+    vim.api.nvim_win_set_cursor(0, { end_row + 1, math.max(0, end_col - 1) })
+    vim.cmd("normal! zz") -- Center the screen
+  else
+    -- Fallback to built-in motion
+    vim.cmd("normal! ]m")
+  end
+end, { desc = "Jump to Function End (Treesitter)" })
+
+-- Jump to function name/signature (first line after any decorators/comments)
+vim.keymap.set("n", "gf", function()
+  local node = get_function_node()
+  if node then
+    local start_row, start_col = node:start()
+    vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+    -- Move to first non-whitespace character
+    vim.cmd("normal! ^")
+    vim.cmd("normal! zz")
+  else
+    vim.notify("No function found at cursor", vim.log.levels.WARN)
+  end
+end, { desc = "Go to Function Start (Treesitter)" })
+
+-- Jump to end of current function (opposite of gf)
+vim.keymap.set("n", "gh", function()
+  local node = get_function_node()
+  if node then
+    local end_row, _ = node:end_()
+    vim.api.nvim_win_set_cursor(0, { end_row + 1, 0 })
+    -- Move to first non-whitespace character (the closing brace)
+    vim.cmd("normal! ^")
+    vim.cmd("normal! zz")
+  else
+    vim.notify("No function found at cursor", vim.log.levels.WARN)
+  end
+end, { desc = "Go to Function End (Treesitter)" })

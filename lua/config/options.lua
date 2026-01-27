@@ -81,7 +81,7 @@ vim.g.matchparen_insert_timeout = 20
 vim.opt.updatetime = 200 -- faster CursorHold (default 4000ms)
 vim.opt.timeoutlen = 300 -- faster keymap timeout (default 1000ms)
 vim.opt.signcolumn = "yes" -- fixed signcolumn prevents layout shift
-vim.opt.lazyredraw = true -- don't redraw during macros
+-- vim.opt.lazyredraw = true -- DISABLED: causes async UI freezes with LSP
 vim.opt.synmaxcol = 300 -- don't syntax highlight super long lines
 
 -- Disable unused providers
