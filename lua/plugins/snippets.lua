@@ -1,6 +1,6 @@
 -- Custom snippets configuration
 -- Set to false to disable custom ES6/React snippets
-local ENABLE_CUSTOM_SNIPPETS = false
+local ENABLE_CUSTOM_SNIPPETS = true
 
 return {
   {

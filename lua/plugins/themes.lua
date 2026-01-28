@@ -1,8 +1,6 @@
 return {
   {
     "navarasu/onedark.nvim",
-    lazy = false,
-    priority = 1000,
     opts = {
       style = "cool",
       transparent = false,
@@ -22,9 +20,25 @@ return {
       },
     },
 
-    config = function(_, opts)
-      require("onedark").setup(opts)
-      require("onedark").load()
-    end,
+    -- uncomment below line for default load onedark
+    -- config = function(_, opts)
+    --   require("onedark").setup(opts)
+    --   require("onedark").load()
+    -- end,
+  },
+  -- Configure LazyVim to load tokyonight
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "tokyonight",
+    },
+  },
+  -- Configure Tokyonight to use the "night" style
+  {
+    "folke/tokyonight.nvim",
+    lazy = true,
+    opts = {
+      style = "night",
+    },
   },
 }

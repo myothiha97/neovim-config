@@ -12,17 +12,14 @@ return {
       },
       servers = {
         emmet_ls = {
+          -- Only HTML/CSS - TSX/JSX use custom snippets for tag completion
           filetypes = {
             "html",
-            "typescriptreact",
-            "javascriptreact",
             "css",
             "sass",
             "scss",
             "less",
-            "eruby",
           },
-          -- Debounce LSP requests
           flags = {
             debounce_text_changes = 200,
           },

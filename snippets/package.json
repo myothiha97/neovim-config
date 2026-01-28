@@ -5,6 +5,10 @@
       {
         "language": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
         "path": "./es6-javascript.json"
+      },
+      {
+        "language": ["typescriptreact", "javascriptreact"],
+        "path": "./typescriptreact.json"
       }
     ]
   }

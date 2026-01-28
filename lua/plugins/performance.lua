@@ -84,15 +84,14 @@ return {
         },
       },
       sources = {
-        default = { "lsp", "path", "buffer" },
+        default = { "lsp", "path", "snippets", "buffer" },
         providers = {
           lsp = {
             score_offset = 100,
-            -- Filter out emmet's bracket abbreviations ({}, [], etc.)
+            -- Filter out bracket-only completions from emmet (for HTML/CSS files)
             transform_items = function(_, items)
               return vim.tbl_filter(function(item)
                 local label = item.label or ""
-                -- Filter out bracket-only completions from emmet
                 if label:match("^[%{%}%(%)%[%]<>]+$") then
                   return false
                 end
