@@ -15,10 +15,10 @@ return {
           -- Only HTML/CSS - TSX/JSX use custom snippets for tag completion
           filetypes = {
             "html",
-            "css",
-            "sass",
-            "scss",
-            "less",
+            -- "css",
+            -- "sass",
+            -- "scss",
+            -- "less",
           },
           flags = {
             debounce_text_changes = 200,
