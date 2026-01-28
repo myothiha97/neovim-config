@@ -27,7 +27,10 @@ return {
             debounce_text_changes = 200,
           },
         },
+        -- ESLint disabled - TypeScript alone is sufficient for current project
+        -- Re-enable by setting enabled = true when needed
         eslint = {
+          enabled = false,
           settings = {
             run = "onSave",
             workingDirectory = { mode = "location" },
@@ -35,7 +38,6 @@ return {
               { rule = "*", severity = "warn" },
             },
           },
-          -- Debounce LSP requests
           flags = {
             debounce_text_changes = 200,
           },

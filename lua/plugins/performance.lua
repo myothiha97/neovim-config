@@ -42,6 +42,9 @@ return {
   { "echasnovski/mini.surround", enabled = true },
   { "echasnovski/mini.ai", enabled = false },
 
+  -- friendly-snippets is loaded but not used (snippets source removed from blink.cmp defaults)
+  -- Re-enable if you want to use snippets later by adding "snippets" back to sources.default
+
   -- =============================================
   -- THROTTLED PLUGINS (Reduced update frequency)
   -- =============================================
@@ -68,24 +71,76 @@ return {
 
   {
     "saghen/blink.cmp",
-    enabled = true,
     opts = {
       keymap = {
-        -- Disable Tab for signature help, make it just insert tab/indent
         ["<Tab>"] = {},
         ["<S-Tab>"] = {},
       },
       completion = {
-        -- Disable ghost text preview in the editor
         ghost_text = { enabled = false },
+        trigger = {
+          -- Don't re-show completion menu after accepting a completion
+          show_on_accept_on_trigger_character = false,
+        },
       },
       sources = {
-        -- Prioritize LSP over snippets
+        default = { "lsp", "path", "buffer" },
         providers = {
-          lsp = { score_offset = 100 }, -- Higher = shown first
-          snippets = { score_offset = -50 }, -- Lower = shown later
+          lsp = {
+            score_offset = 100,
+            -- Filter out emmet's bracket abbreviations ({}, [], etc.)
+            transform_items = function(_, items)
+              return vim.tbl_filter(function(item)
+                local label = item.label or ""
+                -- Filter out bracket-only completions from emmet
+                if label:match("^[%{%}%(%)%[%]<>]+$") then
+                  return false
+                end
+                return true
+              end, items)
+            end,
+          },
         },
       },
     },
+    config = function(_, opts)
+      -- Helper: check if cursor is in a comment using treesitter
+      local function in_comment()
+        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+        row = row - 1
+        col = math.max(col - 1, 0) -- Check char before cursor
+        local ok, captures = pcall(vim.treesitter.get_captures_at_pos, 0, row, col)
+        if ok and captures then
+          for _, c in ipairs(captures) do
+            if c.capture:match("comment") then
+              return true
+            end
+          end
+        end
+        -- Fallback: check vim syntax
+        local syngroup = vim.fn.synIDattr(vim.fn.synID(row + 1, col + 1, true), "name")
+        if syngroup:lower():match("comment") then
+          return true
+        end
+        return false
+      end
+
+      -- Set enabled function
+      opts.enabled = function()
+        local buftype = vim.bo.buftype
+        local filetype = vim.bo.filetype
+        -- Disable in Avante/prompt buffers
+        if filetype:match("^Avante") or filetype == "AvanteInput" or buftype == "prompt" then
+          return false
+        end
+        -- Disable in comments
+        if in_comment() then
+          return false
+        end
+        return true
+      end
+
+      require("blink.cmp").setup(opts)
+    end,
   },
 }
