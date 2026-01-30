@@ -8,6 +8,13 @@ local comment_key = "<M-/>"
 vim.keymap.set("n", "<leader>va", "ggVG", { desc = "Select all the text in the current file" })
 vim.keymap.set("n", "<leader>ya", "ggyG", { desc = "Yank all text" })
 
+-- Copy current file path (relative) to clipboard for Claude Code CLI
+vim.keymap.set("n", "<leader>as", function()
+  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied: " .. path, vim.log.levels.INFO)
+end, { desc = "Copy File Path to Clipboard" })
+
 -- Normal mode: Comment the current line
 vim.keymap.set("n", comment_key, "<cmd>normal gcc<CR>", { desc = "Toggle comment line" })
 
