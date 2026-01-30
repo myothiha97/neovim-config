@@ -39,6 +39,28 @@ return {
     lazy = true,
     opts = {
       style = "night",
+      transparent = false,
+      styles = {
+        sidebars = "dark",
+        floats = "dark",
+      },
+      -- Increase color intensity and sync relative line numbers
+      on_colors = function(colors)
+        colors.bg_visual = "#264f78" -- One Dark style punchy selection
+        colors.git.ignore = "#545c7e" -- Make ignored files slightly more visible
+      end,
+
+      on_highlights = function(hl)
+        -- Sync relative line number color with Ghostty green (#02b890)
+        hl.CursorLineNr = { fg = "#02b890", bold = true }
+
+        -- hl.YankHighlight = { bg = "#02b890", fg = "#000000" }
+        -- Make comments slightly more legible (less "soft")
+        -- hl.Comment = { fg = "#737aa2", italic = true }
+        -- Intensify UI elements
+        hl.Visual = { bg = "#264f78" }
+        hl.LineNr = { fg = "#5b6268" }
+      end,
     },
   },
 }

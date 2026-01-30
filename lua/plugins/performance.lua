@@ -42,8 +42,8 @@ return {
   { "echasnovski/mini.surround", enabled = true },
   { "echasnovski/mini.ai", enabled = false },
 
-  -- friendly-snippets is loaded but not used (snippets source removed from blink.cmp defaults)
-  -- Re-enable if you want to use snippets later by adding "snippets" back to sources.default
+  -- Disable friendly-snippets (conflicts with custom snippets, uses unsupported transform syntax)
+  { "rafamadriz/friendly-snippets", enabled = false },
 
   -- =============================================
   -- THROTTLED PLUGINS (Reduced update frequency)
@@ -76,8 +76,14 @@ return {
         ["<Tab>"] = {},
         ["<S-Tab>"] = {},
       },
+      snippets = {
+        score_offset = 0, -- Remove default -3 penalty on snippet items
+      },
       completion = {
         ghost_text = { enabled = false },
+        list = {
+          max_items = 50,
+        },
         trigger = {
           -- Don't re-show completion menu after accepting a completion
           show_on_accept_on_trigger_character = false,
@@ -98,6 +104,12 @@ return {
                 return true
               end, items)
             end,
+          },
+          snippets = {
+            score_offset = 200,
+            async = false,
+            min_keyword_length = 1,
+            should_show_items = true,
           },
         },
       },

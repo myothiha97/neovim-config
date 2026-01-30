@@ -173,33 +173,9 @@ local function get_function_node()
   return nil
 end
 
--- Jump to start of current function
-vim.keymap.set("n", "[f", function()
-  local node = get_function_node()
-  if node then
-    local start_row, start_col = node:start()
-    vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
-    vim.cmd("normal! zz") -- Center the screen
-  else
-    -- Fallback to built-in motion
-    vim.cmd("normal! [m")
-  end
-end, { desc = "Jump to Function Start (Treesitter)" })
+-- [f / ]f navigation handled by nvim-treesitter-textobjects (see treesitter.lua)
 
--- Jump to end of current function
-vim.keymap.set("n", "]f", function()
-  local node = get_function_node()
-  if node then
-    local end_row, end_col = node:end_()
-    vim.api.nvim_win_set_cursor(0, { end_row + 1, math.max(0, end_col - 1) })
-    vim.cmd("normal! zz") -- Center the screen
-  else
-    -- Fallback to built-in motion
-    vim.cmd("normal! ]m")
-  end
-end, { desc = "Jump to Function End (Treesitter)" })
-
--- Jump to function name/signature (first line after any decorators/comments)
+-- Jump to function name/signature
 vim.keymap.set("n", "gf", function()
   local node = get_function_node()
   if node then

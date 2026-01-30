@@ -7,6 +7,11 @@ vim.o.scrolloff = 10
 vim.g.material_style = "deep ocean"
 vim.opt.list = false
 
+-- horizontal scroll setting
+vim.o.wrap = false
+vim.o.sidescroll = 0
+vim.o.sidescrolloff = 10
+
 -- Ghostty terminal optimizations
 local is_ghostty = vim.env.TERM_PROGRAM == "ghostty" or vim.env.GHOSTTY_RESOURCES_DIR ~= nil
 
