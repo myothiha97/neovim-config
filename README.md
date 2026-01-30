@@ -1,13 +1,15 @@
-# Myothiha's Neovim Configuration
+# My personal Neovim Configuration
 
 A performance-optimized [LazyVim](https://github.com/LazyVim/LazyVim) setup for Full-Stack development and DevOps workflows.
 
-## Extras
+## Features
 
-- `lazyvim.plugins.extras.coding.mini-surround`
-- `lazyvim.plugins.extras.formatting.prettierd`
-- `lazyvim.plugins.extras.lang.json`
-- `lazyvim.plugins.extras.lang.typescript`
+- File navigation with oil.nvim (floating explorer) and Snacks.picker
+- Autocompletion via blink.cmp with LSP, snippets, path, and buffer sources
+- Diagnostics navigation and error fixing with custom shortcuts
+- Todo comments tracking with quick navigation
+- Code formatting with prettierd
+- Language support: TypeScript, JavaScript, Python, Go, Ruby, Lua, Rust, C/C++
 
 ## Disabled Plugins
 
