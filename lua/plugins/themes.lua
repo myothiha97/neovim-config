@@ -60,6 +60,11 @@ return {
         -- Intensify UI elements
         hl.Visual = { bg = "#264f78" }
         hl.LineNr = { fg = "#5b6268" }
+        -- Reduce CursorLine intensity by 40% (blend toward bg)
+        hl.CursorLine = { bg = "#212434" }
+
+        -- Reduce Folded highlight intensity by 50% (blend toward bg)
+        hl.Folded = { bg = "#21283f" }
       end,
     },
   },

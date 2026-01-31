@@ -21,7 +21,7 @@ return {
             -- "less",
           },
           flags = {
-            debounce_text_changes = 200,
+            debounce_text_changes = 100,
           },
         },
         -- ESLint disabled - TypeScript alone is sufficient for current project
@@ -36,13 +36,13 @@ return {
             },
           },
           flags = {
-            debounce_text_changes = 200,
+            debounce_text_changes = 100,
           },
         },
         -- TypeScript LSP optimization
         vtsls = {
           flags = {
-            debounce_text_changes = 200,
+            debounce_text_changes = 100,
           },
         },
       },

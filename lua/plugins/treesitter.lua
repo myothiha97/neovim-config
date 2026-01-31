@@ -14,6 +14,8 @@ return {
       { "ic", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.inner") end, mode = { "x", "o" }, desc = "Inside class" },
       { "aa", function() require("nvim-treesitter-textobjects.select").select_textobject("@parameter.outer") end, mode = { "x", "o" }, desc = "Around parameter" },
       { "ia", function() require("nvim-treesitter-textobjects.select").select_textobject("@parameter.inner") end, mode = { "x", "o" }, desc = "Inside parameter" },
+      { "ax", function() require("nvim-treesitter-textobjects.select").select_textobject("@call.outer") end, mode = { "x", "o" }, desc = "Around call" },
+      { "ix", function() require("nvim-treesitter-textobjects.select").select_textobject("@call.inner") end, mode = { "x", "o" }, desc = "Inside call" },
     },
   },
 }
