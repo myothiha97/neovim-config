@@ -122,6 +122,9 @@ end
 -- 4. Mapping
 vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
 
+-- Search word under cursor and stay in place (Cmd+F via Ghostty → M-f)
+vim.keymap.set("n", "<M-f>", "*N", { desc = "Highlight word under cursor" })
+
 -- Snacks picker: grep within current file
 vim.keymap.set("n", "<leader>sl", function()
   Snacks.picker.grep({
