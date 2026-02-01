@@ -3,10 +3,23 @@ return {
   ---@type snacks.Config
   lazy = false,
   opts = {
-    explorer = { enabled = false },
+    explorer = { enabled = true },
     scroll = { enabled = false },
     dim = { enabled = false },
     picker = {
+      sources = {
+        explorer = {
+          win = {
+            list = {
+              keys = {
+                ["<Esc>"] = false, -- don't close on Esc
+                ["/"] = false, -- use vim search instead of explorer filter
+                ["?"] = false, -- use vim search instead of help
+              },
+            },
+          },
+        },
+      },
       layout = {
         preview = false,
         layout = {
@@ -31,7 +44,6 @@ return {
       end,
       desc = "Find Files (root)",
     },
-
     {
       "<leader>fi",
       function()
@@ -40,5 +52,13 @@ return {
       desc = "Find Files (current file dir)",
     },
     { "<leader>e", false },
+    { "<leader>E", false },
+    {
+      "<leader>r",
+      function()
+        require("snacks").picker.explorer()
+      end,
+      desc = "Toggle Explorer",
+    },
   },
 }

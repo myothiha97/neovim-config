@@ -31,8 +31,8 @@ return {
   -- MEDIUM: Disable gitsigns (heavy in large git repos)
   { "lewis6991/gitsigns.nvim", enabled = false },
 
-  -- LOW: Disable bufferline (recalculates on every buffer change)
-  { "akinsho/bufferline.nvim", enabled = false },
+  -- bufferline: re-enabled (low performance impact)
+  -- { "akinsho/bufferline.nvim", enabled = false },
 
   -- LOW: Disable persistence/session (can cause micro-freezes on exit)
   { "folke/persistence.nvim", enabled = false },
