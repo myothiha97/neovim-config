@@ -9,6 +9,7 @@
 
 ## Performance Rules
 - All changes MUST be performance-safe. No heavy per-keystroke computations.
+- Silently ensure performance safety — do NOT remind the user about performance checks unless there is an actual issue.
 - Prefer in-process solutions (snippets, treesitter) over external LSP servers when possible
 - Disabled plugins for performance: noice, nvim-lint, gitsigns, bufferline, persistence, mini.ai, treesitter-context
 - Lualine throttled to 500ms refresh
