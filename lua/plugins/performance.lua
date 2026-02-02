@@ -32,7 +32,7 @@ return {
   { "lewis6991/gitsigns.nvim", enabled = false },
 
   -- bufferline: re-enabled (low performance impact)
-  -- { "akinsho/bufferline.nvim", enabled = false },
+  { "akinsho/bufferline.nvim", enabled = false },
 
   -- LOW: Disable persistence/session (can cause micro-freezes on exit)
   { "folke/persistence.nvim", enabled = false },
