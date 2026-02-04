@@ -10,9 +10,10 @@ return {
   -- All heavy features disabled for performance
   {
     "folke/noice.nvim",
-    enabled = false,
+    enabled = true,
+    event = "VeryLazy",
     opts = {
-      cmdline = { enabled = false },
+      cmdline = { enabled = true },
       messages = { enabled = false },
       popupmenu = { enabled = false },
       notify = { enabled = false },
