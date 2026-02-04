@@ -30,9 +30,16 @@ vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire p
 -- Hover docs in normal mode
 vim.keymap.set("n", "<Tab>", vim.lsp.buf.hover, { desc = "Hover Documentation" })
 
--- Signature help for insert mode and normal mode
--- Ghostty/Kitty keyboard protocol allows distinguishing Tab from Ctrl+I
-vim.keymap.set({ "i", "n" }, "<C-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
+-- Signature help for insert mode and normal mode (Option+i via Ghostty)
+vim.keymap.set({ "i", "n" }, "<M-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
+
+-- -- Enter insert mode and show completion menu (normal mode only)
+-- vim.keymap.set("n", "<C-i>", function()
+--   vim.cmd("startinsert")
+--   vim.schedule(function()
+--     require("blink.cmp").show()
+--   end)
+-- end, { desc = "Insert & Show Completion" })
 
 -- terminal mode
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true })

@@ -71,15 +71,65 @@ return {
 
   {
     "saghen/blink.cmp",
+    init = function()
+      -- Performance: Cache comment state, updated on CursorMovedI (not every keystroke)
+      -- This avoids expensive treesitter queries on each keypress
+      vim.api.nvim_create_autocmd("CursorMovedI", {
+        callback = function()
+          local buf = vim.api.nvim_get_current_buf()
+          local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+          row = row - 1
+          col = math.max(col - 1, 0)
+
+          -- Check treesitter first
+          local in_comment = false
+          local ok, captures = pcall(vim.treesitter.get_captures_at_pos, buf, row, col)
+          if ok and captures then
+            for _, c in ipairs(captures) do
+              if c.capture:match("comment") then
+                in_comment = true
+                break
+              end
+            end
+          end
+
+          -- Fallback to vim syntax if treesitter didn't find comment
+          if not in_comment then
+            local syngroup = vim.fn.synIDattr(vim.fn.synID(row + 1, col + 1, true), "name")
+            if syngroup:lower():match("comment") then
+              in_comment = true
+            end
+          end
+
+          vim.b[buf].blink_in_comment = in_comment
+        end,
+      })
+    end,
     opts = {
       keymap = {
-        ["<Tab>"] = {},
-        ["<S-Tab>"] = {},
+        -- Disable preset to prevent Tab/C-i conflicts
+        preset = "none",
+        -- Navigation
+        ["<C-n>"] = { "select_next", "fallback" },
+        ["<C-p>"] = { "select_prev", "fallback" },
+        -- Accept
+        ["<CR>"] = { "accept", "fallback" },
+        -- Tab passthrough
+        ["<Tab>"] = { "fallback" },
+        ["<S-Tab>"] = { "fallback" },
+        -- Toggle/close
+        ["<C-i>"] = { "show", "hide" },
+        ["<C-e>"] = { "cancel", "fallback" },
+        -- Toggle documentation
+        ["<C-h>"] = { "show_documentation", "hide_documentation" },
       },
       snippets = {
         score_offset = 0, -- Remove default -3 penalty on snippet items
       },
       completion = {
+        accept = {
+          auto_brackets = { enabled = false },
+        },
         ghost_text = { enabled = false },
         list = {
           max_items = 50,
@@ -87,6 +137,10 @@ return {
         trigger = {
           -- Don't re-show completion menu after accepting a completion
           show_on_accept_on_trigger_character = false,
+        },
+        documentation = {
+          auto_show = true, -- Show docs automatically when item selected
+          auto_show_delay_ms = 200,
         },
       },
       sources = {
@@ -107,51 +161,26 @@ return {
           },
           snippets = {
             score_offset = 200,
-            async = false,
+            async = true, -- Performance: async snippet processing
             min_keyword_length = 1,
             should_show_items = true,
           },
         },
       },
-    },
-    config = function(_, opts)
-      -- Helper: check if cursor is in a comment using treesitter
-      local function in_comment()
-        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-        row = row - 1
-        col = math.max(col - 1, 0) -- Check char before cursor
-        local ok, captures = pcall(vim.treesitter.get_captures_at_pos, 0, row, col)
-        if ok and captures then
-          for _, c in ipairs(captures) do
-            if c.capture:match("comment") then
-              return true
-            end
-          end
-        end
-        -- Fallback: check vim syntax
-        local syngroup = vim.fn.synIDattr(vim.fn.synID(row + 1, col + 1, true), "name")
-        if syngroup:lower():match("comment") then
-          return true
-        end
-        return false
-      end
-
-      -- Set enabled function
-      opts.enabled = function()
+      -- Performance: Read cached comment state instead of querying treesitter
+      enabled = function()
         local buftype = vim.bo.buftype
         local filetype = vim.bo.filetype
         -- Disable in Avante/prompt buffers
         if filetype:match("^Avante") or filetype == "AvanteInput" or buftype == "prompt" then
           return false
         end
-        -- Disable in comments
-        if in_comment() then
+        -- Disable in comments (cached value from CursorMovedI)
+        if vim.b.blink_in_comment then
           return false
         end
         return true
-      end
-
-      require("blink.cmp").setup(opts)
-    end,
+      end,
+    },
   },
 }

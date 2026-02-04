@@ -3,6 +3,9 @@ return {
     "navarasu/onedark.nvim",
     opts = {
       style = "cool",
+      -- colors = {
+      --   bg0 = "#1a1b26",
+      -- },
       transparent = false,
       term_colors = true,
       highlights = {
