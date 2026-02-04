@@ -68,7 +68,7 @@ return {
 
   -- Ensure only prettierd is installed via Mason (not prettier)
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     opts = {
       ensure_installed = {
         "prettierd",

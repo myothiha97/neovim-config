@@ -27,15 +27,21 @@ return {
         end
       end, { desc = "Copilot: Accept" })
 
-      -- Toggle with message
+      -- 2. Toggle and Notify (Simple & Stable)
+      -- We initialize a global variable to match your 'auto_trigger = true' setting
+      vim.g.copilot_enabled = true
+
       map("n", "<leader>ad", function()
         suggestion.toggle_auto_trigger()
-        local is_enabled = require("copilot.config").to_get_passed().suggestion.auto_trigger
-        vim.notify(
-          "Copilot: " .. (is_enabled and "Enabled" or "Disabled"),
-          is_enabled and vim.log.levels.INFO or vim.log.levels.WARN
-        )
-      end, { desc = "Copilot: Toggle" })
+
+        -- Flip our own state tracker
+        vim.g.copilot_enabled = not vim.g.copilot_enabled
+
+        local status = vim.g.copilot_enabled and "Enabled" or "Disabled"
+        local level = vim.g.copilot_enabled and vim.log.levels.INFO or vim.log.levels.WARN
+
+        vim.notify("Copilot Autocomplete: " .. status, level, { title = "Copilot" })
+      end, { desc = "Copilot: Toggle Suggestions" })
 
       -- [ PRO ADDITIONS ]
       -- Accept only the next WORD (Alt + w)

@@ -40,8 +40,17 @@ return {
 
   -- mini.pairs kept enabled (user preference)
 
-  { "echasnovski/mini.surround", enabled = true },
-  { "echasnovski/mini.ai", enabled = false },
+  { "nvim-mini/mini.surround", enabled = true },
+  -- disabling mini.ai due to performance issues with large files
+  -- to disabled the plugin without warning, we have to set the author name to a dummy value
+  -- if we don't change the author name , the nvim will sitll show a warning that the plugin is disabled
+  {
+    "nvim-mini/mini.ai",
+    enabled = false,
+    dir = "/dev/null", -- Or any folder that doesn't exist
+    virtual = true,
+  },
+  { "nvim-mini/mini.nvim", enabled = false },
 
   -- Disable friendly-snippets (conflicts with custom snippets, uses unsupported transform syntax)
   { "rafamadriz/friendly-snippets", enabled = false },
