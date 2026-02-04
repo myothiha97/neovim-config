@@ -30,12 +30,21 @@ Plugins disabled from LazyVim defaults for performance:
 
 ## Completion (blink.cmp)
 
-- **Accept**: `Enter` (Tab/S-Tab unbound)
-- **Navigate**: `Ctrl-n` / `Ctrl-p`
+| Key | Action |
+|-----|--------|
+| `<C-n>` / `<C-p>` | Navigate items |
+| `<CR>` | Accept completion |
+| `<C-i>` | Toggle completion menu |
+| `<C-e>` | Close menu |
+| `<C-h>` | Toggle documentation |
+| `<Tab>` / `<S-Tab>` | Passthrough (indent/outdent) |
+
+- **Sources**: Snippets (priority 200) > LSP (100) > Path > Buffer
 - **Ghost text**: Disabled
-- **Sources**: LSP (priority 100) > Snippets (90) > Path > Buffer
-- Completions disabled in comments and Avante buffers
+- Completions disabled in comments (cached detection) and Avante buffers
+- Documentation auto-shows after 200ms
 - Emmet bracket-only completions filtered out
+- Async snippet processing enabled
 
 ## LSP
 
@@ -78,6 +87,7 @@ Tokyonight (`night` style) with custom overrides:
 | `<C-d>/<C-u>` | n | Half-page scroll (recentered) |
 | `<C-f>/<C-b>` | n | Full-page scroll (recentered) |
 | `<Tab>` | n | LSP hover |
+| `<M-i>` | i/n | Signature help (Option+i) |
 | `<leader>l` | v | Insert language-aware log statement |
 
 ### Diagnostics
@@ -118,10 +128,14 @@ VSCode JSON format in `snippets/` using blink.cmp built-in provider (not LuaSnip
 
 ## Performance Tuning
 
-- Lualine refresh: 500ms (default 100ms)
+- **Comment detection**: Cached on `CursorMovedI` (not every keystroke)
+- **vtsls debounce**: 200ms (default 100ms)
+- **Snippets**: Async processing enabled
+- **Lualine refresh**: 500ms (default 100ms)
 - `updatetime`: 200ms (default 4000ms)
 - `timeoutlen`: 300ms (default 1000ms)
 - `synmaxcol`: 300 (skip long lines)
 - `scrolloff`: 10
 - All language providers disabled (Python, Ruby, Perl, Node)
 - Ghostty terminal optimizations (24-bit color, undercurl, cursor shapes, synchronized output)
+- tmux extended keys enabled for proper `<C-i>`/`<Tab>` distinction
