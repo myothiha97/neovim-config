@@ -63,6 +63,8 @@ return {
       -- Custom gd to filter node_modules (only when LSP is attached)
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
+        -- vim.schedule ensures this runs AFTER LazyVim's LspAttach keymaps
+        vim.schedule(function()
           vim.keymap.set("n", "gd", function()
             vim.lsp.buf.definition({
               on_list = function(options)
@@ -98,7 +100,8 @@ return {
               end,
             })
           end, { buffer = args.buf, desc = "Goto Definition (Skip node_modules)" })
-        end,
+        end)
+      end,
       })
     end,
   },
