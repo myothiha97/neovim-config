@@ -6,22 +6,46 @@ return {
   -- Disable treesitter-context (not in default LazyVim)
   { "nvim-treesitter/nvim-treesitter-context", enabled = false },
 
-  -- noice.nvim: Only cmdline enabled if u want fancy interface for cmdline (fancy : / ? interface)
-  -- All heavy features disabled for performance
+  -- noice.nvim: ONLY cmdline enabled, everything else disabled
   {
     "folke/noice.nvim",
     enabled = true,
     event = "VeryLazy",
     opts = {
+      health = { checker = false }, -- Disable health check (causes 1.5s overhead)
       cmdline = { enabled = true },
+      views = {
+        cmdline_popup = {
+          position = { row = "10%", col = "50%" },
+          size = { width = 60, height = "auto" },
+        },
+      },
       messages = { enabled = false },
       popupmenu = { enabled = false },
       notify = { enabled = false },
+      smart_move = { enabled = false },
       lsp = {
         progress = { enabled = false },
         hover = { enabled = false },
         signature = { enabled = false },
         message = { enabled = false },
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = false,
+          ["vim.lsp.util.stylize_markdown"] = false,
+          ["cmp.entry.get_documentation"] = false,
+        },
+      },
+      presets = {
+        bottom_search = false,
+        command_palette = false,
+        long_message_to_split = false,
+        inc_rename = false,
+        lsp_doc_border = false,
+      },
+      routes = {
+        -- Suppress all messages to prevent notify utils from running
+        { filter = { event = "msg_show" }, opts = { skip = true } },
+        { filter = { event = "notify" }, opts = { skip = true } },
       },
     },
   },
