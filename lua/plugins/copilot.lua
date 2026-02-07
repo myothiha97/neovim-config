@@ -8,8 +8,12 @@ return {
       suggestion = {
         enabled = true,
         auto_trigger = true,
-        debounce = 75,
+        hide_during_completion = false,
+        debounce = 50, -- Reduced debounce for faster triggering
         keymap = { accept = false }, -- Handling manually below
+      },
+      filetypes = {
+        ["*"] = true, -- Enable for all filetypes
       },
     },
     config = function(_, opts)
@@ -61,6 +65,7 @@ return {
       map("i", "<M-[>", function()
         suggestion.prev()
       end, { desc = "Copilot: Prev Suggestion" })
+
     end,
   },
 }

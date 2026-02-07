@@ -3,6 +3,10 @@
 -- Add any additional keymaps here
 --
 
+-- Disable buffer navigation with Shift+H/L (LazyVim defaults)
+vim.keymap.del("n", "<S-h>")
+vim.keymap.del("n", "<S-l>")
+
 local comment_key = "<M-/>"
 
 vim.keymap.set("n", "<leader>va", "ggVG", { desc = "Select all the text in the current file" })

@@ -82,6 +82,10 @@ vim.opt.clipboard = "unnamedplus"
 vim.g.matchparen_timeout = 20
 vim.g.matchparen_insert_timeout = 20
 
+-- Disable bracketed paste mode to prevent escape sequences in pasted text
+vim.opt.paste = false
+vim.cmd([[set t_BE=]])
+
 -- Performance optimizations
 vim.opt.updatetime = 200 -- faster CursorHold (default 4000ms)
 vim.opt.timeoutlen = 300 -- faster keymap timeout (default 1000ms)

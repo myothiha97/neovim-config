@@ -8,6 +8,15 @@ return {
     dim = { enabled = false },
     picker = {
       sources = {
+        smart = {
+          -- Prioritize buffers and recent files over general file search
+          multi = { "buffers", "recent", "files" },
+          matcher = {
+            frecency = true, -- Enable frecency-based sorting
+            cwd_bonus = true, -- Boost files in current working directory
+            sort_empty = true, -- Sort even when filter is empty
+          },
+        },
         explorer = {
           win = {
             list = {
@@ -59,6 +68,13 @@ return {
         require("snacks").picker.explorer()
       end,
       desc = "Toggle Explorer",
+    },
+    {
+      "<leader>fp",
+      function()
+        require("snacks").picker.projects()
+      end,
+      desc = "Switch Project",
     },
   },
 }
