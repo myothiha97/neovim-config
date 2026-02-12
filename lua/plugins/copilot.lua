@@ -1,6 +1,7 @@
 return {
   {
     "zbirenbaum/copilot.lua",
+    enabled = false,
     cmd = "Copilot",
     event = "InsertEnter",
     opts = {
@@ -9,7 +10,7 @@ return {
         enabled = true,
         auto_trigger = true,
         hide_during_completion = false,
-        debounce = 50, -- Reduced debounce for faster triggering
+        debounce = 75, -- Balance between speed and performance
         keymap = { accept = false }, -- Handling manually below
       },
       filetypes = {

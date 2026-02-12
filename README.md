@@ -2,6 +2,8 @@
 
 A performance-optimized [LazyVim](https://github.com/LazyVim/LazyVim) setup for Full-Stack development and DevOps workflows.
 
+
+
 ## Features
 
 - File navigation with oil.nvim (floating explorer) and Snacks.picker

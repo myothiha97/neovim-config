@@ -2,19 +2,48 @@ return {
   "folke/snacks.nvim",
   ---@type snacks.Config
   lazy = false,
+  init = function()
+    local function set_grep_hl()
+      vim.api.nvim_set_hl(0, "SnacksPickerMatch", { link = "DiffText" })
+    end
+    set_grep_hl()
+    vim.api.nvim_create_autocmd("ColorScheme", { callback = set_grep_hl })
+  end,
   opts = {
     explorer = { enabled = true },
     scroll = { enabled = false },
     dim = { enabled = false },
     picker = {
       sources = {
+        ---@class snacks.picker.smart.Config: snacks.picker.Config
         smart = {
-          -- Prioritize buffers and recent files over general file search
-          multi = { "buffers", "recent", "files" },
+          multi = {
+            { source = "buffers", hidden = true, current = false },
+            { source = "recent", filter = { cwd = true } },
+            { source = "files" },
+          },
+          format = "file",
           matcher = {
-            frecency = true, -- Enable frecency-based sorting
-            cwd_bonus = true, -- Boost files in current working directory
-            sort_empty = true, -- Sort even when filter is empty
+            frecency = false,
+            sort_empty = false,
+          },
+        },
+        grep = {
+          layout = {
+            preview = false,
+            layout = {
+              box = "horizontal",
+              width = 0.8,
+              height = 0.5,
+              {
+                box = "vertical",
+                border = true,
+                title = "{title} {live} {flags}",
+                { win = "input", height = 1, border = "bottom" },
+                { win = "list", border = "none" },
+              },
+              { win = "preview", title = "{preview}", border = true, width = 0.45 },
+            },
           },
         },
         explorer = {
