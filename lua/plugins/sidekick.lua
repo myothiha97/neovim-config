@@ -2,6 +2,7 @@ return {
   {
     "folke/sidekick.nvim",
     event = "VeryLazy",
+    enabled = false,
     init = function()
       -- copilot-language-server for NES (inline suggestions handled by copilot.lua)
       vim.lsp.config("copilot_ls", {

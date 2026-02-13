@@ -69,10 +69,15 @@ return {
   -- Ensure only prettierd is installed via Mason (not prettier)
   {
     "mason-org/mason.nvim",
-    opts = {
-      ensure_installed = {
-        "prettierd",
-      },
-    },
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      -- Add prettierd
+      table.insert(opts.ensure_installed, "prettierd")
+      -- Remove packages we don't use (added by LazyVim extras)
+      local exclude = { "prettier", "eslint-lsp" }
+      opts.ensure_installed = vim.tbl_filter(function(pkg)
+        return not vim.tbl_contains(exclude, pkg)
+      end, opts.ensure_installed)
+    end,
   },
 }
