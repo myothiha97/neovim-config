@@ -82,9 +82,38 @@ vim.opt.clipboard = "unnamedplus"
 vim.g.matchparen_timeout = 20
 vim.g.matchparen_insert_timeout = 20
 
--- Disable bracketed paste mode to prevent escape sequences in pasted text
-vim.opt.paste = false
-vim.cmd([[set t_BE=]])
+-- Fix paste in tmux + Ghostty: modifyOtherKeys / kitty keyboard protocol
+-- encodes control characters as CSI sequences instead of literal bytes.
+-- Decode them before passing to the default paste handler.
+vim.paste = (function(overridden)
+  return function(lines, phase)
+    local result = {}
+    for _, line in ipairs(lines) do
+      -- modifyOtherKeys format: \e[27;modifier;keycode~
+      -- modifier can vary (5=Ctrl, 2=Shift, etc.) so match any digit sequence
+      line = line:gsub("\27%[27;%d+;106~", "\n") -- Ctrl+J (newline)
+      line = line:gsub("\27%[27;%d+;109~", "\r") -- Ctrl+M (carriage return)
+      line = line:gsub("\27%[27;%d+;105~", "\t") -- Ctrl+I (tab)
+      line = line:gsub("\27%[27;%d+;10~", "\n")  -- LF keycode direct
+      line = line:gsub("\27%[27;%d+;13~", "\r")  -- CR keycode direct
+      line = line:gsub("\27%[27;%d+;9~", "\t")   -- Tab keycode direct
+      -- Kitty keyboard protocol (CSI u): \e[codepoint;modifiers u
+      line = line:gsub("\27%[10;%d+u", "\n")
+      line = line:gsub("\27%[10u", "\n")
+      line = line:gsub("\27%[13;%d+u", "\r")
+      line = line:gsub("\27%[13u", "\r")
+      line = line:gsub("\27%[9;%d+u", "\t")
+      line = line:gsub("\27%[9u", "\t")
+      -- Strip any remaining CSI sequences (shouldn't appear in pasted text)
+      line = line:gsub("\27%[[%d;]*[A-Za-z~]", "")
+      -- Re-split by decoded newlines
+      for _, part in ipairs(vim.split(line, "\n", { plain = true })) do
+        result[#result + 1] = part
+      end
+    end
+    return overridden(result, phase)
+  end
+end)(vim.paste)
 
 -- Performance optimizations
 vim.opt.updatetime = 200 -- faster CursorHold (default 4000ms)
