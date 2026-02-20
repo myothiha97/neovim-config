@@ -126,8 +126,33 @@
   },
   "Arrow Function": {
     "prefix": "af",
-    "body": "(${1:params}) => {\n\t${2}\n}",
-    "description": "Arrow function"
+    "body": "() => {\n\t${1}\n}",
+    "description": "Unnamed arrow function without args"
+  },
+  "Arrow Function With Args": {
+    "prefix": "afa",
+    "body": "(${1:args}) => {\n\t${2}\n}",
+    "description": "Unnamed arrow function with args"
+  },
+  "Function": {
+    "prefix": "fa",
+    "body": "function ${1:name}() {\n\t${2}\n}",
+    "description": "Named function without args"
+  },
+  "Function With Args": {
+    "prefix": "faa",
+    "body": "function ${1:name}(${2:args}) {\n\t${3}\n}",
+    "description": "Named function with args"
+  },
+  "Anonymous Function": {
+    "prefix": "nfa",
+    "body": "function() {\n\t${1}\n}",
+    "description": "Anonymous function without args"
+  },
+  "Anonymous Function With Args": {
+    "prefix": "nfaa",
+    "body": "function(${1:args}) {\n\t${2}\n}",
+    "description": "Anonymous function with args"
   },
   "Arrow Function Inline": {
     "prefix": "afi",

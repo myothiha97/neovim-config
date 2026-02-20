@@ -136,6 +136,127 @@ vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Sel
 -- Search word under cursor and stay in place (Cmd+F via Ghostty → M-f)
 vim.keymap.set("n", "<M-f>", "*N", { desc = "Highlight word under cursor" })
 
+-- Git who: compact blame info (author, date, message) for current line
+vim.keymap.set("n", "<leader>gw", function()
+  local lnum = vim.fn.line(".")
+  local file = vim.fn.expand("%:p")
+
+  -- Pipe current buffer content so line numbers match even with unsaved changes
+  local buf_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+  local blame = vim.fn.system(
+    { "git", "blame", "-L", lnum .. "," .. lnum, "--porcelain", "--contents", "-", "--", file },
+    buf_content
+  )
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Not in a git repository", vim.log.levels.WARN)
+    return
+  end
+
+  local commit = blame:match("^(%x+)")
+  if not commit or commit:match("^0+$") then
+    vim.notify("Line not yet committed", vim.log.levels.INFO)
+    return
+  end
+
+  local author = blame:match("author ([^\n]+)") or "Unknown"
+  local author_mail = blame:match("author%-mail ([^\n]+)") or ""
+  local author_time = blame:match("author%-time (%d+)")
+  local summary = blame:match("summary ([^\n]+)") or ""
+  local date = author_time and os.date("%Y-%m-%d %H:%M", tonumber(author_time)) or "Unknown"
+
+  local lines = {
+    "Commit:  " .. commit:sub(1, 10),
+    "Author:  " .. author .. " " .. author_mail,
+    "Date:    " .. date,
+    "",
+    "  " .. summary,
+  }
+
+  local float_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(float_buf, 0, -1, false, lines)
+  vim.bo[float_buf].buftype = "nofile"
+  vim.bo[float_buf].modifiable = false
+  vim.bo[float_buf].bufhidden = "wipe"
+  vim.bo[float_buf].filetype = "git"
+
+  local width = 0
+  for _, l in ipairs(lines) do
+    width = math.max(width, #l)
+  end
+  width = math.min(width + 4, 80)
+
+  vim.api.nvim_open_win(float_buf, true, {
+    relative = "cursor",
+    width = width,
+    height = #lines,
+    row = 1,
+    col = 0,
+    style = "minimal",
+    border = "rounded",
+    title = " Git Who ",
+    title_pos = "center",
+  })
+
+  vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = float_buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", "<cmd>close<cr>", { buffer = float_buf, nowait = true })
+end, { desc = "Git Who (blame info)" })
+
+-- Git blame for current line (custom: shows both + and - lines in diff)
+vim.keymap.set("n", "<leader>gb", function()
+  local lnum = vim.fn.line(".")
+  local file = vim.fn.expand("%:p")
+
+  -- Pipe current buffer content so line numbers match even with unsaved changes
+  local buf_content = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+  local blame = vim.fn.system(
+    { "git", "blame", "-L", lnum .. "," .. lnum, "--porcelain", "--contents", "-", "--", file },
+    buf_content
+  )
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Not in a git repository", vim.log.levels.WARN)
+    return
+  end
+
+  local commit = blame:match("^(%x+)")
+  if not commit or commit:match("^0+$") then
+    vim.notify("Line not yet committed", vim.log.levels.INFO)
+    return
+  end
+
+  local output = vim.fn.system({ "git", "show", commit, "--", file })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Failed to get commit info", vim.log.levels.ERROR)
+    return
+  end
+
+  local lines = vim.split(output, "\n")
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.bo[buf].filetype = "git"
+  vim.bo[buf].buftype = "nofile"
+  vim.bo[buf].modifiable = false
+  vim.bo[buf].bufhidden = "wipe"
+
+  local width = math.min(120, vim.o.columns - 4)
+  local height = math.min(#lines, math.floor(vim.o.lines * 0.8))
+
+  vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    col = math.floor((vim.o.columns - width) / 2),
+    row = math.floor((vim.o.lines - height) / 2),
+    style = "minimal",
+    border = "rounded",
+    title = " Git Blame ",
+    title_pos = "center",
+  })
+
+  vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", "<cmd>close<cr>", { buffer = buf, nowait = true })
+end, { desc = "Git Blame Line" })
+
+
 -- Snacks picker: grep within current file
 vim.keymap.set("n", "<leader>sl", function()
   Snacks.picker.grep({

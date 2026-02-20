@@ -68,6 +68,9 @@ return {
 
         -- Reduce Folded highlight intensity by 50% (blend toward bg)
         hl.Folded = { bg = "#21283f" }
+
+        -- Make unused vars/imports visible (default is nearly black)
+        hl.DiagnosticUnnecessary = { fg = "#737aa2", italic = true }
       end,
     },
   },

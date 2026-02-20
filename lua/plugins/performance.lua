@@ -194,7 +194,7 @@ return {
             end,
           },
           snippets = {
-            score_offset = 200,
+            score_offset = 1000,
             async = true, -- Performance: async snippet processing
             min_keyword_length = 1,
             should_show_items = true,
