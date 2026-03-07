@@ -122,6 +122,12 @@ vim.opt.signcolumn = "yes" -- fixed signcolumn prevents layout shift
 -- vim.opt.lazyredraw = true -- DISABLED: causes async UI freezes with LSP
 vim.opt.synmaxcol = 300 -- don't syntax highlight super long lines
 
+-- Fold settings for nvim-ufo (VSCode-style folding)
+vim.o.foldcolumn = "1"
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
 -- Disable unused providers
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_ruby_provider = 0

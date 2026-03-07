@@ -2,18 +2,27 @@ return {
   {
     "folke/sidekick.nvim",
     event = "VeryLazy",
-    enabled = false,
+    enabled = true,
     init = function()
-      -- copilot-language-server for NES (inline suggestions handled by copilot.lua)
-      vim.lsp.config("copilot_ls", {
+      vim.lsp.config("copilot", {
         cmd = { "copilot-language-server", "--stdio" },
         root_markers = { ".git", "package.json" },
+        init_options = {
+          editorInfo = {
+            name = "Neovim",
+            version = tostring(vim.version()),
+          },
+          editorPluginInfo = {
+            name = "Neovim",
+            version = tostring(vim.version()),
+          },
+        },
       })
-      vim.lsp.enable("copilot_ls")
+      vim.lsp.enable("copilot")
     end,
     opts = {
       nes = {
-        debounce = 150, -- slightly higher than default 100ms for smoother typing
+        debounce = 100,
       },
       signs = { enabled = false }, -- skip gutter signs
       copilot = {
@@ -31,7 +40,7 @@ return {
       },
       -- NES: Apply all edit suggestions at once
       {
-        "<leader>am",
+        "<leader>aa",
         function()
           local sk = require("sidekick")
           local count = 0
@@ -50,7 +59,7 @@ return {
       },
       -- CLI: Toggle terminal
       {
-        "<leader>aa",
+        "<leader>am",
         function()
           require("sidekick.cli").toggle()
         end,

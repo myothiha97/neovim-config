@@ -42,7 +42,7 @@ return {
         -- TypeScript LSP optimization
         vtsls = {
           flags = {
-            debounce_text_changes = 200, -- Performance: increased from 100ms
+            debounce_text_changes = 100,
           },
           settings = {
             typescript = {
