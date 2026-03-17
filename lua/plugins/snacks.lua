@@ -51,6 +51,7 @@ return {
             list = {
               keys = {
                 ["<Esc>"] = false, -- don't close on Esc
+                ["q"] = false, -- don't close on q
                 ["/"] = false, -- use vim search instead of explorer filter
                 ["?"] = false, -- use vim search instead of help
               },
