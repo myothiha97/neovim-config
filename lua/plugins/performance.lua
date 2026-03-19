@@ -53,9 +53,6 @@ return {
   -- MEDIUM: Disable nvim-lint (use ESLint LSP only, avoids duplicate linting)
   { "mfussenegger/nvim-lint", enabled = false },
 
-  -- MEDIUM: Disable gitsigns (heavy in large git repos)
-  { "lewis6991/gitsigns.nvim", enabled = false },
-
   -- bufferline: re-enabled (low performance impact)
   { "akinsho/bufferline.nvim", enabled = false },
 
