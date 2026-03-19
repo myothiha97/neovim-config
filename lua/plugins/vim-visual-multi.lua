@@ -12,9 +12,24 @@ return {
       -- skip current match (like VSCode's "Skip" with Cmd+K Cmd+D)
       ["Skip Region"] = "<M-]>",
     }
-    -- exit at first cursor position (like VSCode - stay where you started)
-    vim.g.VM_reselect_first = 1
     -- show match count in statusline
     vim.g.VM_set_statusline = 3
+
+    -- Restore cursor to original position on exit (like VSCode/Zed)
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "visual_multi_start",
+      callback = function()
+        vim.b.vm_start_pos = vim.api.nvim_win_get_cursor(0)
+      end,
+    })
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "visual_multi_exit",
+      callback = function()
+        if vim.b.vm_start_pos then
+          vim.api.nvim_win_set_cursor(0, vim.b.vm_start_pos)
+          vim.b.vm_start_pos = nil
+        end
+      end,
+    })
   end,
 }
