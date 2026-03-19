@@ -69,6 +69,9 @@ return {
     },
   },
   keys = {
+    -- Disable LazyVim default so diffview.nvim owns <leader>gd
+    { "<leader>gd", false },
+    { "<leader>gD", false },
     {
       "<leader><leader>",
       function()
