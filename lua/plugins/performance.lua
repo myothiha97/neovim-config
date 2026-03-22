@@ -168,6 +168,8 @@ return {
         trigger = {
           -- Don't re-show completion menu after accepting a completion
           show_on_accept_on_trigger_character = false,
+          -- Show completions immediately with no blink-side delay
+          show_delay_ms = 0,
         },
         documentation = {
           auto_show = true, -- Show docs automatically when item selected
@@ -179,6 +181,7 @@ return {
         providers = {
           lsp = {
             score_offset = 100,
+            min_keyword_length = 0,
             -- Filter out bracket-only completions from emmet (for HTML/CSS files)
             transform_items = function(_, items)
               return vim.tbl_filter(function(item)

@@ -39,7 +39,7 @@ return {
             debounce_text_changes = 100,
           },
         },
-        -- TypeScript LSP optimization
+        -- TypeScript LSP optimization (React/TSX focused)
         vtsls = {
           flags = {
             debounce_text_changes = 100,
@@ -49,10 +49,29 @@ return {
               suggest = {
                 completeFunctionCalls = false,
               },
+              preferences = {
+                -- Don't scan package.json for auto-imports (big perf win for large React projects)
+                includePackageJsonAutoImports = "off",
+              },
+              tsserver = {
+                -- Give tsserver more heap (default is ~3GB, React projects can need more)
+                maxTsServerMemory = 8192,
+                -- Don't watch node_modules for changes
+                watchOptions = {
+                  watchFile = "useFsEvents",
+                  watchDirectory = "useFsEvents",
+                  fallbackPolling = "dynamicPriority",
+                  synchronousWatchDirectory = true,
+                  excludeDirectories = { "**/node_modules", "**/.git" },
+                },
+              },
             },
             javascript = {
               suggest = {
                 completeFunctionCalls = false,
+              },
+              preferences = {
+                includePackageJsonAutoImports = "off",
               },
             },
           },
