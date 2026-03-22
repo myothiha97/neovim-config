@@ -2,7 +2,7 @@ return {
   {
     "folke/sidekick.nvim",
     event = "VeryLazy",
-    enabled = true,
+    enabled = false,
     init = function()
       vim.lsp.config("copilot", {
         cmd = { "copilot-language-server", "--stdio" },
