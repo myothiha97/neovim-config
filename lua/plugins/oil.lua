@@ -101,7 +101,7 @@ return {
     confirmation = {
       keymaps = {
         ["<CR>"] = "actions.confirm",
-        ["y"] = "actions.confirm", -- keep y as well
+        ["y"] = "actions.confirm",
         ["n"] = "actions.close",
         ["<Esc>"] = "actions.close",
       },
