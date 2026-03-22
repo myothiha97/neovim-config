@@ -11,6 +11,7 @@ return {
   end,
   opts = {
     explorer = { enabled = true },
+    dashboard = { enabled = true },
     scroll = { enabled = false },
     dim = { enabled = false },
     picker = {
