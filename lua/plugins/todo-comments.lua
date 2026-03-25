@@ -1,7 +1,7 @@
 local keywords = {
-  TODO = { icon = " ", alt = { "TODO", "Todo", "Issue", "Bug" } },
-  PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE", "Perf", "Opt" } },
-  REFACTOR = { icon = " ", color = "default", alt = { "Refactor", "REF", "REFACTOR" } },
+  TODO = { icon = " ", alt = { "TODO", "Todo", "td", "Issue", "Bug" } },
+  PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE", "Perf", "perf", "Opt" } },
+  REFACTOR = { icon = " ", color = "default", alt = { "Refactor", "REF", "ref", "REFACTOR" } },
   HACK = { icon = " ", color = "warning" },
   WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
   NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
@@ -16,18 +16,11 @@ return {
     },
     keys = {
       {
-        "tt",
+        "<leader>td",
         function()
           require("todo-comments").jump_next()
         end,
         desc = "Next Todo",
-      },
-      {
-        "tp",
-        function()
-          require("todo-comments").jump_prev()
-        end,
-        desc = "Previous Todo",
       },
       -- Swap defaults: <leader>st = specific (TODO/HACK/WARN), <leader>sT = all
       { "<leader>st", false },
