@@ -20,7 +20,8 @@ return {
       -- Configure prettierd to use project-local config with fallback to default
       formatters = {
         prettierd = {
-          prepend_args = function()
+          -- Walk up from the file's directory, same as VS Code prettier resolution
+          prepend_args = function(_, ctx)
             local config_files = {
               ".prettierrc",
               ".prettierrc.json",
@@ -36,30 +37,30 @@ return {
               "prettier.config.mjs",
             }
 
-            -- Check if project has prettier config
-            local cwd = vim.fn.getcwd()
-            for _, file in ipairs(config_files) do
-              if vim.fn.filereadable(cwd .. "/" .. file) == 1 then
-                return {} -- Project config found, let prettierd auto-detect
+            local dir = ctx.dirname
+            while dir and dir ~= "/" do
+              for _, file in ipairs(config_files) do
+                if vim.fn.filereadable(dir .. "/" .. file) == 1 then
+                  return {} -- Found config, let prettierd auto-detect
+                end
               end
+              local pkg = dir .. "/package.json"
+              if vim.fn.filereadable(pkg) == 1 then
+                local content = table.concat(vim.fn.readfile(pkg), "\n")
+                if content:match('"prettier"') then
+                  return {} -- Config in package.json
+                end
+              end
+              dir = vim.fn.fnamemodify(dir, ":h")
             end
 
-            -- Check package.json for prettier key
-            local pkg = cwd .. "/package.json"
-            if vim.fn.filereadable(pkg) == 1 then
-              local content = table.concat(vim.fn.readfile(pkg), "\n")
-              if content:match('"prettier"') then
-                return {} -- Project config in package.json
-              end
-            end
-
-            -- No project config, use local default
+            -- No project config found, fall back to global
             local default_config = vim.fn.expand("~/.config/prettier/.prettierrc")
             if vim.fn.filereadable(default_config) == 1 then
               return { "--config", default_config }
             end
 
-            return {} -- No config anywhere, use prettierd defaults
+            return {}
           end,
         },
       },
