@@ -103,38 +103,31 @@ return {
   {
     "saghen/blink.cmp",
     init = function()
-      -- Performance: Cache comment state, updated on CursorMovedI (not every keystroke)
-      -- This avoids expensive treesitter queries on each keypress
-      vim.api.nvim_create_autocmd("CursorMovedI", {
-        callback = function()
-          local buf = vim.api.nvim_get_current_buf()
-          local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-          row = row - 1
-          col = math.max(col - 1, 0)
+      local function update_comment_state()
+        local buf = vim.api.nvim_get_current_buf()
+        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+        row = row - 1
+        col = math.max(col - 1, 0)
 
-          -- Check treesitter first
-          local in_comment = false
-          local ok, captures = pcall(vim.treesitter.get_captures_at_pos, buf, row, col)
-          if ok and captures then
-            for _, c in ipairs(captures) do
-              if c.capture:match("comment") then
-                in_comment = true
-                break
-              end
-            end
-          end
-
-          -- Fallback to vim syntax if treesitter didn't find comment
-          if not in_comment then
-            local syngroup = vim.fn.synIDattr(vim.fn.synID(row + 1, col + 1, true), "name")
-            if syngroup:lower():match("comment") then
+        local in_comment = false
+        local ok, captures = pcall(vim.treesitter.get_captures_at_pos, buf, row, col)
+        if ok and captures then
+          for _, c in ipairs(captures) do
+            if c.capture:match("^comment") then
               in_comment = true
+              break
             end
           end
+        end
 
-          vim.b[buf].blink_in_comment = in_comment
-        end,
-      })
+        vim.b[buf].blink_in_comment = in_comment
+      end
+
+      -- CursorHoldI fires only after updatetime (200ms) of idle in insert mode
+      -- Zero treesitter queries during active typing
+      vim.api.nvim_create_autocmd("CursorHoldI", { callback = update_comment_state })
+      -- Reset state immediately on InsertEnter so initial position is correct
+      vim.api.nvim_create_autocmd("InsertEnter", { callback = update_comment_state })
     end,
     opts = {
       keymap = {
