@@ -23,16 +23,16 @@ return {
       local map = vim.keymap.set
 
       -- Accept full suggestion (Ctrl+l, Ctrl+;, Ctrl+')
-      local function accept_or_fallback()
+      local function accept_or_fallback(fallback_key)
         if suggestion.is_visible() then
           suggestion.accept()
         else
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-l>", true, false, true), "n", false)
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(fallback_key, true, false, true), "n", false)
         end
       end
-      map("i", "<C-l>", accept_or_fallback, { desc = "Copilot: Accept" })
-      map("i", "<C-;>", accept_or_fallback, { desc = "Copilot: Accept" })
-      map("i", "<C-'>", accept_or_fallback, { desc = "Copilot: Accept" })
+      map("i", "<C-l>", function() accept_or_fallback("<C-l>") end, { desc = "Copilot: Accept" })
+      map("i", "<C-;>", function() accept_or_fallback("<C-;>") end, { desc = "Copilot: Accept" })
+      map("i", "<C-'>", function() accept_or_fallback("<C-'>") end, { desc = "Copilot: Accept" })
 
       -- Toggle auto-trigger
       vim.g.copilot_enabled = true
