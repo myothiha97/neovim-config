@@ -3,6 +3,9 @@
 -- Add any additional keymaps here
 --
 
+-- Save file (Ctrl+S, works in normal and insert mode)
+vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
+
 -- Disable buffer navigation with Shift+H/L (LazyVim defaults)
 vim.keymap.del("n", "<S-h>")
 vim.keymap.del("n", "<S-l>")
@@ -31,8 +34,18 @@ vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recente
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
 
--- Hover docs in normal mode
-vim.keymap.set("n", "<Tab>", vim.lsp.buf.hover, { desc = "Hover Documentation" })
+-- Tab in normal mode: focus any visible float, or open hover docs if none visible
+-- First press opens hover docs, second press jumps into it (use q or <C-w>w to leave)
+vim.keymap.set("n", "<Tab>", function()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local cfg = vim.api.nvim_win_get_config(win)
+    if cfg.relative ~= "" and cfg.focusable ~= false then
+      vim.api.nvim_set_current_win(win)
+      return
+    end
+  end
+  vim.lsp.buf.hover()
+end, { desc = "Hover / Focus Float" })
 
 -- Signature help for insert mode and normal mode (Option+i via Ghostty)
 vim.keymap.set({ "i", "n" }, "<M-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
@@ -53,14 +66,17 @@ vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "Outdent" })
 
 -- map(mode, key, result, options)
 vim.keymap.set("n", "gi", function()
-  vim.diagnostic.open_float({
-    focusable = true, -- Allows you to tab into the window or focus it
+  local _, winid = vim.diagnostic.open_float({
+    focusable = true,
     border = "rounded",
-    source = "always", -- Shows which LSP (e.g., jdtls) sent the error
+    source = "always",
   })
-end, { desc = "Line Diagnostics (Focusable)" })
+  if winid then
+    vim.api.nvim_set_current_win(winid)
+  end
+end, { desc = "Line Diagnostics (Focus)" })
 
--- Configuration to only target Errors (min and max both set to ERROR for exact match)
+--Configuration to only target Errors (min and max both set to ERROR for exact match)
 local error_only_config = {
   severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
   float = { border = "rounded", source = "always" },
