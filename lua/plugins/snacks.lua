@@ -74,6 +74,46 @@ return {
     { "<leader>gd", false },
     { "<leader>gD", false },
     {
+      "<leader>ss",
+      function()
+        Snacks.picker.lsp_symbols({
+          filter = {
+            default = {
+              "Function",
+              "Method",
+              "Class",
+              "Interface",
+              "Enum",
+              "EnumMember",
+              "Constructor",
+              "TypeParameter",
+            },
+            typescript = {
+              "Function",
+              "Method",
+              "Class",
+              "Interface",
+              "Enum",
+              "EnumMember",
+              "Constructor",
+              "TypeParameter",
+            },
+            typescriptreact = {
+              "Function",
+              "Method",
+              "Class",
+              "Interface",
+              "Enum",
+              "EnumMember",
+              "Constructor",
+              "TypeParameter",
+            },
+          },
+        })
+      end,
+      desc = "LSP Symbols (functions/types)",
+    },
+    {
       "<leader><leader>",
       function()
         require("snacks").picker.smart()
