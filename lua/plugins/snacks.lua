@@ -12,7 +12,14 @@ return {
   opts = {
     explorer = { enabled = true },
     dashboard = { enabled = true },
-    scroll = { enabled = false },
+    scroll = {
+      enabled = false,
+      animate = {
+        duration = { step = 10, total = 80 },
+        easing = "linear",
+      },
+      spamming = 10, -- near-instant when holding j/k repeatedly
+    },
     dim = { enabled = false },
     picker = {
       sources = {
