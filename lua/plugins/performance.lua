@@ -102,6 +102,7 @@ return {
 
   {
     "saghen/blink.cmp",
+    -- dependencies = { "fang2hou/blink-copilot" }, -- disabled: copilot-lsp caused LSP slowdown
     init = function()
       local function update_comment_state()
         local buf = vim.api.nvim_get_current_buf()

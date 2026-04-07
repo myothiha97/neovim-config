@@ -1,4 +1,10 @@
 return {
+  -- copilot-lsp disabled: adds ~3-4s LSP init overhead per buffer
+  -- NES wasn't producing suggestions reliably
+  {
+    "copilotlsp-nvim/copilot-lsp",
+    enabled = false,
+  },
   {
     "zbirenbaum/copilot.lua",
     enabled = true,
@@ -10,8 +16,8 @@ return {
         enabled = true,
         auto_trigger = true,
         hide_during_completion = false,
-        debounce = 75, -- Balance between speed and performance
-        keymap = { accept = false }, -- Handling manually below
+        debounce = 75,
+        keymap = { accept = false },
       },
       filetypes = {
         ["*"] = true, -- Enable for all filetypes
