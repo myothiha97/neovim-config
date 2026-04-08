@@ -25,6 +25,15 @@ return {
     },
     config = function(_, opts)
       require("copilot").setup(opts)
+
+      -- Match neocodeium's ghost text style (#808080 medium gray)
+      vim.api.nvim_set_hl(0, "CopilotSuggestion", { fg = "#808080", ctermfg = 244 })
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        callback = function()
+          vim.api.nvim_set_hl(0, "CopilotSuggestion", { fg = "#808080", ctermfg = 244 })
+        end,
+      })
+
       local suggestion = require("copilot.suggestion")
       local map = vim.keymap.set
 
