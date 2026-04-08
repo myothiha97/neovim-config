@@ -149,14 +149,23 @@ end
 -- 4. Mapping
 vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
 
--- Toggle all folds: zn opens all (zR) when folded, folds all except current (zMzv) when open
-vim.keymap.set("n", "zn", function()
+-- zm: toggle all folds but keep current open (zMzv / zR)
+vim.keymap.set("n", "zm", function()
   if vim.o.foldlevel == 0 then
     vim.cmd("normal! zR")
   else
     vim.cmd("normal! zMzv")
   end
 end, { desc = "Toggle All Folds (keep current open)" })
+
+-- zn: toggle all folds including current (zM / zR)
+vim.keymap.set("n", "zn", function()
+  if vim.o.foldlevel == 0 then
+    vim.cmd("normal! zR")
+  else
+    vim.cmd("normal! zM")
+  end
+end, { desc = "Toggle All Folds" })
 
 -- Search word under cursor and stay in place (Cmd+F via Ghostty → M-f)
 vim.keymap.set("n", "<M-f>", "*N", { desc = "Highlight word under cursor" })
