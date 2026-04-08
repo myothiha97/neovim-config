@@ -55,3 +55,10 @@ Need to investigate and implement working keymaps for:
 - `<leader>ap` - Open Copilot panel for multi-line suggestions
 
 Current attempts using `suggestion.next()` and `require("copilot.panel").open()` did not work as expected.
+
+
+## To integrate neocodeium for ai autocompletetion 
+- plugin link -> https://github.com/monkoose/neocodeium
+
+
+
