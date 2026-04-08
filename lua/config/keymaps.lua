@@ -149,8 +149,8 @@ end
 -- 4. Mapping
 vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
 
--- Toggle all folds except current: zm folds all then reveals cursor, zR when already all folded
-vim.keymap.set("n", "zm", function()
+-- Toggle all folds: zn opens all (zR) when folded, folds all except current (zMzv) when open
+vim.keymap.set("n", "zn", function()
   if vim.o.foldlevel == 0 then
     vim.cmd("normal! zR")
   else
