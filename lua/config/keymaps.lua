@@ -149,23 +149,48 @@ end
 -- 4. Mapping
 vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
 
--- zm: toggle all folds but keep current open (zMzv / zR)
+-- Explicit state flags for fold toggle (foldlevel is unreliable with ufo)
+vim.g.folds_closed = false
+vim.g.fold_keep_current_open = false
+
+-- zm: toggle all folds but keep current open
 vim.keymap.set("n", "zm", function()
-  if vim.o.foldlevel == 0 then
-    vim.cmd("normal! zR")
+  if vim.g.folds_closed then
+    vim.g.folds_closed = false
+    vim.g.fold_keep_current_open = false
+    require("ufo").openAllFolds()
   else
-    vim.cmd("normal! zMzv")
+    vim.g.folds_closed = true
+    vim.g.fold_keep_current_open = true
+    require("ufo").closeAllFolds()
+    vim.cmd("normal! zv")
   end
 end, { desc = "Toggle All Folds (keep current open)" })
 
--- zn: toggle all folds including current (zM / zR)
+-- zn: toggle all folds including current
 vim.keymap.set("n", "zn", function()
-  if vim.o.foldlevel == 0 then
-    vim.cmd("normal! zR")
+  if vim.g.folds_closed then
+    vim.g.folds_closed = false
+    vim.g.fold_keep_current_open = false
+    require("ufo").openAllFolds()
   else
-    vim.cmd("normal! zM")
+    vim.g.folds_closed = true
+    vim.g.fold_keep_current_open = false
+    require("ufo").closeAllFolds()
   end
 end, { desc = "Toggle All Folds" })
+
+-- Re-open the fold at cursor after editing when zm mode is active
+-- (ufo re-evaluates folds on InsertLeave which re-closes everything)
+vim.api.nvim_create_autocmd("InsertLeave", {
+  callback = function()
+    if vim.g.fold_keep_current_open then
+      vim.schedule(function()
+        vim.cmd("normal! zv")
+      end)
+    end
+  end,
+})
 
 -- Search word under cursor and stay in place (Cmd+F via Ghostty → M-f)
 vim.keymap.set("n", "<M-f>", "*N", { desc = "Highlight word under cursor" })
