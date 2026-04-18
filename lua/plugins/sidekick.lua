@@ -23,6 +23,14 @@ return {
     opts = {
       nes = {
         debounce = 100,
+        -- Default normal-mode-only triggers: copilot.lua handles insert mode ghost text
+        trigger = {
+          events = { "InsertLeave", "TextChanged", "User SidekickNesDone" },
+        },
+        clear = {
+          events = { "TextChangedI", "TextChanged", "BufWritePre", "InsertEnter" },
+          esc = true,
+        },
       },
       signs = { enabled = false }, -- skip gutter signs
       copilot = {
@@ -30,12 +38,17 @@ return {
       },
     },
     keys = {
-      -- NES: Jump to / apply next edit hunk (one by one)
+      -- NES: Tab accepts suggestion when visible, normal tab otherwise
       {
-        "<leader>an",
+        "<tab>",
         function()
-          require("sidekick").nes_jump_or_apply()
+          if require("sidekick").nes_jump_or_apply() then
+            return
+          end
+          return "<tab>"
         end,
+        mode = { "i", "n" },
+        expr = true,
         desc = "NES: Jump/Apply Next Edit",
       },
       -- NES: Apply all edit suggestions at once

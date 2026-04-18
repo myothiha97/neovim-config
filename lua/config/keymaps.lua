@@ -3,6 +3,40 @@
 -- Add any additional keymaps here
 --
 
+-- Enhanced LSP floating previews: add inner padding via window options
+-- Neovim 0.12 has no pad_* in open_floating_preview, so we use foldcolumn
+-- (left padding) and winbar (top padding) on the float window after creation
+local orig_open_floating_preview = vim.lsp.util.open_floating_preview
+vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
+  opts = opts or {}
+  local bufnr, winid = orig_open_floating_preview(contents, syntax, opts)
+
+  if winid and vim.api.nvim_win_is_valid(winid) then
+    -- foldcolumn creates left-side padding without modifying content
+    vim.wo[winid].foldcolumn = "1"
+
+    -- Expand window width to compensate for foldcolumn space
+    local config = vim.api.nvim_win_get_config(winid)
+    if config.width then
+      config.width = config.width + 2
+    end
+    vim.api.nvim_win_set_config(winid, config)
+  end
+
+  return bufnr, winid
+end
+
+local hover_opts = {
+  border = "rounded",
+  max_width = 80,
+  max_height = 30,
+}
+
+-- Override default K hover with enhanced popup
+vim.keymap.set("n", "K", function()
+  vim.lsp.buf.hover(hover_opts)
+end, { desc = "Hover Documentation" })
+
 -- Save file (Ctrl+S, works in normal and insert mode)
 vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 
@@ -44,11 +78,13 @@ vim.keymap.set("n", "<Tab>", function()
       return
     end
   end
-  vim.lsp.buf.hover()
+  vim.lsp.buf.hover(hover_opts)
 end, { desc = "Hover / Focus Float" })
 
 -- Signature help for insert mode and normal mode (Option+i via Ghostty)
-vim.keymap.set({ "i", "n" }, "<M-i>", vim.lsp.buf.signature_help, { desc = "Signature Help" })
+vim.keymap.set({ "i", "n" }, "<M-i>", function()
+  vim.lsp.buf.signature_help(hover_opts)
+end, { desc = "Signature Help" })
 
 -- -- Enter insert mode and show completion menu (normal mode only)
 -- vim.keymap.set("n", "<C-i>", function()

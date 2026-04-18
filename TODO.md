@@ -1,5 +1,14 @@
 # TODO
 
+## Tailwind LSP document color highlights
+`tailwindcss-language-server` renders inline color swatches (light yellow/colored backgrounds) on arbitrary hex classes like `bg-[#F8F6F5]` via `textDocument/documentColor`.
+
+Attempted fixes:
+- `vim.lsp.document_color.disable(args.buf)` — errored: `disable` is nil in Neovim 0.12
+- `vim.lsp.handlers["textDocument/documentColor"] = function() end` — no error but highlight persists
+
+The highlight likely comes from a separate mechanism (possibly treesitter or tailwindcss server pushing semantic tokens instead of documentColor). Needs further investigation.
+
 ## Copilot manual trigger keymaps
 Implement working keymaps for manual Copilot triggering:
 - `<leader>at` — manual trigger from normal mode

@@ -1,6 +1,6 @@
 return {
   {
-    "ThePrimeagen/harpoon",
+    "akinsho/bufferline.nvim",
     enabled = false,
   },
 }

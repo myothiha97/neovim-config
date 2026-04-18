@@ -3,7 +3,7 @@
 -- Add any additional options here
 
 vim.o.number = true
-vim.o.scrolloff = 10
+vim.o.scrolloff = 15
 vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false
@@ -42,7 +42,7 @@ vim.opt.winbar = " " -- Single space creates 1 line of padding
 vim.diagnostic.config({
   float = {
     border = "rounded",
-    max_width = 60, -- Forces the window to wrap after 60 characters
+    max_width = 80,
     source = "always",
     header = "",
     prefix = "",

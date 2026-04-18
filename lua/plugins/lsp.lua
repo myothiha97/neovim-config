@@ -79,6 +79,10 @@ return {
       },
     },
     init = function()
+      -- Disable LSP document color highlights (tailwindcss paints hex color swatches)
+      vim.lsp.handlers["textDocument/documentColor"] = function() end
+
+
       -- Custom gd to filter node_modules (only when LSP is attached)
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)

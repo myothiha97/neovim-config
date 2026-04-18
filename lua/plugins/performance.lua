@@ -53,9 +53,6 @@ return {
   -- MEDIUM: Disable nvim-lint (use ESLint LSP only, avoids duplicate linting)
   { "mfussenegger/nvim-lint", enabled = false },
 
-  -- bufferline: re-enabled (low performance impact)
-  { "akinsho/bufferline.nvim", enabled = false },
-
   -- LOW: Disable persistence/session (can cause micro-freezes on exit)
   { "folke/persistence.nvim", enabled = false },
 
@@ -168,6 +165,14 @@ return {
         documentation = {
           auto_show = true, -- Show docs automatically when item selected
           auto_show_delay_ms = 200,
+          window = {
+            border = "rounded",
+            max_width = 80,
+            max_height = 30,
+          },
+        },
+        menu = {
+          border = "rounded",
         },
       },
       sources = {

@@ -11,6 +11,7 @@ return {
     cmd = "Copilot",
     event = "InsertEnter",
     opts = {
+      -- copilot_node_command = vim.fn.expand("$HOME") .. "/.nvm/versions/node/v22.22.0/bin/node",
       panel = { enabled = false },
       suggestion = {
         enabled = true,
@@ -37,17 +38,23 @@ return {
       local suggestion = require("copilot.suggestion")
       local map = vim.keymap.set
 
-      -- Accept full suggestion (Ctrl+l, Ctrl+;, Ctrl+')
-      local function accept_or_fallback(fallback_key)
+      -- Tab: accept suggestion when visible, otherwise insert normal tab
+      map("i", "<Tab>", function()
         if suggestion.is_visible() then
           suggestion.accept()
         else
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(fallback_key, true, false, true), "n", false)
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
         end
-      end
-      map("i", "<C-l>", function() accept_or_fallback("<C-l>") end, { desc = "Copilot: Accept" })
-      map("i", "<C-;>", function() accept_or_fallback("<C-;>") end, { desc = "Copilot: Accept" })
-      map("i", "<C-'>", function() accept_or_fallback("<C-'>") end, { desc = "Copilot: Accept" })
+      end, { desc = "Copilot: Accept or Tab" })
+
+      -- Esc: dismiss suggestion if visible, otherwise normal Esc
+      map("i", "<Esc>", function()
+        if suggestion.is_visible() then
+          suggestion.dismiss()
+        else
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+        end
+      end, { desc = "Copilot: Dismiss or Esc" })
 
       -- Toggle auto-trigger
       vim.g.copilot_enabled = true
