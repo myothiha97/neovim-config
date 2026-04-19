@@ -43,10 +43,12 @@ return {
     lazy = true,
     opts = {
       style = "night",
-      transparent = false,
+      transparent = true,
       styles = {
-        sidebars = "dark",
-        floats = "dark",
+        -- sidebars = "dark",
+        -- floats = "dark",
+        sidebars = "transparent",
+        floats = "transparent",
       },
       on_highlights = function(hl)
         -- Sync relative line number color with Ghostty green (#02b890)
