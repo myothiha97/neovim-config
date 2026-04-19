@@ -43,14 +43,27 @@ return {
     lazy = true,
     opts = {
       style = "night",
-      transparent = true,
+      -- Neovide needs transparent=false so it has a bg color to apply opacity to.
+      -- In terminal (Ghostty), transparent=true lets the terminal bg show through.
+      transparent = not vim.g.neovide,
       styles = {
-        -- sidebars = "dark",
-        -- floats = "dark",
-        sidebars = "transparent",
-        floats = "transparent",
+        -- "normal" for Neovide (same bg as editor), "transparent" for terminal
+        sidebars = vim.g.neovide and "normal" or "transparent",
+        floats = vim.g.neovide and "normal" or "transparent",
       },
       on_highlights = function(hl)
+        -- In Neovide, override tokyonight's bg (#1a1b26) to match Ghostty's bg (#1a1d24)
+        if vim.g.neovide then
+          local bg = "#1a1d24"
+          local fg = hl.Normal and hl.Normal.fg or "#c0caf5"
+          hl.Normal = { bg = bg, fg = fg }
+          hl.NormalNC = { bg = bg, fg = fg }
+          hl.NormalFloat = { bg = bg, fg = fg }
+          hl.NormalSB = { bg = bg, fg = fg }
+          hl.FloatBorder = { bg = bg, fg = "#3b4261" }
+          hl.FloatTitle = { bg = bg, fg = "#7aa2f7" }
+        end
+
         -- Sync relative line number color with Ghostty green (#02b890)
         hl.CursorLineNr = { fg = "#02b890", bold = true }
 

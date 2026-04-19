@@ -5,6 +5,9 @@ if vim.g.neovide then
   vim.g.neovide_cursor_animation_length = 0
   vim.g.neovide_cursor_trail_size = 0
 
+  -- Window transparency (matches Ghostty's background-opacity = 0.93)
+  vim.g.neovide_transparency = 0.93
+
   -- Enable macOS Cmd key (<D->) mappings in Neovide
   vim.g.neovide_input_use_logo = true
 
