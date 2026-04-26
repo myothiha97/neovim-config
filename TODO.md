@@ -10,7 +10,7 @@ Feature - async ai agents completions without blocking the UI
 ## LSP autocompletion 
 fix - currently lsp display snippets at first , this can be convenience for some cases but sometime it can be annoying when you want to see the completions list of lsp suggestions.  so we need to enhance the blink cmp a little bit
 
-## Refactoring 
+## Advance refactoring for large codebases
 currently if the codebase is too large, i found difficult to refactor some parts of the codebase, like extracting some code to a separate file
 so we need to enhance the refactoring process by adding some features like :
 - extract code to a separate file and update the imports accordingly
@@ -21,5 +21,8 @@ so we need to enhance the refactoring process by adding some features like :
 - code coverage analysis and reporting 
 
 
-
-
+## Refactoring for current Neovim configs
+- currently, the lua configuration is a bit messy and hard to maintain, so we need to refactor it to make it more organized and maintainable,
+by splitting it into multiple files and folders.
+- might need to simplify some configurations by removing some unnecessary plugins and configurations that are not being used or not providing much value.
+- need to re-analyze the current plugins and prune the unnecessary ones and only leaves the most essential ones

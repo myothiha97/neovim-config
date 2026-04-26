@@ -9,11 +9,17 @@ return {
         callback = function()
           vim.api.nvim_set_hl(0, "Folded", { bg = "NONE" })
           vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
+          vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
         end,
       })
       -- Also set immediately for current colorscheme
       vim.api.nvim_set_hl(0, "Folded", { bg = "NONE" })
       vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
+      -- Warm bright color for the "N lines" fold count indicator
+      vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
+
+      -- TODO: Auto-fold top import block on file open
+      -- Needs investigation: za works manually but auto-fold breaks after manual unfold + reopen
     end,
     keys = {
       { "zR", function() require("ufo").openAllFolds() end, desc = "Open all folds" },
@@ -43,7 +49,7 @@ return {
           end
           curWidth = curWidth + chunkWidth
         end
-        table.insert(newVirtText, { suffix, "Comment" })
+        table.insert(newVirtText, { suffix, "UfoFoldCount" })
         return newVirtText
       end,
       open_fold_hl_timeout = 0,
