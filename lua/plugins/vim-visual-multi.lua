@@ -29,6 +29,9 @@ return {
           vim.api.nvim_win_set_cursor(0, vim.b.vm_start_pos)
           vim.b.vm_start_pos = nil
         end
+        -- VM sometimes leaves a buffer-local <CR> insert-mode keymap behind,
+        -- which breaks blink.cmp's Enter acceptance. Force-clean it on exit.
+        pcall(vim.api.nvim_buf_del_keymap, 0, "i", "<CR>")
       end,
     })
   end,

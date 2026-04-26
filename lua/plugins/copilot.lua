@@ -1,17 +1,19 @@
+
 return {
-  -- copilot-lsp disabled: adds ~3-4s LSP init overhead per buffer
-  -- NES wasn't producing suggestions reliably
-  {
-    "copilotlsp-nvim/copilot-lsp",
-    enabled = false,
-  },
   {
     "zbirenbaum/copilot.lua",
     enabled = true,
     cmd = "Copilot",
     event = "InsertEnter",
+    dependencies = {
+      {
+        "copilotlsp-nvim/copilot-lsp",
+        init = function()
+          vim.g.copilot_nes_debounce = 500
+        end,
+      },
+    },
     opts = {
-      -- copilot_node_command = vim.fn.expand("$HOME") .. "/.nvm/versions/node/v22.22.0/bin/node",
       panel = { enabled = false },
       suggestion = {
         enabled = true,
@@ -19,6 +21,15 @@ return {
         hide_during_completion = false,
         debounce = 75,
         keymap = { accept = false },
+      },
+      nes = {
+        enabled = true,
+        auto_trigger = true,
+        keymap = {
+          accept_and_goto = "<Tab>",
+          accept = false,
+          dismiss = "<Esc>",
+        },
       },
       filetypes = {
         ["*"] = true, -- Enable for all filetypes
@@ -38,14 +49,28 @@ return {
       local suggestion = require("copilot.suggestion")
       local map = vim.keymap.set
 
-      -- Tab: accept suggestion when visible, otherwise insert normal tab
-      map("i", "<Tab>", function()
-        if suggestion.is_visible() then
-          suggestion.accept()
-        else
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
+      -- Dismiss ghost text immediately when leaving insert mode
+      vim.api.nvim_create_autocmd("InsertLeave", {
+        callback = function()
+          if suggestion.is_visible() then
+            suggestion.dismiss()
+          end
+        end,
+      })
+
+      -- Accept ghost text; fall through to normal behavior if not visible
+      local function accept_or(key)
+        return function()
+          if suggestion.is_visible() then
+            suggestion.accept()
+          else
+            vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "n", false)
+          end
         end
-      end, { desc = "Copilot: Accept or Tab" })
+      end
+      map("i", "<C-l>", accept_or("<C-l>"), { desc = "Copilot: Accept" })
+      map("i", "<C-;>", accept_or("<C-;>"), { desc = "Copilot: Accept" })
+      map("i", "<C-'>", accept_or("<C-'>"), { desc = "Copilot: Accept" })
 
       -- Esc: dismiss suggestion if visible, otherwise normal Esc
       map("i", "<Esc>", function()

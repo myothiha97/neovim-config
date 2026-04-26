@@ -1,3 +1,5 @@
+local debounce_text_change = 50
+
 return {
   {
     "neovim/nvim-lspconfig",
@@ -21,7 +23,7 @@ return {
             -- "less",
           },
           flags = {
-            debounce_text_changes = 100,
+            debounce_text_changes = debounce_text_change,
           },
         },
         -- ESLint disabled - TypeScript alone is sufficient for current project
@@ -36,13 +38,13 @@ return {
             },
           },
           flags = {
-            debounce_text_changes = 100,
+            debounce_text_changes = debounce_text_change,
           },
         },
         -- TypeScript LSP optimization (React/TSX focused)
         vtsls = {
           flags = {
-            debounce_text_changes = 100,
+            debounce_text_changes = debounce_text_change,
           },
           settings = {
             typescript = {
@@ -81,7 +83,6 @@ return {
     init = function()
       -- Disable LSP document color highlights (tailwindcss paints hex color swatches)
       vim.lsp.handlers["textDocument/documentColor"] = function() end
-
 
       -- Custom gd to filter node_modules (only when LSP is attached)
       vim.api.nvim_create_autocmd("LspAttach", {

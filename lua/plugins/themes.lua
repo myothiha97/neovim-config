@@ -45,11 +45,13 @@ return {
       style = "night",
       -- Neovide needs transparent=false so it has a bg color to apply opacity to.
       -- In terminal (Ghostty), transparent=true lets the terminal bg show through.
-      transparent = not vim.g.neovide,
+      transparent = false, --not vim.g.neovide,
       styles = {
         -- "normal" for Neovide (same bg as editor), "transparent" for terminal
-        sidebars = vim.g.neovide and "normal" or "transparent",
-        floats = vim.g.neovide and "normal" or "transparent",
+        -- sidebars = vim.g.neovide and "normal" or "transparent",
+        -- floats = vim.g.neovide and "normal" or "transparent",
+        sidebars = "normal",
+        floats = "normal",
       },
       on_highlights = function(hl)
         -- In Neovide, override tokyonight's bg (#1a1b26) to match Ghostty's bg (#1a1d24)

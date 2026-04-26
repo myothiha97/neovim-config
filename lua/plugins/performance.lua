@@ -58,7 +58,10 @@ return {
 
   -- mini.pairs kept enabled (user preference)
 
-  { "nvim-mini/mini.surround", enabled = true },
+  { "nvim-mini/mini.surround", enabled = false },
+
+  -- Classic vim-surround keymaps: ys, ds, cs, S (visual)
+  { "tpope/vim-surround" },
   -- disabling mini.ai due to performance issues with large files
   -- to disabled the plugin without warning, we have to set the author name to a dummy value
   -- if we don't change the author name , the nvim will sitll show a warning that the plugin is disabled
@@ -80,15 +83,58 @@ return {
   -- Throttle lualine updates (default 100ms -> 500ms)
   {
     "nvim-lualine/lualine.nvim",
-    opts = {
-      options = {
-        refresh = {
-          statusline = 500,
-          tabline = 1000,
-          winbar = 1000,
-        },
-      },
-    },
+    init = function()
+      vim.g.lsp_loading = ""
+
+      -- Ignore clients that never send a "end" progress event
+      local ignored = { copilot = true, ["copilot-lsp"] = true }
+
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client and not ignored[client.name] then
+            vim.g.lsp_loading = "⟳ " .. client.name
+            vim.cmd.redrawstatus()
+          end
+        end,
+      })
+
+      vim.api.nvim_create_autocmd("LspProgress", {
+        callback = function(ev)
+          local val = ev.data and ev.data.params and ev.data.params.value
+          if not val then return end
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if not client or ignored[client.name] then return end
+          if val.kind == "end" then
+            vim.g.lsp_loading = ""
+          else
+            local msg = val.title or ""
+            if val.percentage then msg = msg .. " " .. val.percentage .. "%" end
+            vim.g.lsp_loading = "⟳ " .. client.name .. (msg ~= "" and ": " .. msg or "")
+          end
+          vim.cmd.redrawstatus()
+        end,
+      })
+    end,
+    opts = function(_, opts)
+      opts.options = opts.options or {}
+      opts.options.refresh = {
+        statusline = 500,
+        tabline = 1000,
+        winbar = 1000,
+      }
+      opts.sections = opts.sections or {}
+      opts.sections.lualine_c = opts.sections.lualine_c or {}
+      table.insert(opts.sections.lualine_c, {
+        function()
+          return vim.g.lsp_loading or ""
+        end,
+        cond = function()
+          return (vim.g.lsp_loading or "") ~= ""
+        end,
+      })
+      return opts
+    end,
   },
 
   -- which-key kept at default 200ms delay (user preference)
@@ -126,6 +172,16 @@ return {
       vim.api.nvim_create_autocmd("CursorHoldI", { callback = update_comment_state })
       -- Reset state immediately on InsertEnter so initial position is correct
       vim.api.nvim_create_autocmd("InsertEnter", { callback = update_comment_state })
+      -- Optimistically re-enable when cursor moves (no treesitter query — just a flag reset)
+      -- Prevents blink staying disabled after moving from a comment to code without pausing
+      vim.api.nvim_create_autocmd("CursorMovedI", {
+        callback = function()
+          local buf = vim.api.nvim_get_current_buf()
+          if vim.b[buf].blink_in_comment then
+            vim.b[buf].blink_in_comment = false
+          end
+        end,
+      })
     end,
     opts = {
       keymap = {
@@ -135,7 +191,7 @@ return {
         ["<C-n>"] = { "select_next", "fallback" },
         ["<C-p>"] = { "select_prev", "fallback" },
         -- Accept
-        ["<CR>"] = { "accept", "fallback" },
+        ["<CR>"] = { "select_and_accept", "fallback" },
         -- Tab passthrough
         ["<Tab>"] = { "fallback" },
         ["<S-Tab>"] = { "fallback" },
@@ -155,6 +211,10 @@ return {
         ghost_text = { enabled = false },
         list = {
           max_items = 50,
+          selection = {
+            preselect = true,   -- always highlight first item so <CR> can accept it
+            auto_insert = false, -- don't auto-insert text while navigating the list
+          },
         },
         trigger = {
           -- Don't re-show completion menu after accepting a completion

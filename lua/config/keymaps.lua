@@ -44,6 +44,8 @@ vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 vim.keymap.del("n", "<S-h>")
 vim.keymap.del("n", "<S-l>")
 
+vim.keymap.set("n", "<leader>R", "<cmd>restart<cr>", { desc = "Restart neovim" })
+
 local comment_key = "<M-/>"
 
 vim.keymap.set("n", "<leader>va", "ggVG", { desc = "Select all the text in the current file" })
@@ -68,9 +70,16 @@ vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recente
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
 
--- Tab in normal mode: focus any visible float, or open hover docs if none visible
--- First press opens hover docs, second press jumps into it (use q or <C-w>w to leave)
+-- Tab in normal mode: accept NES if pending, else focus float or open hover
 vim.keymap.set("n", "<Tab>", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  if vim.b[bufnr].nes_state then
+    local ok, nes = pcall(require, "copilot-lsp.nes")
+    if ok then
+      local _ = nes.walk_cursor_start_edit(bufnr) or (nes.apply_pending_nes(bufnr) and nes.walk_cursor_end_edit(bufnr))
+      return
+    end
+  end
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local cfg = vim.api.nvim_win_get_config(win)
     if cfg.relative ~= "" and cfg.focusable ~= false then
@@ -79,7 +88,7 @@ vim.keymap.set("n", "<Tab>", function()
     end
   end
   vim.lsp.buf.hover(hover_opts)
-end, { desc = "Hover / Focus Float" })
+end, { desc = "NES Accept / Hover / Focus Float" })
 
 -- Signature help for insert mode and normal mode (Option+i via Ghostty)
 vim.keymap.set({ "i", "n" }, "<M-i>", function()
@@ -97,7 +106,29 @@ end, { desc = "Signature Help" })
 -- terminal mode
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true })
 
-vim.keymap.set("i", "<Tab>", "<Tab>", { desc = "Indent" })
+-- Override LazyVim's <C-/> to open terminal on the right
+local function toggle_right_term()
+  Snacks.terminal.toggle(nil, {
+    win = {
+      position = "right",
+      width = 0.3,
+    },
+  })
+end
+vim.keymap.set({ "n", "t" }, "<C-->", toggle_right_term, { desc = "Toggle Terminal (right)" })
+vim.keymap.set({ "n", "t" }, "<C-_>", toggle_right_term, { desc = "Toggle Terminal (right)" })
+
+vim.keymap.set("i", "<Tab>", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  if vim.b[bufnr].nes_state then
+    local ok, nes = pcall(require, "copilot-lsp.nes")
+    if ok then
+      local _ = nes.walk_cursor_start_edit(bufnr) or (nes.apply_pending_nes(bufnr) and nes.walk_cursor_end_edit(bufnr))
+      return ""
+    end
+  end
+  return vim.api.nvim_replace_termcodes("<Tab>", true, true, true)
+end, { expr = true, desc = "NES Accept or Indent" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "Outdent" })
 
 -- map(mode, key, result, options)
@@ -350,7 +381,6 @@ vim.keymap.set("n", "<leader>gb", function()
   vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf, nowait = true })
   vim.keymap.set("n", "<Esc>", "<cmd>close<cr>", { buffer = buf, nowait = true })
 end, { desc = "Git Blame Line" })
-
 
 -- Snacks picker: grep within current file
 vim.keymap.set("n", "<leader>sl", function()
