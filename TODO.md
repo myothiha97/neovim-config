@@ -7,8 +7,9 @@ Feature - async ai agents completions without blocking the UI
 ~~its taking too much time to complete the task - which is not even complex~~
 ✅ Fixed: switched to Claude (claude-sonnet-4) as provider with proper model ID, timeout, and max_tokens
 
-## LSP autocompletion 
-fix - currently lsp display snippets at first , this can be convenience for some cases but sometime it can be annoying when you want to see the completions list of lsp suggestions.  so we need to enhance the blink cmp a little bit
+## LSP autocompletion
+~~fix - currently lsp display snippets at first , this can be convenience for some cases but sometime it can be annoying when you want to see the completions list of lsp suggestions.  so we need to enhance the blink cmp a little bit~~
+✅ Fixed: added `fuzzy.sorts = { "exact", "score", "sort_text" }` and disabled default snippet penalty via `sources.transform_items`. Exact prefix matches now surface first (VSCode-like behavior).
 
 ## Advance refactoring for large codebases
 currently if the codebase is too large, i found difficult to refactor some parts of the codebase, like extracting some code to a separate file

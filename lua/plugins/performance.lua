@@ -102,14 +102,20 @@ return {
       vim.api.nvim_create_autocmd("LspProgress", {
         callback = function(ev)
           local val = ev.data and ev.data.params and ev.data.params.value
-          if not val then return end
+          if not val then
+            return
+          end
           local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if not client or ignored[client.name] then return end
+          if not client or ignored[client.name] then
+            return
+          end
           if val.kind == "end" then
             vim.g.lsp_loading = ""
           else
             local msg = val.title or ""
-            if val.percentage then msg = msg .. " " .. val.percentage .. "%" end
+            if val.percentage then
+              msg = msg .. " " .. val.percentage .. "%"
+            end
             vim.g.lsp_loading = "⟳ " .. client.name .. (msg ~= "" and ": " .. msg or "")
           end
           vim.cmd.redrawstatus()
@@ -204,6 +210,13 @@ return {
       snippets = {
         score_offset = 0, -- Remove default -3 penalty on snippet items
       },
+      fuzzy = {
+        sorts = {
+          "exact", -- Exact prefix matches always on top (VSCode-like behavior)
+          "score",
+          "sort_text",
+        },
+      },
       completion = {
         accept = {
           auto_brackets = { enabled = false },
@@ -212,7 +225,7 @@ return {
         list = {
           max_items = 50,
           selection = {
-            preselect = true,   -- always highlight first item so <CR> can accept it
+            preselect = true, -- always highlight first item so <CR> can accept it
             auto_insert = false, -- don't auto-insert text while navigating the list
           },
         },
@@ -237,6 +250,8 @@ return {
       },
       sources = {
         default = { "lsp", "path", "snippets", "buffer" },
+        -- Disable default transform that penalizes snippet scores
+        transform_items = function(_, items) return items end,
         providers = {
           lsp = {
             score_offset = 100,
@@ -253,7 +268,7 @@ return {
             end,
           },
           snippets = {
-            score_offset = 1000,
+            score_offset = 100,
             async = true, -- Performance: async snippet processing
             min_keyword_length = 1,
             should_show_items = true,
