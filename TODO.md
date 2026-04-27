@@ -1,4 +1,4 @@
-# TODO 
+# TODO List 
 
 ## AI integration updates
 Feature -  custom popup for ai agents 
@@ -27,3 +27,6 @@ so we need to enhance the refactoring process by adding some features like :
 by splitting it into multiple files and folders.
 - might need to simplify some configurations by removing some unnecessary plugins and configurations that are not being used or not providing much value.
 - need to re-analyze the current plugins and prune the unnecessary ones and only leaves the most essential ones
+
+
+## To show save/unsave status in the status line for current file and also the custom pop-up menu for all the unsaved files
