@@ -52,7 +52,7 @@ Inline suggestions with 75ms debounce and auto-trigger enabled.
 
 ### NES (Native Edit Suggestions)
 
-Copilot-LSP powered inline edits with 500ms debounce.
+Copilot-LSP powered inline edits with 300ms debounce.
 
 | Key | Mode | Action |
 |-----|------|--------|
@@ -96,7 +96,7 @@ Cursor restores to original position on exit. Cleans up buffer-local `<CR>` keym
 
 | Server | Config |
 |--------|--------|
-| `vtsls` | TypeScript, 50ms debounce, 8GB heap, auto-imports from package.json disabled |
+| `vtsls` | TypeScript, 75ms debounce, 8GB heap, auto-imports from package.json disabled |
 | `emmet_ls` | HTML only (not TSX/JSX) |
 | `eslint` | Disabled |
 

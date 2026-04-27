@@ -469,3 +469,8 @@ vim.keymap.set("n", "gh", function()
     vim.notify("No function found at cursor", vim.log.levels.WARN)
   end
 end, { desc = "Go to Function End (Treesitter)" })
+
+-- Avante ai agents
+vim.keymap.set("n", "<leader>am", "<cmd>AvanteModels<cr>", {
+  desc = "avante: select models",
+})

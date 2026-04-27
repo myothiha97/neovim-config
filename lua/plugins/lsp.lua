@@ -1,4 +1,4 @@
-local debounce_text_change = 50
+local debounce_text_change = 75
 
 return {
   {
