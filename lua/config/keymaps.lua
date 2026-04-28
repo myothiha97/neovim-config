@@ -480,6 +480,89 @@ vim.keymap.set("n", "<leader>am", "<cmd>AvanteModels<cr>", {
   desc = "avante: select models",
 })
 
+-- Unsaved files popup: list all modified buffers with jump/save actions
+local function show_unsaved_files()
+  local modified = {}
+  for _, buf in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+    if buf.changed == 1 then
+      local name = buf.name ~= "" and vim.fn.fnamemodify(buf.name, ":~:.") or "[No Name]"
+      table.insert(modified, { bufnr = buf.bufnr, name = name })
+    end
+  end
+
+  if #modified == 0 then
+    vim.notify("All files saved", vim.log.levels.INFO)
+    return
+  end
+
+  local lines = {}
+  local max_len = 0
+  for i, f in ipairs(modified) do
+    local line = string.format("  %d  %s", i, f.name)
+    table.insert(lines, line)
+    max_len = math.max(max_len, #line)
+  end
+
+  -- Footer hint line
+  local hint = "  <CR> jump  s save  S save all  q close"
+  max_len = math.max(max_len, #hint)
+  table.insert(lines, "")
+  table.insert(lines, hint)
+
+  local width = math.max(max_len + 2, 44)
+  local height = #lines
+  local float_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(float_buf, 0, -1, false, lines)
+  vim.bo[float_buf].buftype = "nofile"
+  vim.bo[float_buf].modifiable = false
+  vim.bo[float_buf].bufhidden = "wipe"
+
+  local win = vim.api.nvim_open_win(float_buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2),
+    col = math.floor((vim.o.columns - width) / 2),
+    style = "minimal",
+    border = "rounded",
+    title = " ● Unsaved Files (" .. #modified .. ") ",
+    title_pos = "center",
+  })
+
+  -- Dim the hint line
+  vim.api.nvim_buf_add_highlight(float_buf, -1, "Comment", #modified + 1, 0, -1)
+
+  local map_opts = { buffer = float_buf, nowait = true }
+
+  vim.keymap.set("n", "<CR>", function()
+    local row = vim.api.nvim_win_get_cursor(win)[1]
+    if row > #modified then return end
+    local target = modified[row]
+    vim.api.nvim_win_close(win, true)
+    vim.api.nvim_set_current_buf(target.bufnr)
+  end, map_opts)
+
+  vim.keymap.set("n", "s", function()
+    local row = vim.api.nvim_win_get_cursor(win)[1]
+    if row > #modified then return end
+    local target = modified[row]
+    vim.api.nvim_buf_call(target.bufnr, function() vim.cmd("write") end)
+    vim.api.nvim_win_close(win, true)
+    show_unsaved_files()
+  end, map_opts)
+
+  vim.keymap.set("n", "S", function()
+    vim.api.nvim_win_close(win, true)
+    vim.cmd("wa")
+    vim.notify("All files saved", vim.log.levels.INFO)
+  end, map_opts)
+
+  vim.keymap.set("n", "q", function() vim.api.nvim_win_close(win, true) end, map_opts)
+  vim.keymap.set("n", "<Esc>", function() vim.api.nvim_win_close(win, true) end, map_opts)
+end
+
+vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" })
+
 vim.keymap.set("n", "<leader>ag", function()
   local model = "claude-haiku-4.5"
   local provider_name = "copilot"

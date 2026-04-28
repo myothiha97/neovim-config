@@ -121,6 +121,12 @@ return {
           vim.cmd.redrawstatus()
         end,
       })
+
+      vim.api.nvim_create_autocmd({ "BufModifiedSet", "BufWritePost" }, {
+        callback = function()
+          vim.cmd.redrawstatus()
+        end,
+      })
     end,
     opts = function(_, opts)
       opts.options = opts.options or {}
@@ -138,6 +144,12 @@ return {
         cond = function()
           return (vim.g.lsp_loading or "") ~= ""
         end,
+      })
+      opts.sections.lualine_b = opts.sections.lualine_b or {}
+      table.insert(opts.sections.lualine_b, {
+        function() return "● unsaved" end,
+        color = { fg = "#ff4444" },
+        cond = function() return vim.bo.modified end,
       })
       return opts
     end,
