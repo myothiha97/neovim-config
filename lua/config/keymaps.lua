@@ -44,7 +44,8 @@ vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 vim.keymap.del("n", "<S-h>")
 vim.keymap.del("n", "<S-l>")
 
-vim.keymap.set("n", "<leader>R", "<cmd>restart<cr>", { desc = "Restart neovim" })
+vim.keymap.set("n", "<leader>L", "<cmd>restart<cr>", { desc = "Restart Neovim" })
+vim.keymap.set("n", "<leader>R", "<cmd>Lazy log<cr>", { desc = "Lazy Log" })
 
 local comment_key = "<M-/>"
 
@@ -83,8 +84,12 @@ vim.keymap.set("n", "<Tab>", function()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local cfg = vim.api.nvim_win_get_config(win)
     if cfg.relative ~= "" and cfg.focusable ~= false then
-      vim.api.nvim_set_current_win(win)
-      return
+      local buf = vim.api.nvim_win_get_buf(win)
+      local ft = vim.bo[buf].filetype
+      if not ft:match("^snacks_picker") then
+        vim.api.nvim_set_current_win(win)
+        return
+      end
     end
   end
   vim.lsp.buf.hover(hover_opts)
@@ -474,3 +479,31 @@ end, { desc = "Go to Function End (Treesitter)" })
 vim.keymap.set("n", "<leader>am", "<cmd>AvanteModels<cr>", {
   desc = "avante: select models",
 })
+
+vim.keymap.set("n", "<leader>ag", function()
+  local model = "claude-haiku-4.5"
+  local provider_name = "copilot"
+  local Config = require("avante.config")
+  local Providers = require("avante.providers")
+
+  if provider_name ~= Config.provider then
+    Providers.refresh(provider_name)
+  end
+
+  Config.override({
+    providers = {
+      [provider_name] = vim.tbl_deep_extend(
+        "force",
+        Config.get_provider_config(provider_name),
+        { model = model }
+      ),
+    },
+  })
+
+  local provider_cfg = Providers[provider_name]
+  if provider_cfg then
+    provider_cfg.model = model
+  end
+
+  vim.notify("Avante → " .. provider_name .. "/" .. model, vim.log.levels.INFO)
+end, { desc = "avante: switch to Haiku 4.5" })

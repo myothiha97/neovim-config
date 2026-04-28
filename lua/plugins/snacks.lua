@@ -55,6 +55,11 @@ return {
           },
         },
         explorer = {
+          layout = {
+            layout = {
+              width = 0.2,
+            },
+          },
           win = {
             list = {
               keys = {
