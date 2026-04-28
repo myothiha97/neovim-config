@@ -60,6 +60,30 @@ return {
               width = 0.2,
             },
           },
+          actions = {
+            explorer_toggle_focus = function(picker)
+              local root = vim.uv.cwd()
+              if picker:cwd() ~= root then
+                local target = picker:cwd()
+                picker:set_cwd(root)
+                picker:find()
+                -- After items load, move cursor to the previously focused folder
+                vim.defer_fn(function()
+                  local items = picker.list.items
+                  for i, item in ipairs(items) do
+                    if item.file and item.file == target then
+                      picker.list:view(i)
+                      return
+                    end
+                  end
+                end, 50)
+                return
+              else
+                picker:set_cwd(picker:dir())
+                picker:find()
+              end
+            end,
+          },
           win = {
             list = {
               keys = {
@@ -67,6 +91,9 @@ return {
                 ["q"] = false, -- don't close on q
                 ["/"] = false, -- use vim search instead of explorer filter
                 ["?"] = false, -- use vim search instead of help
+                ["<C-f>"] = { "explorer_close_all", mode = { "n" } },
+                ["<C-c>"] = { "close", mode = { "n" } },
+                ["."] = { "explorer_toggle_focus", mode = { "n" }, desc = "Toggle focus folder" },
               },
             },
           },
