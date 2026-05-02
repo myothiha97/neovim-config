@@ -3,6 +3,7 @@ return {
     "kevinhwang91/nvim-ufo",
     dependencies = { "kevinhwang91/promise-async" },
     event = "BufReadPost",
+    enabled = true,
     init = function()
       -- Disable fold highlight - run after colorscheme loads
       vim.api.nvim_create_autocmd("ColorScheme", {
@@ -22,9 +23,27 @@ return {
       -- Needs investigation: za works manually but auto-fold breaks after manual unfold + reopen
     end,
     keys = {
-      { "zR", function() require("ufo").openAllFolds() end, desc = "Open all folds" },
-      { "zM", function() require("ufo").closeAllFolds() end, desc = "Close all folds" },
-      { "zK", function() require("ufo").peekFoldedLinesUnderCursor() end, desc = "Peek fold" },
+      {
+        "zR",
+        function()
+          require("ufo").openAllFolds()
+        end,
+        desc = "Open all folds",
+      },
+      {
+        "zM",
+        function()
+          require("ufo").closeAllFolds()
+        end,
+        desc = "Close all folds",
+      },
+      {
+        "zK",
+        function()
+          require("ufo").peekFoldedLinesUnderCursor()
+        end,
+        desc = "Peek fold",
+      },
     },
     opts = {
       provider_selector = function()

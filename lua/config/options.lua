@@ -7,6 +7,7 @@ vim.o.scrolloff = 12
 vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false
+vim.opt.listchars = { leadmultispace = "│ ", tab = "▸ ", trail = "·" }
 
 -- animations
 vim.g.snacks_animate = false
@@ -129,11 +130,24 @@ vim.opt.signcolumn = "yes" -- fixed signcolumn prevents layout shift
 -- vim.opt.lazyredraw = true -- DISABLED: causes async UI freezes with LSP
 vim.opt.synmaxcol = 300 -- don't syntax highlight super long lines
 
--- Fold settings for nvim-ufo (VSCode-style folding)
+-- Fold settings
 vim.o.foldcolumn = "1"
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
+-- Wire treesitter fold detection (built-in since Neovim 0.10, no plugin needed)
+-- nvim-ufo overrides this at buffer level, but this ensures folds are computed
+-- even before ufo attaches, and for filetypes ufo doesn't cover
+vim.o.foldmethod = "expr"
+vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+-- fold ui options
+-- vim.opt.fillchars = {
+--   foldopen  = "⌄",
+--   foldclose = "›",
+--   fold      = " ",
+--   foldsep   = " ",
+-- }
 
 -- Disable unused providers
 vim.g.loaded_python3_provider = 0

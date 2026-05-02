@@ -2,20 +2,24 @@ return {
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
     opts = {
-      select = {
-        enable = true,
-        lookahead = true,
-      },
+      select = { lookahead = true },
     },
-    keys = {
-      { "af", function() require("nvim-treesitter-textobjects.select").select_textobject("@function.outer") end, mode = { "x", "o" }, desc = "Around function" },
-      { "if", function() require("nvim-treesitter-textobjects.select").select_textobject("@function.inner") end, mode = { "x", "o" }, desc = "Inside function" },
-      { "ac", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.outer") end, mode = { "x", "o" }, desc = "Around class" },
-      { "ic", function() require("nvim-treesitter-textobjects.select").select_textobject("@class.inner") end, mode = { "x", "o" }, desc = "Inside class" },
-      { "aa", function() require("nvim-treesitter-textobjects.select").select_textobject("@parameter.outer") end, mode = { "x", "o" }, desc = "Around parameter" },
-      { "ia", function() require("nvim-treesitter-textobjects.select").select_textobject("@parameter.inner") end, mode = { "x", "o" }, desc = "Inside parameter" },
-      { "ax", function() require("nvim-treesitter-textobjects.select").select_textobject("@call.outer") end, mode = { "x", "o" }, desc = "Around call" },
-      { "ix", function() require("nvim-treesitter-textobjects.select").select_textobject("@call.inner") end, mode = { "x", "o" }, desc = "Inside call" },
-    },
+    init = function()
+      local function sel(query)
+        return function()
+          require("nvim-treesitter-textobjects.select").select_textobject(query, "textobjects")
+        end
+      end
+      vim.keymap.set({ "x", "o" }, "af", sel("@function.outer"), { desc = "Around function" })
+      vim.keymap.set({ "x", "o" }, "if", sel("@function.inner"), { desc = "Inside function" })
+      vim.keymap.set({ "x", "o" }, "ac", sel("@class.outer"), { desc = "Around class" })
+      vim.keymap.set({ "x", "o" }, "ic", sel("@class.inner"), { desc = "Inside class" })
+      vim.keymap.set({ "x", "o" }, "ai", sel("@class.outer"), { desc = "Around interface/object" })
+      vim.keymap.set({ "x", "o" }, "ii", sel("@class.inner"), { desc = "Inside interface/object" })
+      vim.keymap.set({ "x", "o" }, "aa", sel("@parameter.outer"), { desc = "Around parameter" })
+      vim.keymap.set({ "x", "o" }, "ia", sel("@parameter.inner"), { desc = "Inside parameter" })
+      vim.keymap.set({ "x", "o" }, "ax", sel("@call.outer"), { desc = "Around call" })
+      vim.keymap.set({ "x", "o" }, "ix", sel("@call.inner"), { desc = "Inside call" })
+    end,
   },
 }

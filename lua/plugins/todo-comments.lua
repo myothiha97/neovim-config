@@ -17,11 +17,18 @@ return {
     },
     keys = {
       {
-        "<leader>td",
+        "tt",
         function()
           require("todo-comments").jump_next()
         end,
         desc = "Next Todo",
+      },
+      {
+        "tp",
+        function()
+          require("todo-comments").jump_prev()
+        end,
+        desc = "Prev Todo",
       },
       -- Swap defaults: <leader>st = specific (TODO/HACK/WARN), <leader>sT = all
       { "<leader>st", false },

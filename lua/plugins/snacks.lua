@@ -14,9 +14,9 @@ return {
     dashboard = { enabled = true },
     scroll = { enabled = false },
     animate = { enabled = false },
-    words = { enabled = false },   -- CursorMoved buffer-wide search on every j/k
-    indent = { enabled = false },  -- per-scroll indent guide rendering
-    scope = { enabled = false },   -- treesitter scope tracking on every cursor move
+    words = { enabled = false }, -- CursorMoved buffer-wide search on every j/k
+    indent = { enabled = false }, -- per-scroll indent guide rendering
+    scope = { enabled = false }, -- treesitter scope tracking on every cursor move
     dim = { enabled = false },
     picker = {
       sources = {
