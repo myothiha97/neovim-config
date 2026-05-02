@@ -213,15 +213,6 @@ return {
         if filetype:match("^Avante") or filetype == "AvanteInput" or buftype == "prompt" then
           return false
         end
-        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-        local ok, captures = pcall(vim.treesitter.get_captures_at_pos, 0, row - 1, col)
-        if ok then
-          for _, c in ipairs(captures) do
-            if c.capture:match("^comment") then
-              return false
-            end
-          end
-        end
         return true
       end,
     },

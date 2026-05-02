@@ -135,11 +135,11 @@ vim.o.foldcolumn = "1"
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
--- Wire treesitter fold detection (built-in since Neovim 0.10, no plugin needed)
--- nvim-ufo overrides this at buffer level, but this ensures folds are computed
--- even before ufo attaches, and for filetypes ufo doesn't cover
-vim.o.foldmethod = "expr"
-vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+-- foldmethod intentionally left as default ("manual") here.
+-- nvim-ufo sets it to "manual" per-buffer after async attachment and runs its
+-- own treesitter provider off the main thread. Setting foldmethod=expr globally
+-- would trigger a synchronous per-line treesitter scan on every buffer open,
+-- blocking render before ufo ever gets a chance to attach.
 
 -- fold ui options
 -- vim.opt.fillchars = {
