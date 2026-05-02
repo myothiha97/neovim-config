@@ -12,14 +12,11 @@ return {
   opts = {
     explorer = { enabled = true },
     dashboard = { enabled = true },
-    scroll = {
-      enabled = false,
-      animate = {
-        duration = { step = 10, total = 80 },
-        easing = "linear",
-      },
-      spamming = 10, -- near-instant when holding j/k repeatedly
-    },
+    scroll = { enabled = false },
+    animate = { enabled = false },
+    words = { enabled = false },   -- CursorMoved buffer-wide search on every j/k
+    indent = { enabled = false },  -- per-scroll indent guide rendering
+    scope = { enabled = false },   -- treesitter scope tracking on every cursor move
     dim = { enabled = false },
     picker = {
       sources = {
@@ -112,6 +109,31 @@ return {
     -- Disable LazyVim default so diffview.nvim owns <leader>gd
     { "<leader>gd", false },
     { "<leader>gD", false },
+    {
+      "<leader>xd",
+      function()
+        Snacks.picker.diagnostics({
+          filter = { buf = true },
+          layout = {
+            preview = true,
+            layout = { width = 0.85, height = 0.75 },
+          },
+        })
+      end,
+      desc = "Diagnostics (current file)",
+    },
+    {
+      "<leader>xD",
+      function()
+        Snacks.picker.diagnostics({
+          layout = {
+            preview = true,
+            layout = { width = 0.85, height = 0.75 },
+          },
+        })
+      end,
+      desc = "Diagnostics (workspace)",
+    },
     {
       "<leader>ss",
       function()

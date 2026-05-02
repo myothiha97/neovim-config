@@ -4,25 +4,17 @@ return {
     enabled = true,
     cmd = "Copilot",
     event = "InsertEnter",
-    dependencies = {
-      {
-        "copilotlsp-nvim/copilot-lsp",
-        init = function()
-          vim.g.copilot_nes_debounce = 300
-        end,
-      },
-    },
     opts = {
       panel = { enabled = false },
       suggestion = {
         enabled = true,
         auto_trigger = true,
-        hide_during_completion = false,
+        hide_during_completion = true,
         debounce = 75,
         keymap = { accept = false },
       },
       nes = {
-        enabled = true,
+        enabled = false,
         auto_trigger = true,
         keymap = {
           accept_and_goto = "<Tab>",
@@ -89,18 +81,6 @@ return {
         local level = vim.g.copilot_enabled and vim.log.levels.INFO or vim.log.levels.WARN
         vim.notify("Copilot Autocomplete: " .. status, level, { title = "Copilot" })
       end, { desc = "Copilot: Toggle Suggestions" })
-
-      -- Accept NES from insert mode: apply, jump to end, exit to normal mode
-      map("i", "<Tab>", function()
-        if vim.b.nes_state then
-          vim.cmd("stopinsert")
-          local nes = require("copilot-lsp.nes")
-          nes.apply_pending_nes()
-          nes.walk_cursor_end_edit()
-        else
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
-        end
-      end, { desc = "NES: Accept and exit insert mode" })
 
       -- Accept word / line
       map("i", "<M-w>", function()

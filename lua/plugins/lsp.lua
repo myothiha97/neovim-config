@@ -1,4 +1,4 @@
-local debounce_text_change = 75
+local debounce_text_change = 100
 
 return {
   {
@@ -83,6 +83,17 @@ return {
     init = function()
       -- Disable LSP document color highlights (tailwindcss paints hex color swatches)
       vim.lsp.handlers["textDocument/documentColor"] = function() end
+
+      -- Disable semantic tokens globally: stops LSP from computing/sending token payloads.
+      -- Highlighting falls back to treesitter. All other LSP features unaffected.
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client then
+            client.server_capabilities.semanticTokensProvider = nil
+          end
+        end,
+      })
 
       -- Custom gd to filter node_modules (only when LSP is attached)
       vim.api.nvim_create_autocmd("LspAttach", {

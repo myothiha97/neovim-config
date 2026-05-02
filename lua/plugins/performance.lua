@@ -84,44 +84,6 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     init = function()
-      vim.g.lsp_loading = ""
-
-      -- Ignore clients that never send a "end" progress event
-      local ignored = { copilot = true, ["copilot-lsp"] = true }
-
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          if client and not ignored[client.name] then
-            vim.g.lsp_loading = "⟳ " .. client.name
-            vim.cmd.redrawstatus()
-          end
-        end,
-      })
-
-      vim.api.nvim_create_autocmd("LspProgress", {
-        callback = function(ev)
-          local val = ev.data and ev.data.params and ev.data.params.value
-          if not val then
-            return
-          end
-          local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if not client or ignored[client.name] then
-            return
-          end
-          if val.kind == "end" then
-            vim.g.lsp_loading = ""
-          else
-            local msg = val.title or ""
-            if val.percentage then
-              msg = msg .. " " .. val.percentage .. "%"
-            end
-            vim.g.lsp_loading = "⟳ " .. client.name .. (msg ~= "" and ": " .. msg or "")
-          end
-          vim.cmd.redrawstatus()
-        end,
-      })
-
       vim.api.nvim_create_autocmd({ "BufModifiedSet", "BufWritePost" }, {
         callback = function()
           vim.cmd.redrawstatus()
@@ -136,15 +98,6 @@ return {
         winbar = 1000,
       }
       opts.sections = opts.sections or {}
-      opts.sections.lualine_c = opts.sections.lualine_c or {}
-      table.insert(opts.sections.lualine_c, {
-        function()
-          return vim.g.lsp_loading or ""
-        end,
-        cond = function()
-          return (vim.g.lsp_loading or "") ~= ""
-        end,
-      })
       opts.sections.lualine_b = opts.sections.lualine_b or {}
       table.insert(opts.sections.lualine_b, {
         function() return "● unsaved" end,
@@ -164,43 +117,6 @@ return {
   {
     "saghen/blink.cmp",
     -- dependencies = { "fang2hou/blink-copilot" }, -- disabled: copilot-lsp caused LSP slowdown
-    init = function()
-      local function update_comment_state()
-        local buf = vim.api.nvim_get_current_buf()
-        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-        row = row - 1
-        col = math.max(col - 1, 0)
-
-        local in_comment = false
-        local ok, captures = pcall(vim.treesitter.get_captures_at_pos, buf, row, col)
-        if ok and captures then
-          for _, c in ipairs(captures) do
-            if c.capture:match("^comment") then
-              in_comment = true
-              break
-            end
-          end
-        end
-
-        vim.b[buf].blink_in_comment = in_comment
-      end
-
-      -- CursorHoldI fires only after updatetime (200ms) of idle in insert mode
-      -- Zero treesitter queries during active typing
-      vim.api.nvim_create_autocmd("CursorHoldI", { callback = update_comment_state })
-      -- Reset state immediately on InsertEnter so initial position is correct
-      vim.api.nvim_create_autocmd("InsertEnter", { callback = update_comment_state })
-      -- Optimistically re-enable when cursor moves (no treesitter query — just a flag reset)
-      -- Prevents blink staying disabled after moving from a comment to code without pausing
-      vim.api.nvim_create_autocmd("CursorMovedI", {
-        callback = function()
-          local buf = vim.api.nvim_get_current_buf()
-          if vim.b[buf].blink_in_comment then
-            vim.b[buf].blink_in_comment = false
-          end
-        end,
-      })
-    end,
     opts = {
       keymap = {
         -- Disable preset to prevent Tab/C-i conflicts
@@ -281,23 +197,30 @@ return {
           },
           snippets = {
             score_offset = 100,
-            async = true, -- Performance: async snippet processing
+            async = true,
             min_keyword_length = 1,
             should_show_items = true,
           },
+          buffer = {
+            min_keyword_length = 3,
+            max_items = 10,
+          },
         },
       },
-      -- Performance: Read cached comment state instead of querying treesitter
       enabled = function()
         local buftype = vim.bo.buftype
         local filetype = vim.bo.filetype
-        -- Disable in Avante/prompt buffers
         if filetype:match("^Avante") or filetype == "AvanteInput" or buftype == "prompt" then
           return false
         end
-        -- Disable in comments (cached value from CursorMovedI)
-        if vim.b.blink_in_comment then
-          return false
+        local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+        local ok, captures = pcall(vim.treesitter.get_captures_at_pos, 0, row - 1, col)
+        if ok then
+          for _, c in ipairs(captures) do
+            if c.capture:match("^comment") then
+              return false
+            end
+          end
         end
         return true
       end,

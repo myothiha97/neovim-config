@@ -3,15 +3,21 @@
 -- Add any additional options here
 
 vim.o.number = true
-vim.o.scrolloff = 15
+vim.o.scrolloff = 12
 vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false
 
+-- animations
+vim.g.snacks_animate = false
+
+-- enabled mouse
+vim.o.mouse = "a"
+vim.opt.sidescroll = 1
+
 -- horizontal scroll setting
 vim.o.wrap = false
-vim.o.sidescroll = 0
-vim.o.sidescrolloff = 15
+vim.o.sidescrolloff = 5
 
 -- Ghostty terminal optimizations
 local is_ghostty = vim.env.TERM_PROGRAM == "ghostty" or vim.env.GHOSTTY_RESOURCES_DIR ~= nil

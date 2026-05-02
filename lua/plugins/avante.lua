@@ -2,6 +2,7 @@ return {
   "yetone/avante.nvim",
   event = "VeryLazy",
   build = "make",
+  enabled = false,
   init = function()
     -- Panels hidden by default, toggled with keymaps
     vim.g.avante_show_selected_files = false

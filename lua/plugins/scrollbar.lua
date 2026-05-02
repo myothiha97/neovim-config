@@ -1,6 +1,7 @@
 return {
   {
     "petertriho/nvim-scrollbar",
+    enabled = false,
     event = "BufReadPost",
     opts = {
       show_in_active_only = true,

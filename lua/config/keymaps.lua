@@ -40,6 +40,14 @@ end, { desc = "Hover Documentation" })
 -- Save file (Ctrl+S, works in normal and insert mode)
 vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 
+-- Mouse/trackpad: scroll viewport without moving cursor (VSCode/WebStorm behavior)
+-- <C-e> scrolls viewport down, <C-y> scrolls viewport up — cursor stays in place
+-- Adjust the multiplier (3) if trackpad feels too slow or too fast
+vim.keymap.set({ "n", "v" }, "<ScrollWheelDown>", "3<C-e>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>",   "3<C-y>", { noremap = true })
+vim.keymap.set("i",           "<ScrollWheelDown>", "<C-o>3<C-e>", { noremap = true })
+vim.keymap.set("i",           "<ScrollWheelUp>",   "<C-o>3<C-y>", { noremap = true })
+
 -- Disable buffer navigation with Shift+H/L (LazyVim defaults)
 vim.keymap.del("n", "<S-h>")
 vim.keymap.del("n", "<S-l>")
@@ -65,11 +73,10 @@ vim.keymap.set("n", comment_key, "<cmd>normal gcc<CR>", { desc = "Toggle comment
 -- Visual mode: Comment the highlighted selection
 vim.keymap.set("v", comment_key, "<Esc>:normal gvgc<CR>", { desc = "Toggle comment block" })
 
--- recenter the page when hit ctrl-d/u/f/b
 vim.keymap.set({ "n", "v" }, "<C-d>", "<C-d>zz", { desc = "Scroll Down and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recenter" })
-vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down by entire page and Recenter" })
-vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up by entire page and Recenter" })
+vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down Page and Recenter" })
+vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up Page and Recenter" })
 
 -- Tab in normal mode: accept NES if pending, else focus float or open hover
 vim.keymap.set("n", "<Tab>", function()

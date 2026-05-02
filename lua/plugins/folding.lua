@@ -58,6 +58,7 @@ return {
 
   {
     "luukvbaal/statuscol.nvim",
+    enabled = false,
     event = "BufReadPost",
     init = function()
       -- Toggle fold column with <leader>uo
