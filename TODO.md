@@ -41,3 +41,18 @@ by splitting it into multiple files and folders.
 
 ## Complete Avante AI agents integrations
 - currently, the avante.nvim ai agents features are barely workings and we need to complete the integration to be like a cursor ai agents that show the generated codes with a diff view and accepting the suggestions with keymaps
+
+## Copilot lua issues 
+- sometime the suggestions not appearing  after typing sometime, this issues is randomly occuring 
+- currently, only ghost-highlight feature is working well , and NES features is not yet fully stable. 
+- In future combine both ghost-highlight and NES to be a cursor tab like feature in cursor ide or zed editor, instead of being individual 
+
+## Blink cmp bugs 
+- sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
+
+## Prune or remove unnecessary plugins 
+- currently there are still too many plugins install in the system, which dose not have a lot of use
+- the target plugins quantity -> around 15-20 ( currently is 31  )  
+
+## Performance optimization for big projects 
+- Currently there are still some bottle neck with nvim runtime performance and sometime UI is lagging when scrolling in a huge files.
