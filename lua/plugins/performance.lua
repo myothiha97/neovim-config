@@ -100,9 +100,45 @@ return {
       opts.sections = opts.sections or {}
       opts.sections.lualine_b = opts.sections.lualine_b or {}
       table.insert(opts.sections.lualine_b, {
-        function() return "● unsaved" end,
+        function()
+          return "● unsaved"
+        end,
         color = { fg = "#ff4444" },
-        cond = function() return vim.bo.modified end,
+        cond = function()
+          return vim.bo.modified
+        end,
+      })
+
+      -- Copilot LSP status indicator (only shown after copilot has loaded)
+      opts.sections.lualine_x = opts.sections.lualine_x or {}
+      table.insert(opts.sections.lualine_x, 1, {
+        function()
+          local ok, api = pcall(require, "copilot.api")
+          if not ok then
+            return ""
+          end
+          local s = api.status.data.status
+          local icons = { Normal = " ", InProgress = "󰔟", Warning = "⚠", Error = "✗" }
+          return (icons[s] or "?") .. " Copilot"
+        end,
+        color = function()
+          local ok, api = pcall(require, "copilot.api")
+          if not ok then
+            return { fg = "#888888" }
+          end
+          local s = api.status.data.status
+          if s == "Normal" then
+            return { fg = "#6cc644" }
+          elseif s == "Warning" then
+            return { fg = "#f0c040" }
+          elseif s == "Error" then
+            return { fg = "#ff6b6b" }
+          end
+          return { fg = "#888888" }
+        end,
+        cond = function()
+          return package.loaded["copilot.api"] ~= nil
+        end,
       })
       return opts
     end,
@@ -131,7 +167,8 @@ return {
         ["<S-Tab>"] = { "fallback" },
         -- Toggle/close
         ["<C-i>"] = { "show", "hide" },
-        ["<C-e>"] = { "cancel", "fallback" },
+
+        ["<ESC>"] = { "cancel", "fallback" },
         -- Toggle documentation
         ["<C-h>"] = { "show_documentation", "hide_documentation" },
       },
@@ -179,7 +216,9 @@ return {
       sources = {
         default = { "lsp", "path", "snippets", "buffer" },
         -- Disable default transform that penalizes snippet scores
-        transform_items = function(_, items) return items end,
+        transform_items = function(_, items)
+          return items
+        end,
         providers = {
           lsp = {
             score_offset = 100,

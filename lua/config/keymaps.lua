@@ -37,6 +37,22 @@ vim.keymap.set("n", "K", function()
   vim.lsp.buf.hover(hover_opts)
 end, { desc = "Hover Documentation" })
 
+vim.keymap.set("n", "<Esc>", function()
+  local closed_float = false
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    -- Check if the window is a floating window
+    if vim.api.nvim_win_get_config(win).relative ~= "" then
+      vim.api.nvim_win_close(win, false)
+      closed_float = true
+    end
+  end
+
+  -- If no floating window was closed, perform the default Esc action (clear search)
+  if not closed_float then
+    vim.cmd("noh")
+  end
+end, { desc = "Dismiss hover docs / Clear highlights" })
+
 -- Save file (Ctrl+S, works in normal and insert mode)
 vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 
@@ -44,9 +60,9 @@ vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 -- <C-e> scrolls viewport down, <C-y> scrolls viewport up — cursor stays in place
 -- Adjust the multiplier (3) if trackpad feels too slow or too fast
 vim.keymap.set({ "n", "v" }, "<ScrollWheelDown>", "3<C-e>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>",   "3<C-y>", { noremap = true })
-vim.keymap.set("i",           "<ScrollWheelDown>", "<C-o>3<C-e>", { noremap = true })
-vim.keymap.set("i",           "<ScrollWheelUp>",   "<C-o>3<C-y>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>", "3<C-y>", { noremap = true })
+vim.keymap.set("i", "<ScrollWheelDown>", "<C-o>3<C-e>", { noremap = true })
+vim.keymap.set("i", "<ScrollWheelUp>", "<C-o>3<C-y>", { noremap = true })
 
 -- Disable buffer navigation with Shift+H/L (LazyVim defaults)
 vim.keymap.del("n", "<S-h>")
@@ -543,7 +559,9 @@ local function show_unsaved_files()
 
   vim.keymap.set("n", "<CR>", function()
     local row = vim.api.nvim_win_get_cursor(win)[1]
-    if row > #modified then return end
+    if row > #modified then
+      return
+    end
     local target = modified[row]
     vim.api.nvim_win_close(win, true)
     vim.api.nvim_set_current_buf(target.bufnr)
@@ -551,9 +569,13 @@ local function show_unsaved_files()
 
   vim.keymap.set("n", "s", function()
     local row = vim.api.nvim_win_get_cursor(win)[1]
-    if row > #modified then return end
+    if row > #modified then
+      return
+    end
     local target = modified[row]
-    vim.api.nvim_buf_call(target.bufnr, function() vim.cmd("write") end)
+    vim.api.nvim_buf_call(target.bufnr, function()
+      vim.cmd("write")
+    end)
     vim.api.nvim_win_close(win, true)
     show_unsaved_files()
   end, map_opts)
@@ -564,8 +586,12 @@ local function show_unsaved_files()
     vim.notify("All files saved", vim.log.levels.INFO)
   end, map_opts)
 
-  vim.keymap.set("n", "q", function() vim.api.nvim_win_close(win, true) end, map_opts)
-  vim.keymap.set("n", "<Esc>", function() vim.api.nvim_win_close(win, true) end, map_opts)
+  vim.keymap.set("n", "q", function()
+    vim.api.nvim_win_close(win, true)
+  end, map_opts)
+  vim.keymap.set("n", "<Esc>", function()
+    vim.api.nvim_win_close(win, true)
+  end, map_opts)
 end
 
 vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" })
@@ -582,11 +608,7 @@ vim.keymap.set("n", "<leader>ag", function()
 
   Config.override({
     providers = {
-      [provider_name] = vim.tbl_deep_extend(
-        "force",
-        Config.get_provider_config(provider_name),
-        { model = model }
-      ),
+      [provider_name] = vim.tbl_deep_extend("force", Config.get_provider_config(provider_name), { model = model }),
     },
   })
 

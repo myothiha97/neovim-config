@@ -29,6 +29,32 @@ return {
     config = function(_, opts)
       require("copilot").setup(opts)
 
+      -- Fidget notifications for copilot LSP connect / disconnect
+      local copilot_ready_shown = false
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          if copilot_ready_shown then return end
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client and client.name == "copilot" then
+            copilot_ready_shown = true
+            vim.schedule(function()
+              local ok, fidget = pcall(require, "fidget")
+              if ok then fidget.notify(" Copilot ready", vim.log.levels.INFO, { ttl = 3 }) end
+            end)
+          end
+        end,
+      })
+      vim.api.nvim_create_autocmd("LspDetach", {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client and client.name == "copilot" then
+            copilot_ready_shown = false
+            local ok, fidget = pcall(require, "fidget")
+            if ok then fidget.notify("⚠ Copilot disconnected", vim.log.levels.WARN, { ttl = 4 }) end
+          end
+        end,
+      })
+
       -- Match neocodeium's ghost text style (#808080 medium gray)
       vim.api.nvim_set_hl(0, "CopilotSuggestion", { fg = "#808080", ctermfg = 244 })
       vim.api.nvim_create_autocmd("ColorScheme", {
@@ -63,14 +89,13 @@ return {
       map("i", "<C-;>", accept_or("<C-;>"), { desc = "Copilot: Accept" })
       map("i", "<C-'>", accept_or("<C-'>"), { desc = "Copilot: Accept" })
 
-      -- Esc: dismiss suggestion if visible, otherwise normal Esc
+      -- Esc: always exit insert mode; if a suggestion is visible, dismiss it first
       map("i", "<Esc>", function()
         if suggestion.is_visible() then
           suggestion.dismiss()
-        else
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
         end
-      end, { desc = "Copilot: Dismiss or Esc" })
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+      end, { desc = "Copilot: Dismiss and Exit Insert" })
 
       -- Toggle auto-trigger
       vim.g.copilot_enabled = true
@@ -97,6 +122,10 @@ return {
       map("i", "<M-[>", function()
         suggestion.prev()
       end, { desc = "Copilot: Prev Suggestion" })
+
+      -- Check / recover copilot status from normal mode
+      map("n", "<leader>aS", "<cmd>Copilot status<cr>", { desc = "Copilot: Status" })
+      map("n", "<leader>aR", "<cmd>Copilot restart<cr>", { desc = "Copilot: Restart" })
     end,
   },
 }
