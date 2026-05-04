@@ -40,14 +40,19 @@ end, { desc = "Hover Documentation" })
 vim.keymap.set("n", "<Esc>", function()
   local closed_float = false
   for _, win in ipairs(vim.api.nvim_list_wins()) do
-    -- Check if the window is a floating window
     if vim.api.nvim_win_get_config(win).relative ~= "" then
+      local buf = vim.api.nvim_win_get_buf(win)
+      local ft = vim.bo[buf].filetype
+      -- Skip snacks picker/explorer windows — they manage their own lifetime
+      if ft:match("^snacks_picker") then
+        goto continue
+      end
       vim.api.nvim_win_close(win, false)
       closed_float = true
     end
+    ::continue::
   end
 
-  -- If no floating window was closed, perform the default Esc action (clear search)
   if not closed_float then
     vim.cmd("noh")
   end

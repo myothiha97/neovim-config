@@ -9,7 +9,9 @@ return {
       suggestion = {
         enabled = true,
         auto_trigger = true,
-        hide_during_completion = true,
+        -- Built-in guard checks vim.fn.pumvisible() which is always 0 with blink.cmp
+        -- (custom popup, not pumenu). Coexistence is handled via BlinkCmp* autocmds below.
+        hide_during_completion = false,
         debounce = 75,
         keymap = { accept = false },
       },
@@ -33,13 +35,17 @@ return {
       local copilot_ready_shown = false
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
-          if copilot_ready_shown then return end
+          if copilot_ready_shown then
+            return
+          end
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "copilot" then
             copilot_ready_shown = true
             vim.schedule(function()
               local ok, fidget = pcall(require, "fidget")
-              if ok then fidget.notify(" Copilot ready", vim.log.levels.INFO, { ttl = 3 }) end
+              if ok then
+                fidget.notify(" Copilot ready", vim.log.levels.INFO, { ttl = 3 })
+              end
             end)
           end
         end,
@@ -50,7 +56,9 @@ return {
           if client and client.name == "copilot" then
             copilot_ready_shown = false
             local ok, fidget = pcall(require, "fidget")
-            if ok then fidget.notify("⚠ Copilot disconnected", vim.log.levels.WARN, { ttl = 4 }) end
+            if ok then
+              fidget.notify("⚠ Copilot disconnected", vim.log.levels.WARN, { ttl = 4 })
+            end
           end
         end,
       })
@@ -74,6 +82,31 @@ return {
           end
         end,
       })
+
+      -- blink.cmp coexistence: dismiss copilot ghost text while menu is open,
+      -- re-request a fresh suggestion when it closes (the built-in
+      -- hide_during_completion guard relies on pumvisible() and never fires for blink).
+      -- vim.api.nvim_create_autocmd("User", {
+      --   pattern = "BlinkCmpMenuOpen",
+      --   callback = function()
+      --     if suggestion.is_visible() then
+      --       suggestion.dismiss()
+      --     end
+      --   end,
+      -- })
+      -- vim.api.nvim_create_autocmd("User", {
+      --   pattern = "BlinkCmpMenuClose",
+      --   callback = function()
+      --     if vim.g.copilot_enabled == false then
+      --       return
+      --     end
+      --     vim.schedule(function()
+      --       if vim.api.nvim_get_mode().mode:match("^[iR]") and not suggestion.is_visible() then
+      --         suggestion.next()
+      --       end
+      --     end)
+      --   end,
+      -- })
 
       -- Accept ghost text; fall through to normal behavior if not visible
       local function accept_or(key)

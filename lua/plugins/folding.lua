@@ -44,6 +44,84 @@ return {
         end,
         desc = "Peek fold",
       },
+      {
+        "zv",
+        function()
+          local bufnr = vim.api.nvim_get_current_buf()
+          local lang_queries = {
+            typescript = "[(function_declaration) (function_expression) (arrow_function) (method_definition)] @func",
+            tsx = "[(function_declaration) (function_expression) (arrow_function) (method_definition)] @func",
+            javascript = "[(function_declaration) (function_expression) (arrow_function) (method_definition)] @func",
+            jsx = "[(function_declaration) (function_expression) (arrow_function) (method_definition)] @func",
+            lua = "[(function_declaration) (local_function)] @func",
+            python = "(function_definition) @func",
+            go = "[(function_declaration) (method_declaration)] @func",
+            rust = "(function_item) @func",
+          }
+
+          local func_lines = {}
+          local ok_p, parser = pcall(vim.treesitter.get_parser, bufnr)
+          if ok_p and parser then
+            local lang = parser:lang()
+            local query_str = lang_queries[lang]
+            if query_str then
+              local ok_q, query = pcall(vim.treesitter.query.parse, lang, query_str)
+              if ok_q and query then
+                local tree = parser:parse()[1]
+                if tree then
+                  local root = tree:root()
+                  for _, node in query:iter_captures(root, bufnr, 0, -1) do
+                    local lnum = node:start() + 1
+                    if vim.fn.foldlevel(lnum) > 0 then
+                      table.insert(func_lines, lnum)
+                    end
+                  end
+                end
+              end
+            end
+          end
+
+          -- Fallback: top-level folds when treesitter has no query for this language
+          if #func_lines == 0 then
+            local line_count = vim.api.nvim_buf_line_count(bufnr)
+            for lnum = 1, line_count do
+              if vim.fn.foldlevel(lnum) > 0 and (lnum == 1 or vim.fn.foldlevel(lnum - 1) == 0) then
+                table.insert(func_lines, lnum)
+              end
+            end
+          end
+
+          if #func_lines == 0 then
+            return
+          end
+
+          local any_open = false
+          for _, lnum in ipairs(func_lines) do
+            if vim.fn.foldclosed(lnum) == -1 then
+              any_open = true
+              break
+            end
+          end
+
+          local saved_cursor = vim.api.nvim_win_get_cursor(0)
+          for _, lnum in ipairs(func_lines) do
+            if vim.fn.foldlevel(lnum) > 0 then
+              vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+              if any_open then
+                if vim.fn.foldclosed(lnum) == -1 then
+                  pcall(vim.cmd, "normal! zc")
+                end
+              else
+                if vim.fn.foldclosed(lnum) ~= -1 then
+                  pcall(vim.cmd, "normal! zo")
+                end
+              end
+            end
+          end
+          vim.api.nvim_win_set_cursor(0, saved_cursor)
+        end,
+        desc = "Toggle all function folds",
+      },
     },
     opts = {
       provider_selector = function()

@@ -2,9 +2,21 @@ return {
   "yetone/avante.nvim",
   event = "VeryLazy",
   build = "make",
-  enabled = false,
+  enabled = true,
+  cmd = {
+    "AvanteAsk",
+    "AvanteChat",
+    "AvanteClear",
+    "AvanteEdit",
+    "AvanteFocus",
+    "AvanteHistory",
+    "AvanteModels",
+    "AvanteRefresh",
+    "AvanteStop",
+    "AvanteSwitchProvider",
+    "AvanteToggle",
+  },
   init = function()
-    -- Panels hidden by default, toggled with keymaps
     vim.g.avante_show_selected_files = false
     vim.g.avante_show_todos = false
 
@@ -18,9 +30,11 @@ return {
         patched = true
 
         vim.schedule(function()
-          local Sidebar = require("avante.sidebar")
+          local ok, Sidebar = pcall(require, "avante.sidebar")
+          if not ok then
+            return
+          end
 
-          -- Patch height to return 0 when hidden (so chat panel fills the space)
           local orig_sf_height = Sidebar.get_selected_files_container_height
           Sidebar.get_selected_files_container_height = function(self)
             if not vim.g.avante_show_selected_files then
@@ -37,7 +51,6 @@ return {
             return orig_todos_height(self)
           end
 
-          -- Patch creation to skip mounting when hidden
           local orig_create_sf = Sidebar.create_selected_files_container
           Sidebar.create_selected_files_container = function(self)
             if not vim.g.avante_show_selected_files then
@@ -66,8 +79,8 @@ return {
             return orig_create_todos(self)
           end
 
-          -- Apply to current sidebar
-          local sidebar = require("avante").get()
+          local avante = require("avante")
+          local sidebar = avante and avante.get and avante.get()
           if sidebar then
             if sidebar.containers.selected_files then
               sidebar.containers.selected_files:unmount()
@@ -88,21 +101,62 @@ return {
   opts = {
     provider = "copilot",
     mode = "agentic",
-    auto_suggestions_provider = nil, -- don't let avante touch copilot.lua suggestions
+    -- Prevent avante from using copilot for per-keystroke suggestions
+    auto_suggestions_provider = nil,
+    behaviour = {
+      -- We define all keymaps manually in `keys` below
+      auto_set_keymaps = false,
+    },
+    selection = {
+      hint_display = "none",
+    },
     windows = {
       input = {
         height = 20,
       },
     },
-    providers = {
-      copilot = {
-        model = "claude-haiku-4.5",
+    -- Model is persisted to ~/.local/state/nvim/avante/config.json automatically.
+    -- Run :AvanteModels to select a model — never configure it here (causes model_not_supported).
+    mappings = {
+      diff = {
+        ours = "co",
+        theirs = "ct",
+        all_theirs = "ca",
+        both = "cb",
+        cursor = "cc",
+        next = "]x",
+        prev = "[x",
+      },
+      sidebar = {
+        apply_all = "A",
+        apply_cursor = "a",
+        switch_windows = "<Tab>",
+        reverse_switch_windows = "<S-Tab>",
+      },
+      submit = {
+        normal = "<CR>",
+        insert = "<C-s>",
+      },
+      cancel = {
+        normal = { "<C-c>", "q" },
+        insert = "<C-c>",
       },
     },
   },
   keys = {
+    { "<leader>aa", "<cmd>AvanteAsk<cr>", desc = "Avante: Ask AI" },
+    { "<leader>aa", "<cmd>AvanteAsk<cr>", mode = "v", desc = "Avante: Ask AI (selection)" },
+    { "<leader>ac", "<cmd>AvanteChat<cr>", desc = "Avante: Chat" },
+    { "<leader>ae", "<cmd>AvanteEdit<cr>", mode = "v", desc = "Avante: Edit selection" },
+    { "<leader>at", "<cmd>AvanteToggle<cr>", desc = "Avante: Toggle sidebar" },
+    { "<leader>ar", "<cmd>AvanteRefresh<cr>", desc = "Avante: Refresh" },
+    { "<leader>aX", "<cmd>AvanteStop<cr>", desc = "Avante: Stop" },
+    { "<leader>am", "<cmd>AvanteModels<cr>", desc = "Avante: Select model" },
+    { "<leader>ap", "<cmd>AvanteSwitchProvider<cr>", desc = "Avante: Switch provider" },
+    { "<leader>ah", "<cmd>AvanteHistory<cr>", desc = "Avante: History" },
+    -- Sub-panel visibility toggles (hidden by default, use these to reveal)
     {
-      "<leader>ae",
+      "<leader>aF",
       function()
         vim.g.avante_show_selected_files = not vim.g.avante_show_selected_files
         local sidebar = require("avante").get()
@@ -119,10 +173,10 @@ return {
         end
         sidebar:adjust_layout()
       end,
-      desc = "avante: toggle selected files panel",
+      desc = "Avante: Toggle files panel",
     },
     {
-      "<leader>at",
+      "<leader>aO",
       function()
         vim.g.avante_show_todos = not vim.g.avante_show_todos
         local sidebar = require("avante").get()
@@ -139,7 +193,7 @@ return {
         end
         sidebar:adjust_layout()
       end,
-      desc = "avante: toggle todos panel",
+      desc = "Avante: Toggle todos panel",
     },
   },
 }

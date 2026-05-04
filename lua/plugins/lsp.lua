@@ -13,6 +13,11 @@ return {
         severity_sort = true,
       },
       servers = {
+        -- Disable nvim-lspconfig's stock copilot config so mason-lspconfig's automatic_enable
+        -- skips it. Otherwise it auto-starts the binary copilot-language-server and fights
+        -- with the zbirenbaum/copilot.lua plugin for the "copilot" client slot — the plugin's
+        -- per-buffer state never initializes and ghost text never renders.
+        copilot = { enabled = false },
         emmet_ls = {
           -- Only HTML/CSS - TSX/JSX use custom snippets for tag completion
           filetypes = {

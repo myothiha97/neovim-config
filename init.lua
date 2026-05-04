@@ -6,7 +6,7 @@ if vim.g.neovide then
   vim.g.neovide_cursor_trail_size = 0
 
   -- Window transparency (matches Ghostty's background-opacity = 0.93)
-  vim.g.neovide_transparency = 0.93
+  -- vim.g.neovide_transparency = 0.93
 
   -- Enable macOS Cmd key (<D->) mappings in Neovide
   vim.g.neovide_input_use_logo = true
@@ -46,6 +46,10 @@ if vim.g.neovide then
   vim.keymap.set("v", "<D-v>", '"+p', { desc = "Paste from clipboard" })
   vim.keymap.set("i", "<D-v>", "<C-r>+", { desc = "Paste from clipboard" })
 end
+
+-- Disable built-in matchparen — fires Highlight_Matching_Pair() on every
+-- CursorMoved (1200+ calls/session). Must be set before lazy loads.
+vim.g.loaded_matchparen = 1
 
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")

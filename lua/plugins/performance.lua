@@ -80,10 +80,14 @@ return {
   -- THROTTLED PLUGINS (Reduced update frequency)
   -- =============================================
 
-  -- Throttle lualine updates (default 100ms -> 500ms)
+  -- Throttle lualine updates and avoid high-frequency components.
   {
     "nvim-lualine/lualine.nvim",
     init = function()
+      -- LazyVim's Trouble breadcrumb is useful, but it rebuilds Trouble symbols
+      -- during statusline draws and showed up as a runtime hotspot.
+      vim.g.trouble_lualine = false
+
       vim.api.nvim_create_autocmd({ "BufModifiedSet", "BufWritePost" }, {
         callback = function()
           vim.cmd.redrawstatus()
@@ -93,11 +97,24 @@ return {
     opts = function(_, opts)
       opts.options = opts.options or {}
       opts.options.refresh = {
-        statusline = 500,
+        statusline = 1000,
         tabline = 1000,
         winbar = 1000,
+        events = {
+          "WinEnter",
+          "BufEnter",
+          "BufWritePost",
+          "SessionLoadPost",
+          "FileChangedShellPost",
+          "VimResized",
+          "Filetype",
+          "ModeChanged",
+        },
       }
       opts.sections = opts.sections or {}
+      opts.sections.lualine_x = vim.tbl_filter(function(component)
+        return not (component == "diff" or (type(component) == "table" and component[1] == "diff"))
+      end, opts.sections.lualine_x or {})
       opts.sections.lualine_b = opts.sections.lualine_b or {}
       table.insert(opts.sections.lualine_b, {
         function()
@@ -110,7 +127,6 @@ return {
       })
 
       -- Copilot LSP status indicator (only shown after copilot has loaded)
-      opts.sections.lualine_x = opts.sections.lualine_x or {}
       table.insert(opts.sections.lualine_x, 1, {
         function()
           local ok, api = pcall(require, "copilot.api")
@@ -188,7 +204,7 @@ return {
         },
         ghost_text = { enabled = false },
         list = {
-          max_items = 50,
+          max_items = 25,
           selection = {
             preselect = true, -- always highlight first item so <CR> can accept it
             auto_insert = false, -- don't auto-insert text while navigating the list
@@ -197,12 +213,11 @@ return {
         trigger = {
           -- Don't re-show completion menu after accepting a completion
           show_on_accept_on_trigger_character = false,
-          -- Show completions immediately with no blink-side delay
-          show_delay_ms = 0,
         },
         documentation = {
-          auto_show = true, -- Show docs automatically when item selected
-          auto_show_delay_ms = 200,
+          -- auto_show = true, --  Show docs automatically when item selected
+          auto_show = false, --  use c-h to toggle docs if needed
+          -- auto_show_delay_ms = 200, -- Delay before showing docs (ms)
           window = {
             border = "rounded",
             max_width = 80,
@@ -242,7 +257,7 @@ return {
           },
           buffer = {
             min_keyword_length = 3,
-            max_items = 10,
+            max_items = 5,
           },
         },
       },
