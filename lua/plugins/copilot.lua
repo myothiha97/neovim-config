@@ -86,6 +86,7 @@ return {
       -- blink.cmp coexistence: dismiss copilot ghost text while menu is open,
       -- re-request a fresh suggestion when it closes (the built-in
       -- hide_during_completion guard relies on pumvisible() and never fires for blink).
+      -- TODO: need to check if below autocmds are safe for peformance
       -- vim.api.nvim_create_autocmd("User", {
       --   pattern = "BlinkCmpMenuOpen",
       --   callback = function()
@@ -118,9 +119,11 @@ return {
           end
         end
       end
-      map("i", "<C-l>", accept_or("<C-l>"), { desc = "Copilot: Accept" })
-      map("i", "<C-;>", accept_or("<C-;>"), { desc = "Copilot: Accept" })
-      map("i", "<C-'>", accept_or("<C-'>"), { desc = "Copilot: Accept" })
+      -- TODO: below keymap is just temporary, since we use c-l for blink completion, we need to use differnt keymap for copilot acceptance
+      -- for now we use <C-o>, but i am not sure if this keymap could conflict with nvim jump to prev location function
+      map("i", "<C-o>", accept_or("<C-o>"), { desc = "Copilot: Accept" })
+      -- map("i", "<C-;>", accept_or("<C-;>"), { desc = "Copilot: Accept" })
+      -- map("i", "<C-'>", accept_or("<C-'>"), { desc = "Copilot: Accept" })
 
       -- Esc: always exit insert mode; if a suggestion is visible, dismiss it first
       map("i", "<Esc>", function()

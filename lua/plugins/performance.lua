@@ -177,7 +177,7 @@ return {
         ["<C-n>"] = { "select_next", "fallback" },
         ["<C-p>"] = { "select_prev", "fallback" },
         -- Accept
-        ["<CR>"] = { "select_and_accept", "fallback" },
+        ["<C-l>"] = { "select_and_accept", "fallback" },
         -- Tab passthrough
         ["<Tab>"] = { "fallback" },
         ["<S-Tab>"] = { "fallback" },
