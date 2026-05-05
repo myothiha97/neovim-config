@@ -8,9 +8,11 @@ return {
       panel = { enabled = false },
       suggestion = {
         enabled = true,
-        auto_trigger = true,
-        -- Built-in guard checks vim.fn.pumvisible() which is always 0 with blink.cmp
-        -- (custom popup, not pumenu). Coexistence is handled via BlinkCmp* autocmds below.
+        -- Manual-only: no ghost text unless user presses <C-j>. blink.cmp owns
+        -- the autocomplete loop; copilot is on-demand via require("copilot.suggestion").next().
+        auto_trigger = false,
+        -- hide_during_completion checks pumvisible() which never fires for blink's
+        -- custom popup. Defense-in-depth still handled via BlinkCmp* autocmds below.
         hide_during_completion = false,
         debounce = 75,
         keymap = { accept = false },
@@ -83,31 +85,26 @@ return {
         end,
       })
 
-      -- blink.cmp coexistence: dismiss copilot ghost text while menu is open,
-      -- re-request a fresh suggestion when it closes (the built-in
-      -- hide_during_completion guard relies on pumvisible() and never fires for blink).
-      -- TODO: need to check if below autocmds are safe for peformance
-      -- vim.api.nvim_create_autocmd("User", {
-      --   pattern = "BlinkCmpMenuOpen",
-      --   callback = function()
-      --     if suggestion.is_visible() then
-      --       suggestion.dismiss()
-      --     end
-      --   end,
-      -- })
-      -- vim.api.nvim_create_autocmd("User", {
-      --   pattern = "BlinkCmpMenuClose",
-      --   callback = function()
-      --     if vim.g.copilot_enabled == false then
-      --       return
-      --     end
-      --     vim.schedule(function()
-      --       if vim.api.nvim_get_mode().mode:match("^[iR]") and not suggestion.is_visible() then
-      --         suggestion.next()
-      --       end
-      --     end)
-      --   end,
-      -- })
+      -- blink.cmp coexistence: copilot's built-in hide_during_completion guard
+      -- relies on pumvisible() and never fires for blink's custom floating window.
+      -- Setting vim.b.copilot_suggestion_hidden makes copilot's render-time guard
+      -- (suggestion/init.lua:257) drop both the current ghost and any in-flight
+      -- LSP response that arrives after the menu opens.
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "BlinkCmpMenuOpen",
+        callback = function()
+          vim.b.copilot_suggestion_hidden = true
+          if suggestion.is_visible() then
+            suggestion.dismiss()
+          end
+        end,
+      })
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "BlinkCmpMenuClose",
+        callback = function()
+          vim.b.copilot_suggestion_hidden = false
+        end,
+      })
 
       -- Accept ghost text; fall through to normal behavior if not visible
       local function accept_or(key)
@@ -119,11 +116,10 @@ return {
           end
         end
       end
-      -- TODO: below keymap is just temporary, since we use c-l for blink completion, we need to use differnt keymap for copilot acceptance
-      -- for now we use <C-o>, but i am not sure if this keymap could conflict with nvim jump to prev location function
-      map("i", "<C-o>", accept_or("<C-o>"), { desc = "Copilot: Accept" })
-      -- map("i", "<C-;>", accept_or("<C-;>"), { desc = "Copilot: Accept" })
-      -- map("i", "<C-'>", accept_or("<C-'>"), { desc = "Copilot: Accept" })
+      -- Shared <C-l>: blink.cmp's keymap runs `select_and_accept` first, then
+      -- `fallback` invokes this mapping. So menu open -> blink accepts; menu
+      -- closed + ghost visible -> copilot accepts; neither -> no-op.
+      map("i", "<C-l>", accept_or("<C-l>"), { desc = "Copilot: Accept (fallback from blink.cmp)" })
 
       -- Esc: always exit insert mode; if a suggestion is visible, dismiss it first
       map("i", "<Esc>", function()
@@ -133,8 +129,21 @@ return {
         vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
       end, { desc = "Copilot: Dismiss and Exit Insert" })
 
-      -- Toggle auto-trigger
-      vim.g.copilot_enabled = true
+      -- Manual copilot trigger: closes blink menu if open, clears the hidden
+      -- guard set by BlinkCmpMenuOpen, then requests/cycles a suggestion.
+      -- Press repeatedly to cycle through variants (same as <M-]>).
+      map("i", "<C-j>", function()
+        local ok, blink = pcall(require, "blink.cmp")
+        if ok and blink.is_menu_visible and blink.is_menu_visible() then
+          blink.hide()
+        end
+        vim.b.copilot_suggestion_hidden = false
+        suggestion.next()
+      end, { desc = "Copilot: Trigger / cycle suggestion" })
+
+      -- Toggle auto-trigger (starts false — manual mode is the default now,
+      -- toggle on if you want copilot to fire on every keystroke again)
+      vim.g.copilot_enabled = false
       map("n", "<leader>ad", function()
         suggestion.toggle_auto_trigger()
         vim.g.copilot_enabled = not vim.g.copilot_enabled

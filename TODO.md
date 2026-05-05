@@ -155,6 +155,47 @@ Re-enabled avante.nvim in agentic mode with Cursor-style diff acceptance keymaps
 
 Uses treesitter to locate function nodes (ts/tsx/js/jsx/lua/python/go/rust). Falls back to top-level folds for other languages. Toggle: any function open → close all; all closed → open all. Cursor restored after. Added to nvim-ufo keys in `lua/plugins/folding.lua`.
 
+## ✅ Copilot + blink.cmp coexistence + manual-only copilot mode (RESOLVED 2026-05-05)
+
+Resolved long-running mental overhead of fighting two completion systems at once.
+Copilot ghost text now strictly opt-in; blink.cmp owns the autocomplete loop.
+
+**Root cause of the conflict:**
+- Copilot's built-in `hide_during_completion` checks `vim.fn.pumvisible()`, which
+  is always `0` for blink.cmp's custom floating window (not the native pum). The
+  guard never fired, so ghost text overlapped the menu.
+- `suggestion.dismiss()` alone isn't enough — it only clears the *currently
+  rendered* ghost. In-flight LSP responses (~200ms latency) still drew on top
+  of an already-open blink menu. Fix: also set `vim.b.copilot_suggestion_hidden = true`,
+  which is checked at *render time* in `copilot/suggestion/init.lua:257`.
+
+**Mode change — copilot is now manual-only:**
+- `auto_trigger = false` in copilot opts. No more per-keystroke LSP requests.
+- `<C-j>` (insert) — manually trigger or cycle copilot suggestion. Closes blink
+  menu first if open, clears the hidden guard, then `suggestion.next()`.
+- Big perf win: copilot LSP no longer fires on every `TextChangedI`.
+
+**Shared keymap layout (consistent semantics across both popups):**
+- `<C-j>` — invoke copilot
+- `<C-l>` — accept (blink first via `select_and_accept`, copilot via blink's
+  `fallback` mechanism if menu is closed)
+- `<Esc>` — cancel blink menu (stays in insert) OR dismiss copilot ghost +
+  exit insert (depending on which is active). Original behavior preserved.
+- `<M-]>` / `<M-[>` — cycle copilot variants
+- `<M-w>` / `<M-l>` — accept word / line
+- `<leader>ad` (normal) — escape hatch back to auto-trigger mode
+
+**Files touched:**
+- `lua/plugins/copilot.lua` — `auto_trigger = false`, `BlinkCmpMenuOpen/Close`
+  autocmds with `vim.b.copilot_suggestion_hidden`, `<C-j>` manual trigger,
+  `<C-l>` accept (replaces previous `<C-o>`)
+- `lua/plugins/performance.lua` — no functional change to blink keymap (kept
+  `<ESC>` as cancel + fallback)
+
+**Performance:** all autocmds fire on discrete events (menu open/close), not
+on `TextChangedI`/`CursorMoved`. Net runtime cost is negative — disabling
+copilot auto-trigger eliminates the per-keystroke LSP request loop.
+
 ## Blink cmp bugs 
 - sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
 

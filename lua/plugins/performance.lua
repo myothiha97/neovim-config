@@ -184,6 +184,10 @@ return {
         -- Toggle/close
         ["<C-i>"] = { "show", "hide" },
 
+        -- <Esc>: blink cancels the menu first. If the menu was open, cancel
+        -- returns true and the fallback is suppressed (cursor stays in insert,
+        -- press Esc again to leave). If the menu was closed, fallback runs
+        -- copilot's <Esc> handler which dismisses ghost text + exits insert.
         ["<ESC>"] = { "cancel", "fallback" },
         -- Toggle documentation
         ["<C-h>"] = { "show_documentation", "hide_documentation" },
