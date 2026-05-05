@@ -1,5 +1,3 @@
-# TODO List 
-
 ## AI integration updates
 Feature -  custom popup for ai agents 
 Feature - async ai agents completions without blocking the UI
