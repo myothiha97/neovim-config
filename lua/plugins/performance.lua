@@ -126,18 +126,27 @@ return {
         end,
       })
 
-      -- Copilot LSP status indicator (only shown after copilot has loaded)
+      -- Copilot status indicator (LSP status + autocomplete toggle state)
+      -- Color reflects vim.g.copilot_enabled (toggled via <leader>ad / <C-k>):
+      --   enabled  -> color from LSP status (green/yellow/red)
+      --   disabled -> dim gray + power-off icon
       table.insert(opts.sections.lualine_x, 1, {
         function()
           local ok, api = pcall(require, "copilot.api")
           if not ok then
             return ""
           end
+          if not vim.g.copilot_enabled then
+            return " Copilot"
+          end
           local s = api.status.data.status
           local icons = { Normal = " ", InProgress = "󰔟", Warning = "⚠", Error = "✗" }
           return (icons[s] or "?") .. " Copilot"
         end,
         color = function()
+          if not vim.g.copilot_enabled then
+            return { fg = "#6c7086" }
+          end
           local ok, api = pcall(require, "copilot.api")
           if not ok then
             return { fg = "#888888" }

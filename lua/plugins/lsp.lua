@@ -86,6 +86,11 @@ return {
       },
     },
     init = function()
+      -- Free <C-k> in insert mode (LazyVim binds it to vim.lsp.buf.signature_help
+      -- buffer-locally on LspAttach, which steals it from our Copilot toggle).
+      local keys = require("lazyvim.plugins.lsp.keymaps").get()
+      keys[#keys + 1] = { "<C-k>", false, mode = "i" }
+
       -- Disable LSP document color highlights (tailwindcss paints hex color swatches)
       vim.lsp.handlers["textDocument/documentColor"] = function() end
 

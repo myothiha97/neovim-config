@@ -8,9 +8,10 @@ return {
       panel = { enabled = false },
       suggestion = {
         enabled = true,
-        -- Manual-only: no ghost text unless user presses <C-j>. blink.cmp owns
-        -- the autocomplete loop; copilot is on-demand via require("copilot.suggestion").next().
-        auto_trigger = false,
+        -- Master switch model: when Copilot is enabled (toggled on via <leader>ad / <C-k>),
+        -- auto-fire ghost text; when disabled, the LSP is detached so suggestions never run.
+        -- blink.cmp coexistence is handled by BlinkCmpMenu* autocmds below.
+        auto_trigger = true,
         -- hide_during_completion checks pumvisible() which never fires for blink's
         -- custom popup. Defense-in-depth still handled via BlinkCmp* autocmds below.
         hide_during_completion = false,
@@ -33,8 +34,16 @@ return {
     config = function(_, opts)
       require("copilot").setup(opts)
 
-      -- Fidget notifications for copilot LSP connect / disconnect
+      -- Master-switch state: vim.g.copilot_enabled is the single source of truth
+      -- for both LSP attach state and auto-suggestion ghost text. Default OFF.
+      vim.g.copilot_enabled = false
+
+      -- During startup we let copilot attach (so its commands are registered),
+      -- then immediately detach to land in OFF state. startup_settled gates the
+      -- spurious "ready" / "disconnected" toasts that fire during this dance.
+      local startup_settled = false
       local copilot_ready_shown = false
+
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           if copilot_ready_shown then
@@ -43,6 +52,9 @@ return {
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "copilot" then
             copilot_ready_shown = true
+            if not startup_settled then
+              return
+            end
             vim.schedule(function()
               local ok, fidget = pcall(require, "fidget")
               if ok then
@@ -57,6 +69,9 @@ return {
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "copilot" then
             copilot_ready_shown = false
+            if not startup_settled then
+              return
+            end
             local ok, fidget = pcall(require, "fidget")
             if ok then
               fidget.notify("⚠ Copilot disconnected", vim.log.levels.WARN, { ttl = 4 })
@@ -64,6 +79,17 @@ return {
           end
         end,
       })
+
+      -- Apply the default-OFF state on the next tick (after copilot's initial
+      -- attach completes). Two-step schedule ensures startup_settled flips only
+      -- after the detach has fired and its event has propagated.
+      vim.schedule(function()
+        vim.cmd("Copilot disable")
+        vim.schedule(function()
+          startup_settled = true
+          vim.cmd.redrawstatus()
+        end)
+      end)
 
       -- Match neocodeium's ghost text style (#808080 medium gray)
       vim.api.nvim_set_hl(0, "CopilotSuggestion", { fg = "#808080", ctermfg = 244 })
@@ -141,16 +167,23 @@ return {
         suggestion.next()
       end, { desc = "Copilot: Trigger / cycle suggestion" })
 
-      -- Toggle auto-trigger (starts false — manual mode is the default now,
-      -- toggle on if you want copilot to fire on every keystroke again)
-      vim.g.copilot_enabled = false
-      map("n", "<leader>ad", function()
-        suggestion.toggle_auto_trigger()
+      -- Master toggle: flips Copilot LSP (attach/detach) and auto-suggestions
+      -- together. vim.g.copilot_enabled drives the lualine indicator color.
+      local function toggleCopilot()
         vim.g.copilot_enabled = not vim.g.copilot_enabled
+        if vim.g.copilot_enabled then
+          vim.cmd("Copilot enable")
+        else
+          vim.cmd("Copilot disable")
+        end
         local status = vim.g.copilot_enabled and "Enabled" or "Disabled"
         local level = vim.g.copilot_enabled and vim.log.levels.INFO or vim.log.levels.WARN
-        vim.notify("Copilot Autocomplete: " .. status, level, { title = "Copilot" })
-      end, { desc = "Copilot: Toggle Suggestions" })
+        vim.notify("Copilot: " .. status, level, { title = "Copilot" })
+        vim.cmd.redrawstatus()
+      end
+
+      map("n", "<leader>ad", toggleCopilot, { desc = "Copilot: Toggle (LSP + suggestions)" })
+      map("i", "<C-k>", toggleCopilot, { desc = "Copilot: Toggle (LSP + suggestions)" })
 
       -- Accept word / line
       map("i", "<M-w>", function()
