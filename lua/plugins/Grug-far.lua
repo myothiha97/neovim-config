@@ -6,7 +6,7 @@ return {
     },
     keys = {
       {
-        "<leader>sF",
+        "<leader>sf",
         function()
           local grug = require("grug-far")
           local ext = vim.bo.buftype == "" and vim.fn.expand("%:e")
@@ -28,7 +28,7 @@ return {
         desc = "Search and Replace in Project (Grug-far)",
       },
       {
-        "<leader>sf",
+        "<leader>sF",
         function()
           local grug = require("grug-far")
           local path = vim.fn.expand("%:p")

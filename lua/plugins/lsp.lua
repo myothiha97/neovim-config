@@ -13,6 +13,16 @@ return {
         severity_sort = true,
       },
       servers = {
+        -- Free <C-k> in insert mode for our Copilot toggle.
+        -- LazyVim binds it to vim.lsp.buf.signature_help via servers["*"].keys
+        -- (see lazy/LazyVim/lua/lazyvim/plugins/lsp/init.lua:87).
+        -- opts_extend = { "servers.*.keys" } appends this to LazyVim's defaults,
+        -- and Keys.resolve drops entries whose rhs is false.
+        ["*"] = {
+          keys = {
+            { "<c-k>", false, mode = "i" },
+          },
+        },
         -- Disable nvim-lspconfig's stock copilot config so mason-lspconfig's automatic_enable
         -- skips it. Otherwise it auto-starts the binary copilot-language-server and fights
         -- with the zbirenbaum/copilot.lua plugin for the "copilot" client slot — the plugin's
@@ -86,11 +96,6 @@ return {
       },
     },
     init = function()
-      -- Free <C-k> in insert mode (LazyVim binds it to vim.lsp.buf.signature_help
-      -- buffer-locally on LspAttach, which steals it from our Copilot toggle).
-      local keys = require("lazyvim.plugins.lsp.keymaps").get()
-      keys[#keys + 1] = { "<C-k>", false, mode = "i" }
-
       -- Disable LSP document color highlights (tailwindcss paints hex color swatches)
       vim.lsp.handlers["textDocument/documentColor"] = function() end
 

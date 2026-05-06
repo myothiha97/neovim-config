@@ -3,17 +3,15 @@ return {
     "zbirenbaum/copilot.lua",
     enabled = true,
     cmd = "Copilot",
-    event = "InsertEnter",
+    event = { "InsertEnter" },
     opts = {
       panel = { enabled = false },
       suggestion = {
         enabled = true,
-        -- Master switch model: when Copilot is enabled (toggled on via <leader>ad / <C-k>),
-        -- auto-fire ghost text; when disabled, the LSP is detached so suggestions never run.
-        -- blink.cmp coexistence is handled by BlinkCmpMenu* autocmds below.
+        -- Auto-suggest alongside blink.cmp. hide_during_completion = false lets
+        -- copilot's ghost text render even while blink's menu is open, so both
+        -- engines stay visible. Accept keys are split: <C-l> = blink, <C-o> = copilot.
         auto_trigger = true,
-        -- hide_during_completion checks pumvisible() which never fires for blink's
-        -- custom popup. Defense-in-depth still handled via BlinkCmp* autocmds below.
         hide_during_completion = false,
         debounce = 75,
         keymap = { accept = false },
@@ -34,16 +32,8 @@ return {
     config = function(_, opts)
       require("copilot").setup(opts)
 
-      -- Master-switch state: vim.g.copilot_enabled is the single source of truth
-      -- for both LSP attach state and auto-suggestion ghost text. Default OFF.
-      vim.g.copilot_enabled = false
-
-      -- During startup we let copilot attach (so its commands are registered),
-      -- then immediately detach to land in OFF state. startup_settled gates the
-      -- spurious "ready" / "disconnected" toasts that fire during this dance.
-      local startup_settled = false
+      -- Fidget notifications for copilot LSP connect / disconnect
       local copilot_ready_shown = false
-
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           if copilot_ready_shown then
@@ -52,9 +42,6 @@ return {
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "copilot" then
             copilot_ready_shown = true
-            if not startup_settled then
-              return
-            end
             vim.schedule(function()
               local ok, fidget = pcall(require, "fidget")
               if ok then
@@ -69,9 +56,6 @@ return {
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "copilot" then
             copilot_ready_shown = false
-            if not startup_settled then
-              return
-            end
             local ok, fidget = pcall(require, "fidget")
             if ok then
               fidget.notify("⚠ Copilot disconnected", vim.log.levels.WARN, { ttl = 4 })
@@ -79,17 +63,6 @@ return {
           end
         end,
       })
-
-      -- Apply the default-OFF state on the next tick (after copilot's initial
-      -- attach completes). Two-step schedule ensures startup_settled flips only
-      -- after the detach has fired and its event has propagated.
-      vim.schedule(function()
-        vim.cmd("Copilot disable")
-        vim.schedule(function()
-          startup_settled = true
-          vim.cmd.redrawstatus()
-        end)
-      end)
 
       -- Match neocodeium's ghost text style (#808080 medium gray)
       vim.api.nvim_set_hl(0, "CopilotSuggestion", { fg = "#808080", ctermfg = 244 })
@@ -116,36 +89,30 @@ return {
       -- Setting vim.b.copilot_suggestion_hidden makes copilot's render-time guard
       -- (suggestion/init.lua:257) drop both the current ghost and any in-flight
       -- LSP response that arrives after the menu opens.
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "BlinkCmpMenuOpen",
-        callback = function()
-          vim.b.copilot_suggestion_hidden = true
-          if suggestion.is_visible() then
-            suggestion.dismiss()
-          end
-        end,
-      })
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "BlinkCmpMenuClose",
-        callback = function()
-          vim.b.copilot_suggestion_hidden = false
-        end,
-      })
+      -- vim.api.nvim_create_autocmd("User", {
+      --   pattern = "BlinkCmpMenuOpen",
+      --   callback = function()
+      --     vim.b.copilot_suggestion_hidden = true
+      --     if suggestion.is_visible() then
+      --       suggestion.dismiss()
+      --     end
+      --   end,
+      -- })
+      -- vim.api.nvim_create_autocmd("User", {
+      --   pattern = "BlinkCmpMenuClose",
+      --   callback = function()
+      --     vim.b.copilot_suggestion_hidden = false
+      --   end,
+      -- })
 
-      -- Accept ghost text; fall through to normal behavior if not visible
-      local function accept_or(key)
-        return function()
-          if suggestion.is_visible() then
-            suggestion.accept()
-          else
-            vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, false, true), "n", false)
-          end
+      -- <C-o>: dedicated copilot accept. blink owns <C-l>; copilot owns <C-o>,
+      -- so both engines can show suggestions simultaneously without a shared
+      -- accept key. Works for both manual (<C-j>) and auto-triggered ghosts.
+      map("i", "<C-o>", function()
+        if suggestion.is_visible() then
+          suggestion.accept()
         end
-      end
-      -- Shared <C-l>: blink.cmp's keymap runs `select_and_accept` first, then
-      -- `fallback` invokes this mapping. So menu open -> blink accepts; menu
-      -- closed + ghost visible -> copilot accepts; neither -> no-op.
-      map("i", "<C-l>", accept_or("<C-l>"), { desc = "Copilot: Accept (fallback from blink.cmp)" })
+      end, { desc = "Copilot: Accept suggestion" })
 
       -- Esc: always exit insert mode; if a suggestion is visible, dismiss it first
       map("i", "<Esc>", function()
@@ -167,23 +134,28 @@ return {
         suggestion.next()
       end, { desc = "Copilot: Trigger / cycle suggestion" })
 
-      -- Master toggle: flips Copilot LSP (attach/detach) and auto-suggestions
-      -- together. vim.g.copilot_enabled drives the lualine indicator color.
-      local function toggleCopilot()
+      -- Toggle auto-trigger only (Copilot LSP stays loaded so manual <C-j> and
+      -- blink.cmp coexistence keep working). vim.g.copilot_enabled mirrors the
+      -- auto-trigger state and drives the lualine indicator color.
+      vim.g.copilot_enabled = true
+
+      local function toggleCopilotSuggestions()
+        suggestion.toggle_auto_trigger()
         vim.g.copilot_enabled = not vim.g.copilot_enabled
-        if vim.g.copilot_enabled then
-          vim.cmd("Copilot enable")
-        else
-          vim.cmd("Copilot disable")
+        -- Belt-and-suspenders: when disabling, drop any ghost text that was
+        -- rendered just before the toggle. toggle_auto_trigger only stops
+        -- *future* requests; the current ghost can linger until next render.
+        if not vim.g.copilot_enabled and suggestion.is_visible() then
+          suggestion.dismiss()
         end
         local status = vim.g.copilot_enabled and "Enabled" or "Disabled"
         local level = vim.g.copilot_enabled and vim.log.levels.INFO or vim.log.levels.WARN
-        vim.notify("Copilot: " .. status, level, { title = "Copilot" })
+        vim.notify("Copilot Autocomplete: " .. status, level, { title = "Copilot" })
         vim.cmd.redrawstatus()
       end
 
-      map("n", "<leader>ad", toggleCopilot, { desc = "Copilot: Toggle (LSP + suggestions)" })
-      map("i", "<C-k>", toggleCopilot, { desc = "Copilot: Toggle (LSP + suggestions)" })
+      map("n", "<leader>ad", toggleCopilotSuggestions, { desc = "Copilot: Toggle Suggestions" })
+      map("i", "<C-k>", toggleCopilotSuggestions, { desc = "Copilot: Toggle Suggestions" })
 
       -- Accept word / line
       map("i", "<M-w>", function()

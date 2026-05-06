@@ -69,7 +69,8 @@ vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>", "3<C-y>", { noremap = true })
 vim.keymap.set("i", "<ScrollWheelDown>", "<C-o>3<C-e>", { noremap = true })
 vim.keymap.set("i", "<ScrollWheelUp>", "<C-o>3<C-y>", { noremap = true })
 
--- Disable buffer navigation with Shift+H/L (LazyVim defaults)
+-- Disable buffer navigation with Shift+H/L (LazyVim defaults). Will be
+-- reclaimed by bufferline.nvim when that plugin is re-enabled — see journal.md.
 vim.keymap.del("n", "<S-h>")
 vim.keymap.del("n", "<S-l>")
 

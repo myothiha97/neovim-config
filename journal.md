@@ -203,3 +203,30 @@ copilot auto-trigger eliminates the per-keystroke LSP request loop.
 
 ## Performance optimization for big projects 
 - Currently there are still some bottle neck with nvim runtime performance and sometime UI is lagging when scrolling in a huge files.
+
+## Bufferline.nvim "pinned-only" tabline — deferred (2026-05-06)
+
+**Goal:** Re-enable `akinsho/bufferline.nvim` as a *favorites bar*, not a VSCode-style "every visited buffer becomes a tab" bar. Use case: as the project grows, jumping back-and-forth via snacks picker is tedious — pin 3–5 actively-used files, cycle between them with `<S-h>`/`<S-l>` or `<leader>1..9`, ignore everything else.
+
+**Status:** disabled (`enabled = false` in `lua/plugins/bufferline.lua`). Config preserved in the file so we can iterate later.
+
+**Designed behavior (already in the disabled config):**
+- Path-keyed `pinned` table inside the plugin's config closure (survives `:bd` + reopen in same session, NOT persisted across nvim restarts).
+- `custom_filter` returns true for the current buffer + any pinned buffer; everything else is hidden from the bar.
+- `always_show_bufferline = true` so the current file's name is always visible (VSCode-like).
+- Soft warning at >5 pins (not a hard cap).
+- `<leader>bb` toggle pin, `<leader>bj` pick by letter, `<leader>bx` unpin+close, `<C-q>` close current buffer (won't conflict with `<C-w>` window prefix), `<S-h>`/`<S-l>` cycle pinned, `<leader>1..9` jump to Nth.
+
+**What broke / open questions:**
+- After enabling with `lazy = false` + `priority = 900`, tab DID render but layout looked wrong: tab squashed into the top-left over the neo-tree column, with a misaligned diagonal artifact across the screen. Suspected `offsets` neo-tree integration + `indicator = { style = "underline" }` + `separator_style = "thin"` interaction with the active theme (tokyonight). Removing those (current state of the disabled file) was untested before disabling.
+- Need to verify on a clean restart whether the simplified config (no offsets, `indicator = { style = "icon" }`, default separator) actually renders cleanly. If yes, just flip `enabled = true`. If no, the issue is deeper (theme highlight groups, terminal font, etc.).
+
+**Coordinated state:**
+- `lua/config/keymaps.lua` re-applies `vim.keymap.del("n", "<S-h>")` / `<S-l>` since LazyVim's default `:bnext`/`:bprev` cycles ALL loaded buffers, which is the opposite of the pinned-only workflow. When re-enabling bufferline, those `del` calls become redundant (bufferline's mappings will overwrite anyway) but don't conflict.
+- `<C-q>` is currently unbound (it was set inside the disabled plugin's config). Free for future use or re-mapping when bufferline returns.
+
+**Next time this is picked up:**
+1. Flip `enabled = true` and restart nvim.
+2. Open a file → confirm tabline shows `1.  filename.ext` at the top with a `▎` indicator.
+3. If layout is still broken, capture `:messages` + `:hi BufferLineFill BufferLineBackground BufferLineBufferSelected` output to debug highlight resolution.
+4. If layout is fine, optionally restore the neo-tree `offsets` block as a separate iteration.

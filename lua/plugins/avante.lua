@@ -103,6 +103,13 @@ return {
     mode = "agentic",
     -- Prevent avante from using copilot for per-keystroke suggestions
     auto_suggestions_provider = nil,
+
+    providers = {
+      copilot = {
+        model = "gpt-5.3-codex",
+      },
+    },
+
     behaviour = {
       -- We define all keymaps manually in `keys` below
       auto_set_keymaps = false,

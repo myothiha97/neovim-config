@@ -3,7 +3,7 @@
 -- Add any additional options here
 
 vim.o.number = true
-vim.o.scrolloff = 12
+vim.o.scrolloff = 10
 vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false

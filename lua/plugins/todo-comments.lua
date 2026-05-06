@@ -1,5 +1,5 @@
 local keywords = {
-  TODO = { icon = " ", alt = { "TODO", "Todo", "todo", "Bug" } },
+  TODO = { icon = " ", alt = { "TODO", "Todo", "todo" } },
   PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE", "Perf", "perf", "Opt" } },
   REFACTOR = { icon = " ", color = "default", alt = { "Refactor", "REF", "ref", "REFACTOR" } },
   HACK = { icon = " ", color = "warning" },
@@ -36,9 +36,16 @@ return {
       {
         "<leader>st",
         function()
-          Snacks.picker.todo_comments({ keywords = { "fix", "todo", "bug", "issue" } })
+          Snacks.picker.todo_comments({ keywords = { "todo", "Todo", "TODO" } })
         end,
-        desc = "Todo/Fix/Fixme",
+        desc = "Todo list",
+      },
+      {
+        "<leader>se",
+        function()
+          Snacks.picker.todo_comments({ keywords = { "FIX", "fix", "Fix", "Issue", "ISSUE", "issue" } })
+        end,
+        desc = "Issues/Fixes list",
       },
       {
         "<leader>sT",
