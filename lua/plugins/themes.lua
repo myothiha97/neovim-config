@@ -33,8 +33,31 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
+      -- colorscheme = "tokyonight",
+      -- colorscheme = "onedark",
+      colorscheme = "solarized-osaka",
+    },
+  },
+  {
+    "craftzdog/solarized-osaka.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {
+      on_highlights = function(hl, c)
+        hl.Visual = { bg = "#3b4261" }
+        hl.VisualNOS = { bg = "#3b4261" }
 
-      colorscheme = "tokyonight",
+        hl.BlinkCmpMenu = { fg = c.base1, bg = c.bg_float }
+        hl.BlinkCmpMenuBorder = { fg = c.base02, bg = c.bg_float }
+        hl.BlinkCmpMenuSelection = { fg = c.base2, bg = c.base02, bold = true }
+        hl.BlinkCmpLabel = { fg = c.base1, bg = c.none }
+        hl.BlinkCmpLabelMatch = { fg = c.blue300, bg = c.none }
+
+        hl.DiagnosticVirtualTextError = { fg = "#ff3b30", bg = c.none }
+        hl.DiagnosticVirtualTextWarn = { fg = "#e0af68", bg = c.none }
+        hl.DiagnosticVirtualTextInfo = { bg = c.none }
+        hl.DiagnosticVirtualTextHint = { fg = "#1abc9c", bg = c.none }
+      end,
     },
   },
   -- Configure Tokyonight to use the "night" style

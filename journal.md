@@ -16,6 +16,9 @@ Feature - async ai agents completions without blocking the UI
 ~~fix - currently lsp display snippets at first , this can be convenience for some cases but sometime it can be annoying when you want to see the completions list of lsp suggestions.  so we need to enhance the blink cmp a little bit~~
 ✅ Fixed: added `fuzzy.sorts = { "exact", "score", "sort_text" }` and disabled default snippet penalty via `sources.transform_items`. Exact prefix matches now surface first (VSCode-like behavior).
 
+## Theme highlight tweaks (2026-05-07)
+✅ Updated: solarized-osaka `on_highlights` overrides to match tokyonight-night selection contrast, refine blink.cmp menu colors, and tune LSP diagnostic virtual text (bright red error, info bg removed).
+
 
 ## ✅ To show save/unsave status in the status line for current file and also the custom pop-up menu for all the unsaved files
 ✅ Fixed: bright red "● unsaved" in lualine_b; `<leader>bu` opens unsaved files popup with jump/save/save-all actions.
