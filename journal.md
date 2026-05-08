@@ -197,17 +197,7 @@ Copilot ghost text now strictly opt-in; blink.cmp owns the autocomplete loop.
 on `TextChangedI`/`CursorMoved`. Net runtime cost is negative — disabling
 copilot auto-trigger eliminates the per-keystroke LSP request loop.
 
-## Blink cmp bugs 
-- sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
 
-## Prune or remove unnecessary plugins 
-- currently there are still too many plugins install in the system, which dose not have a lot of use
-- the target plugins quantity -> around 15-20 ( currently is 31  )  
-
-## Performance optimization for big projects 
-- Currently there are still some bottle neck with nvim runtime performance and sometime UI is lagging when scrolling in a huge files.
-
-## Bufferline.nvim "pinned-only" tabline — deferred (2026-05-06)
 
 **Goal:** Re-enable `akinsho/bufferline.nvim` as a *favorites bar*, not a VSCode-style "every visited buffer becomes a tab" bar. Use case: as the project grows, jumping back-and-forth via snacks picker is tedious — pin 3–5 actively-used files, cycle between them with `<S-h>`/`<S-l>` or `<leader>1..9`, ignore everything else.
 
@@ -233,3 +223,22 @@ copilot auto-trigger eliminates the per-keystroke LSP request loop.
 2. Open a file → confirm tabline shows `1.  filename.ext` at the top with a `▎` indicator.
 3. If layout is still broken, capture `:messages` + `:hi BufferLineFill BufferLineBackground BufferLineBufferSelected` output to debug highlight resolution.
 4. If layout is fine, optionally restore the neo-tree `offsets` block as a separate iteration.
+
+
+# ISSUES / TODOs
+
+## Blink cmp bugs 
+- sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
+
+## Prune or remove unnecessary plugins 
+- currently there are still too many plugins install in the system, which dose not have a lot of use
+- the target plugins quantity -> around 15-20 ( currently is 31  )  
+
+## Performance optimization for big projects 
+- Currently there are still some bottle neck with nvim runtime performance and sometime UI is lagging when scrolling in a huge files.
+
+## Bufferline.nvim "pinned-only" tabline — deferred (2026-05-06)
+
+## Lualine.nvim: To display only file name instead of the whole path in the status line — done
+
+## Solarized-osaka: refine solarized-osaka highlight color for grug far nvim search highlights, currently the color is too blend with the background and make it hard to see the search results

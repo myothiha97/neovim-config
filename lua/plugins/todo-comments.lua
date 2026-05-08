@@ -36,7 +36,7 @@ return {
       {
         "<leader>st",
         function()
-          Snacks.picker.todo_comments({ keywords = { "todo", "Todo", "TODO" } })
+          Snacks.picker.todo_comments({ keywords = { "todo" } }) -- "Todo", "TODO"
         end,
         desc = "Todo list",
       },

@@ -126,6 +126,44 @@ return {
         end,
       })
 
+      local lualine_c = opts.sections.lualine_c or {}
+      for i, component in ipairs(lualine_c) do
+        if component == "diagnostics" or (type(component) == "table" and component[1] == "diagnostics") then
+          table.insert(lualine_c, i + 1, {
+            function()
+              return "  "
+            end,
+            separator = "",
+            padding = { left = 0, right = 0 },
+          })
+          break
+        end
+      end
+      for _, component in ipairs(lualine_c) do
+        if type(component) == "table" and component[1] == "filetype" then
+          component.padding = { left = 0, right = 0 }
+          break
+        end
+      end
+      for i = #lualine_c, 1, -1 do
+        local component = lualine_c[i]
+        if
+          type(component) == "table"
+          and component[1] ~= "filetype"
+          and type(component[1]) == "function"
+          and component.cond == nil
+        then
+          lualine_c[i] = {
+            "filename",
+            path = 0,
+            color = { fg = "#89b4fa", gui = "bold" },
+            padding = { left = 0, right = 0 },
+          }
+          break
+        end
+      end
+      opts.sections.lualine_c = lualine_c
+
       -- Copilot status indicator (LSP status + autocomplete toggle state)
       -- Color reflects vim.g.copilot_enabled (toggled via <leader>ad / <C-k>):
       --   enabled  -> color from LSP status (green/yellow/red)
