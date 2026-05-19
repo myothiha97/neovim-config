@@ -14,7 +14,32 @@ vim.g.snacks_animate = false
 
 -- enabled mouse
 vim.o.mouse = "a"
+-- popup_setpos: right-click moves the cursor to the click first, so LSP
+-- hover / signature_help fire on the symbol under the pointer (not wherever
+-- the cursor happened to be). Use "popup" if you'd rather keep the cursor.
+vim.o.mousemodel = "popup_setpos"
 vim.opt.sidescroll = 1
+
+-- Right-click menu: pin LSP actions at the top of the popup.
+-- Neovim's defaults add items without explicit priorities (so they share
+-- priority 500 and order by insertion). Giving ours priority 1.10/1.20/1.30
+-- floats them above everything else. We also unmenu the default
+-- "Go to definition" so it isn't duplicated -- the MenuPopup autocmd in
+-- runtime/lua/vim/_core/defaults.lua still gates it by LSP-client presence
+-- because the menu is addressed by path, not by definition site.
+pcall(vim.cmd, [[aunmenu PopUp.Go\ to\ definition]])
+pcall(vim.cmd, [[aunmenu PopUp.Show\ Hover\ Docs]])
+pcall(vim.cmd, [[aunmenu PopUp.Show\ Signature\ Help]])
+pcall(vim.cmd, [[aunmenu PopUp.-LspExtras-]])
+
+local hover_opts_literal = [[{ border = "rounded", max_width = 80, max_height = 30 }]]
+
+vim.cmd([[anoremenu 1.10 PopUp.Go\ to\ definition <Cmd>lua vim.lsp.buf.definition()<CR>]])
+vim.cmd("anoremenu 1.20 PopUp.Show\\ Hover\\ Docs <Cmd>lua vim.lsp.buf.hover(" .. hover_opts_literal .. ")<CR>")
+vim.cmd(
+  "anoremenu 1.30 PopUp.Show\\ Signature\\ Help <Cmd>lua vim.lsp.buf.signature_help(" .. hover_opts_literal .. ")<CR>"
+)
+vim.cmd([[anoremenu 1.40 PopUp.-LspExtras- <Nop>]])
 
 -- horizontal scroll setting
 vim.o.wrap = false

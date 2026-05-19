@@ -1,3 +1,25 @@
+local function clear_smart_picker_history()
+  local history = require("snacks.picker.util.history").new("picker_smart")
+  history.kv.data = {}
+  history.idx = 1
+  history.cursor = 1
+  history.kv:close()
+
+  vim.v.oldfiles = {}
+  pcall(vim.cmd, "wshada!")
+
+  vim.notify("Cleared Snacks smart picker history", vim.log.levels.INFO)
+end
+
+local snacks_keymaps = {
+  ["<C-f>"] = { "close", mode = { "n", "i" } },
+  ["<C-l>"] = {
+    "confirm",
+    mode = { "n", "i" },
+    desc = "Confirm selection",
+  },
+}
+
 return {
   "folke/snacks.nvim",
   ---@type snacks.Config
@@ -19,6 +41,18 @@ return {
     scope = { enabled = false }, -- treesitter scope tracking on every cursor move
     dim = { enabled = false },
     picker = {
+      win = {
+        input = {
+          keys = {
+            ["<C-l>"] = { "confirm", mode = { "n", "i" }, desc = "Confirm selection" },
+          },
+        },
+        list = {
+          keys = {
+            ["<C-l>"] = { "confirm", mode = { "n", "i" }, desc = "Confirm selection" },
+          },
+        },
+      },
       sources = {
         ---@class snacks.picker.smart.Config: snacks.picker.Config
         smart = {
@@ -27,6 +61,7 @@ return {
             { source = "recent", filter = { cwd = true } },
             { source = "files" },
           },
+          keys = snacks_keymaps,
           format = "file",
           matcher = {
             frecency = false,
@@ -34,6 +69,7 @@ return {
           },
         },
         grep = {
+          keys = snacks_keymaps,
           layout = {
             preview = false,
             layout = {
@@ -54,7 +90,7 @@ return {
         explorer = {
           layout = {
             layout = {
-              width = 0.2,
+              width = 0.25,
             },
           },
           actions = {
@@ -88,9 +124,11 @@ return {
                 ["q"] = false, -- don't close on q
                 ["/"] = false, -- use vim search instead of explorer filter
                 ["?"] = false, -- use vim search instead of help
+                ["<C-l>"] = { "confirm", mode = { "n", "i" }, desc = "Confirm selection" },
                 ["<C-f>"] = { "explorer_close_all", mode = { "n" } },
                 ["<C-c>"] = { "close", mode = { "n" } },
                 ["."] = { "explorer_toggle_focus", mode = { "n" }, desc = "Toggle focus folder" },
+                -- ["<LeftMouse>"] = "confirm", -- not working well with nested dirs, when single clicking a folder instead of opening the dir it collapse the parent dir
               },
             },
           },
@@ -106,6 +144,9 @@ return {
     },
   },
   keys = {
+    { "<leader>sc", false },
+    { "<leader>sC", false },
+    { "<leader>so", false },
     -- Disable LazyVim default so diffview.nvim owns <leader>gd
     { "<leader>gd", false },
     { "<leader>gD", false },
@@ -173,6 +214,27 @@ return {
         })
       end,
       desc = "LSP Symbols (functions/types)",
+    },
+    {
+      "<leader>sc",
+      function()
+        Snacks.picker.commands()
+      end,
+      desc = "Commands",
+    },
+    {
+      "<leader>sC",
+      function()
+        clear_smart_picker_history()
+      end,
+      desc = "Clear Smart Picker History",
+    },
+    {
+      "<leader>so",
+      function()
+        Snacks.picker.command_history()
+      end,
+      desc = "Command History",
     },
     {
       "<leader><leader>",

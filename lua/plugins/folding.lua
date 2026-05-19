@@ -4,24 +4,19 @@ return {
     dependencies = { "kevinhwang91/promise-async" },
     event = "BufReadPost",
     enabled = true,
-    init = function()
-      -- Disable fold highlight - run after colorscheme loads
-      vim.api.nvim_create_autocmd("ColorScheme", {
-        callback = function()
-          vim.api.nvim_set_hl(0, "Folded", { bg = "NONE" })
-          vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
-          vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
-        end,
-      })
-      -- Also set immediately for current colorscheme
-      vim.api.nvim_set_hl(0, "Folded", { bg = "NONE" })
-      vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
-      -- Warm bright color for the "N lines" fold count indicator
-      vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
-
-      -- TODO: Auto-fold top import block on file open
-      -- Needs investigation: za works manually but auto-fold breaks after manual unfold + reopen
-    end,
+    -- init = function()
+    --   -- Disable fold highlight - run after colorscheme loads
+    --   vim.api.nvim_create_autocmd("ColorScheme", {
+    --     callback = function()
+    --       vim.api.nvim_set_hl(0, "Folded", { bg = "NONE" })
+    --       vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
+    --       vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
+    --     end,
+    --   })
+    --   vim.api.nvim_set_hl(0, "Folded", { bg = "NONE" })
+    --   vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
+    --   vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
+    -- end,
     keys = {
       {
         "zR",
@@ -123,6 +118,73 @@ return {
         desc = "Toggle all function folds",
       },
     },
+    init = function()
+      -- bufnr → true once imports have been auto-folded for this buffer lifetime.
+      -- Reset on BufDelete/BufWipeout so a re-opened file gets a fresh fold.
+      local folded = {}
+
+      local function get_first_import_line(bufnr)
+        local ok_parser, parser = pcall(vim.treesitter.get_parser, bufnr)
+        if not ok_parser or not parser then return nil end
+        local tree = parser:parse()[1]
+        if not tree then return nil end
+        local lang = parser:lang()
+        local ok_q, query = pcall(vim.treesitter.query.parse, lang, [[ (import_statement) @import ]])
+        if not ok_q or not query then return nil end
+        for _, node in query:iter_captures(tree:root(), bufnr, 0, -1) do
+          return node:start() + 1  -- first import, 1-indexed
+        end
+        return nil
+      end
+
+      local function try_fold(bufnr, line, retries)
+        if retries <= 0 or not vim.api.nvim_buf_is_valid(bufnr) then return end
+
+        -- foldlevel == 0 means UFO hasn't computed this fold yet; retry
+        if vim.fn.foldlevel(line) == 0 then
+          vim.defer_fn(function() try_fold(bufnr, line, retries - 1) end, 150)
+          return
+        end
+
+        -- Only act when this buffer is visible in the current window
+        local win = vim.api.nvim_get_current_win()
+        if vim.api.nvim_win_get_buf(win) ~= bufnr then return end
+
+        if vim.fn.foldclosed(line) == -1 then
+          local saved = vim.api.nvim_win_get_cursor(win)
+          vim.api.nvim_win_set_cursor(win, { line, 0 })
+          pcall(vim.cmd, "normal! zc")
+          vim.api.nvim_win_set_cursor(win, saved)
+        end
+
+        folded[bufnr] = true
+      end
+
+      -- BufReadPost fires on first open AND after :bdelete/:bwipeout + reopen.
+      -- It does NOT fire when switching between already-open buffers (snacks/harpoon/marks),
+      -- so we never re-fold a buffer the user is actively working in.
+      vim.api.nvim_create_autocmd("BufReadPost", {
+        pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
+        callback = function(args)
+          local bufnr = args.buf
+          folded[bufnr] = nil  -- fresh read = treat as new
+
+          local ok_stat, stat = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
+          if ok_stat and stat and stat.size > 102400 then return end
+
+          vim.defer_fn(function()
+            if folded[bufnr] or not vim.api.nvim_buf_is_valid(bufnr) then return end
+            local line = get_first_import_line(bufnr)
+            if line then try_fold(bufnr, line, 5) end
+          end, 200)
+        end,
+      })
+
+      -- Clean up tracking when buffer is removed so its number can be reused safely
+      vim.api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
+        callback = function(args) folded[args.buf] = nil end,
+      })
+    end,
     opts = {
       provider_selector = function()
         return { "treesitter", "indent" }

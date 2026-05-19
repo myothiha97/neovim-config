@@ -224,7 +224,8 @@ return {
         ["<C-n>"] = { "select_next", "fallback" },
         ["<C-p>"] = { "select_prev", "fallback" },
         -- Accept
-        ["<C-l>"] = { "select_and_accept", "fallback" },
+        ["<C-o>"] = { "select_and_accept", "fallback" },
+        ["<CR>"] = { "select_and_accept", "fallback" },
         -- Tab passthrough
         ["<Tab>"] = { "fallback" },
         ["<S-Tab>"] = { "fallback" },
@@ -266,8 +267,9 @@ return {
           show_on_accept_on_trigger_character = false,
         },
         documentation = {
-          -- auto_show = true, --  Show docs automatically when item selected
-          auto_show = false, --  use c-h to toggle docs if needed
+          auto_show = true, --  Show docs automatically when item selected
+          auto_show_delay_ms = 150,
+          -- auto_show = false, --  use c-h to toggle docs if needed
           -- auto_show_delay_ms = 200, -- Delay before showing docs (ms)
           window = {
             border = "rounded",

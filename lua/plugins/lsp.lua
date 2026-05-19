@@ -96,11 +96,15 @@ return {
       },
     },
     init = function()
-      -- Disable LSP document color highlights (tailwindcss paints hex color swatches)
-      vim.lsp.handlers["textDocument/documentColor"] = function() end
+      -- Neovim 0.12 added vim.lsp.document_color with its own internal LspAttach autocmd
+      -- that fires before any plugin-registered handler. Overriding the handler or clearing
+      -- colorProvider in LspAttach is too late — the module is already polling. Replacing
+      -- enable() here (before any client attaches) stops it from ever activating.
+      if vim.lsp.document_color then
+        vim.lsp.document_color.enable = function() end
+      end
 
       -- Disable semantic tokens globally: stops LSP from computing/sending token payloads.
-      -- Highlighting falls back to treesitter. All other LSP features unaffected.
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
@@ -109,6 +113,19 @@ return {
           end
         end,
       })
+
+      -- Restart LSP to refresh type diagnostics after external file changes (e.g., Grug-far)
+      vim.keymap.set("n", "<leader>cL", function()
+        local clients = vim.lsp.get_clients()
+        for _, client in ipairs(clients) do
+          client.stop()
+        end
+        vim.notify("LSP stopped, restarting...", vim.log.levels.INFO)
+        vim.defer_fn(function()
+          vim.cmd("edit!")
+          vim.notify("LSP restarted", vim.log.levels.INFO)
+        end, 100)
+      end, { noremap = true, silent = false, desc = "Restart LSP" })
 
       -- Custom gd to filter node_modules (only when LSP is attached)
       vim.api.nvim_create_autocmd("LspAttach", {

@@ -108,7 +108,7 @@ return {
       -- <C-o>: dedicated copilot accept. blink owns <C-l>; copilot owns <C-o>,
       -- so both engines can show suggestions simultaneously without a shared
       -- accept key. Works for both manual (<C-j>) and auto-triggered ghosts.
-      map("i", "<C-o>", function()
+      map("i", "<C-l>", function()
         if suggestion.is_visible() then
           suggestion.accept()
         end

@@ -230,6 +230,12 @@ copilot auto-trigger eliminates the per-keystroke LSP request loop.
 ## Blink cmp bugs 
 - sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
 
+
+## Paste without losing the current clipboard content (override default p behavior)
+ 
+- vim.keymap.set("n", "<leader>p", ':let @/=@"<CR>"_dP', { silent = true })
+
+
 ## Prune or remove unnecessary plugins 
 - currently there are still too many plugins install in the system, which dose not have a lot of use
 - the target plugins quantity -> around 15-20 ( currently is 31  )  
@@ -242,3 +248,5 @@ copilot auto-trigger eliminates the per-keystroke LSP request loop.
 ## Lualine.nvim: To display only file name instead of the whole path in the status line — done
 
 ## Solarized-osaka: refine solarized-osaka highlight color for grug far nvim search highlights, currently the color is too blend with the background and make it hard to see the search results
+
+## Advance code folding features like folding imports blocks at initially when open the files initially, currently need to manually toggle with za keys , which is quite repetitive

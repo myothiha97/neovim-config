@@ -69,6 +69,17 @@ vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>", "3<C-y>", { noremap = true })
 vim.keymap.set("i", "<ScrollWheelDown>", "<C-o>3<C-e>", { noremap = true })
 vim.keymap.set("i", "<ScrollWheelUp>", "<C-o>3<C-y>", { noremap = true })
 
+-- Horizontal mouse/trackpad scroll: override Neovim's default 6-column jump
+-- with native sideways scrolling at a small 3-column step.
+vim.keymap.set({ "n", "v" }, "<ScrollWheelLeft>", "3zh", { noremap = true, silent = true })
+vim.keymap.set({ "n", "v" }, "<ScrollWheelRight>", "3zl", { noremap = true, silent = true })
+vim.keymap.set("i", "<ScrollWheelLeft>", "<C-o>3zh", { noremap = true, silent = true })
+vim.keymap.set("i", "<ScrollWheelRight>", "<C-o>3zl", { noremap = true, silent = true })
+vim.keymap.set({ "n", "v" }, "<S-ScrollWheelLeft>", "3zh", { noremap = true, silent = true })
+vim.keymap.set({ "n", "v" }, "<S-ScrollWheelRight>", "3zl", { noremap = true, silent = true })
+vim.keymap.set("i", "<S-ScrollWheelLeft>", "<C-o>3zh", { noremap = true, silent = true })
+vim.keymap.set("i", "<S-ScrollWheelRight>", "<C-o>3zl", { noremap = true, silent = true })
+
 -- Disable buffer navigation with Shift+H/L (LazyVim defaults). Will be
 -- reclaimed by bufferline.nvim when that plugin is re-enabled — see journal.md.
 vim.keymap.del("n", "<S-h>")
@@ -81,6 +92,9 @@ local comment_key = "<M-/>"
 
 vim.keymap.set("n", "<leader>va", "ggVG", { desc = "Select all the text in the current file" })
 vim.keymap.set("n", "<leader>ya", "ggyG", { desc = "Yank all text" })
+
+-- Paste without losing the current clipboard content (override default p behavior)
+-- vim.keymap.set("n", "<leader>p", ':let @/=@"<CR>"_dP', { silent = true })
 
 -- Copy current file path (relative) to clipboard for Claude Code CLI
 vim.keymap.set("n", "<leader>as", function()
