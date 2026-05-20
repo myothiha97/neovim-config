@@ -80,22 +80,23 @@ return {
         harpoon.ui:toggle_quick_menu(harpoon:list())
       end, { desc = "Harpoon Menu" })
 
+      local harpoon_select_opts = { desc = "which_key_ignore" }
       vim.keymap.set("n", "<leader>1", function()
         harpoon:list():select(1)
-      end, { desc = "Harpoon Select 1" })
+      end, harpoon_select_opts)
       vim.keymap.set("n", "<leader>2", function()
         harpoon:list():select(2)
-      end, { desc = "Harpoon Select 2" })
+      end, harpoon_select_opts)
       vim.keymap.set("n", "<leader>3", function()
         harpoon:list():select(3)
-      end, { desc = "Harpoon Select 3" })
+      end, harpoon_select_opts)
       vim.keymap.set("n", "<leader>4", function()
         harpoon:list():select(4)
-      end, { desc = "Harpoon Select 4" })
+      end, harpoon_select_opts)
 
       vim.keymap.set("n", "<leader>5", function()
         harpoon:list():select(5)
-      end, { desc = "Harpoon Select 5" })
+      end, harpoon_select_opts)
 
       -- Toggle previous & next buffers stored within Harpoon list
       -- vim.keymap.set("n", "<C-Space>p", function()

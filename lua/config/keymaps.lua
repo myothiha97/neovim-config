@@ -107,6 +107,9 @@ vim.keymap.set("n", comment_key, "<cmd>normal gcc<CR>", { desc = "Toggle comment
 -- Visual mode: Comment the highlighted selection
 vim.keymap.set("v", comment_key, "<Esc>:normal gvgc<CR>", { desc = "Toggle comment block" })
 
+-- Jumplist forward on <C-p> (default <C-i> is shadowed by the <Tab> mapping below)
+vim.keymap.set("n", "<C-p>", "<C-i>", { desc = "Jump Forward (jumplist)" })
+
 vim.keymap.set({ "n", "v" }, "<C-d>", "<C-d>zz", { desc = "Scroll Down and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down Page and Recenter" })
