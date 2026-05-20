@@ -1,6 +1,10 @@
 return {
   {
     "zbirenbaum/copilot.lua",
+    -- lazy.nvim uses `dependencies`, not packer's `requires`. copilot.lua's
+    -- nes/api.lua delegates to require("copilot-lsp.nes"), so NES needs this
+    -- plugin on the runtimepath before copilot.lua's setup runs.
+    dependencies = { "copilotlsp-nvim/copilot-lsp" },
     enabled = true,
     cmd = "Copilot",
     event = { "InsertEnter" },
@@ -11,14 +15,29 @@ return {
         -- Auto-suggest alongside blink.cmp. hide_during_completion = false lets
         -- copilot's ghost text render even while blink's menu is open, so both
         -- engines stay visible. Accept keys are split: <C-l> = blink, <C-o> = copilot.
+        --
+        -- debounce: 250ms gives the server time to finish multi-line generations
+        -- before the next keystroke cancels the in-flight request. WebStorm uses
+        -- a similar window (~300-400ms). Lower if you want snappier single-token
+        -- suggestions at the cost of multi-line ones.
         auto_trigger = true,
         hide_during_completion = false,
-        debounce = 75,
+        debounce = 250,
         keymap = { accept = false },
       },
       nes = {
-        enabled = false,
+        enabled = true,
         auto_trigger = true,
+
+        -- NES persistence tuning. copilot-lsp's defaults are move_count_threshold=3
+        -- and distance_threshold=40 -- aggressive enough that scrolling up to check
+        -- a function signature wipes the pending edit before you can accept it.
+        -- Bumping both buys time to navigate context first.
+
+        move_count_threshold = 10,
+        distance_threshold = 100,
+        count_horizontal_moves = false,
+        ount_horizontal_moves = false,
         keymap = {
           accept_and_goto = "<Tab>",
           accept = false,
@@ -105,14 +124,21 @@ return {
       --   end,
       -- })
 
-      -- <C-o>: dedicated copilot accept. blink owns <C-l>; copilot owns <C-o>,
-      -- so both engines can show suggestions simultaneously without a shared
-      -- accept key. Works for both manual (<C-j>) and auto-triggered ghosts.
+      -- <C-l>: accept current suggestion AND immediately fire a fresh request
+      -- at the new cursor position. Mimics WebStorm/Zed's "chained Tab" feel
+      -- where the next ghost appears right after accept without waiting for
+      -- TextChangedI / debounce. We schedule the next() call so accept()'s
+      -- text insertion and ctx reset complete first; otherwise next() would
+      -- see the pre-accept context and cycle the old candidate list instead
+      -- of fetching for the new cursor position.
       map("i", "<C-l>", function()
         if suggestion.is_visible() then
           suggestion.accept()
+          vim.schedule(function()
+            suggestion.next()
+          end)
         end
-      end, { desc = "Copilot: Accept suggestion" })
+      end, { desc = "Copilot: Accept + Trigger Next" })
 
       -- Esc: always exit insert mode; if a suggestion is visible, dismiss it first
       map("i", "<Esc>", function()

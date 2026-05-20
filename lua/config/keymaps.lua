@@ -37,25 +37,32 @@ vim.keymap.set("n", "K", function()
   vim.lsp.buf.hover(hover_opts)
 end, { desc = "Hover Documentation" })
 
+-- NES wraps <Esc> with expr=true (copilot/keymaps/init.lua:126). Expression-mode
+-- keymaps forbid text/window mutation, so calling nvim_win_close directly here
+-- raises E565 when NES delegates back to this handler. vim.schedule defers the
+-- side effects to the next event tick where window operations are allowed
+-- again. Imperceptible delay in the un-wrapped path.
 vim.keymap.set("n", "<Esc>", function()
-  local closed_float = false
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_get_config(win).relative ~= "" then
-      local buf = vim.api.nvim_win_get_buf(win)
-      local ft = vim.bo[buf].filetype
-      -- Skip snacks picker/explorer windows — they manage their own lifetime
-      if ft:match("^snacks_picker") then
-        goto continue
+  vim.schedule(function()
+    local closed_float = false
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_config(win).relative ~= "" then
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.bo[buf].filetype
+        -- Skip snacks picker/explorer windows — they manage their own lifetime
+        if ft:match("^snacks_picker") then
+          goto continue
+        end
+        vim.api.nvim_win_close(win, false)
+        closed_float = true
       end
-      vim.api.nvim_win_close(win, false)
-      closed_float = true
+      ::continue::
     end
-    ::continue::
-  end
 
-  if not closed_float then
-    vim.cmd("noh")
-  end
+    if not closed_float then
+      vim.cmd("noh")
+    end
+  end)
 end, { desc = "Dismiss hover docs / Clear highlights" })
 
 -- Save file (Ctrl+S, works in normal and insert mode)
