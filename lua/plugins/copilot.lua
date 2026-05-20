@@ -16,13 +16,13 @@ return {
         -- copilot's ghost text render even while blink's menu is open, so both
         -- engines stay visible. Accept keys are split: <C-l> = blink, <C-o> = copilot.
         --
-        -- debounce: 250ms gives the server time to finish multi-line generations
+        -- debounce: 300ms gives the server time to finish multi-line generations
         -- before the next keystroke cancels the in-flight request. WebStorm uses
         -- a similar window (~300-400ms). Lower if you want snappier single-token
         -- suggestions at the cost of multi-line ones.
         auto_trigger = true,
         hide_during_completion = false,
-        debounce = 250,
+        debounce = 300,
         keymap = { accept = false },
       },
       nes = {
@@ -37,7 +37,6 @@ return {
         move_count_threshold = 10,
         distance_threshold = 100,
         count_horizontal_moves = false,
-        ount_horizontal_moves = false,
         keymap = {
           accept_and_goto = "<Tab>",
           accept = false,
