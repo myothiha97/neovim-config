@@ -1,12 +1,7 @@
 return {
-  -- =============================================
-  -- DISABLED PLUGINS (Performance optimization)
-  -- =============================================
-
-  -- Disable treesitter-context (not in default LazyVim)
   { "nvim-treesitter/nvim-treesitter-context", enabled = false },
 
-  -- noice.nvim: ONLY cmdline enabled, everything else disabled
+  -- noice.nvim: cmdline popup only, everything else off
   {
     "folke/noice.nvim",
     enabled = true,
@@ -42,45 +37,23 @@ return {
         inc_rename = false,
         lsp_doc_border = false,
       },
-      routes = {
-        -- Suppress all messages to prevent notify utils from running
-        { filter = { event = "msg_show" }, opts = { skip = true } },
-        { filter = { event = "notify" }, opts = { skip = true } },
-      },
+      routes = {},
     },
   },
 
-  -- MEDIUM: Disable nvim-lint (use ESLint LSP only, avoids duplicate linting)
   { "mfussenegger/nvim-lint", enabled = false },
-
-  -- LOW: Disable persistence/session (can cause micro-freezes on exit)
   { "folke/persistence.nvim", enabled = false },
-
-  -- mini.pairs kept enabled (user preference)
-
   { "nvim-mini/mini.surround", enabled = false },
-
-  -- Classic vim-surround keymaps: ys, ds, cs, S (visual)
-  { "tpope/vim-surround" },
-  -- disabling mini.ai due to performance issues with large files
-  -- to disabled the plugin without warning, we have to set the author name to a dummy value
-  -- if we don't change the author name , the nvim will sitll show a warning that the plugin is disabled
-  {
-    "nvim-mini/mini.ai",
-    enabled = false,
-    dir = "/dev/null", -- Or any folder that doesn't exist
-    virtual = true,
-  },
   { "nvim-mini/mini.nvim", enabled = false },
-
-  -- Disable friendly-snippets (conflicts with custom snippets, uses unsupported transform syntax)
   { "rafamadriz/friendly-snippets", enabled = false },
 
-  -- =============================================
-  -- THROTTLED PLUGINS (Reduced update frequency)
-  -- =============================================
+  -- mini.ai disabled: performance issues with large files.
+  -- dir="/dev/null" + virtual=true prevents LazyVim from showing a warning.
+  { "nvim-mini/mini.ai", enabled = false, dir = "/dev/null", virtual = true },
 
-  -- Throttle lualine updates and avoid high-frequency components.
+  -- Classic vim-surround: ys, ds, cs, S (visual)
+  { "tpope/vim-surround" },
+
   {
     "nvim-lualine/lualine.nvim",
     init = function()
@@ -207,121 +180,4 @@ return {
     end,
   },
 
-  -- which-key kept at default 200ms delay (user preference)
-
-  -- =============================================
-  -- COMPLETION (blink.cmp)
-  -- =============================================
-
-  {
-    "saghen/blink.cmp",
-    -- dependencies = { "fang2hou/blink-copilot" }, -- disabled: copilot-lsp caused LSP slowdown
-    opts = {
-      keymap = {
-        -- Disable preset to prevent Tab/C-i conflicts
-        preset = "none",
-        -- Navigation
-        ["<C-n>"] = { "select_next", "fallback" },
-        ["<C-p>"] = { "select_prev", "fallback" },
-        -- Accept
-        ["<C-o>"] = { "select_and_accept", "fallback" },
-        ["<CR>"] = { "select_and_accept", "fallback" },
-        -- Tab passthrough
-        ["<Tab>"] = { "fallback" },
-        ["<S-Tab>"] = { "fallback" },
-        -- Toggle/close
-        ["<C-i>"] = { "show", "hide" },
-
-        -- <Esc>: blink cancels the menu first. If the menu was open, cancel
-        -- returns true and the fallback is suppressed (cursor stays in insert,
-        -- press Esc again to leave). If the menu was closed, fallback runs
-        -- copilot's <Esc> handler which dismisses ghost text + exits insert.
-        ["<ESC>"] = { "cancel", "fallback" },
-        -- Toggle documentation
-        ["<C-h>"] = { "show_documentation", "hide_documentation" },
-      },
-      snippets = {
-        score_offset = 0, -- Remove default -3 penalty on snippet items
-      },
-      fuzzy = {
-        sorts = {
-          "exact", -- Exact prefix matches always on top (VSCode-like behavior)
-          "score",
-          "sort_text",
-        },
-      },
-      completion = {
-        accept = {
-          auto_brackets = { enabled = false },
-        },
-        ghost_text = { enabled = false },
-        list = {
-          max_items = 25,
-          selection = {
-            preselect = true, -- always highlight first item so <CR> can accept it
-            auto_insert = false, -- don't auto-insert text while navigating the list
-          },
-        },
-        trigger = {
-          -- Don't re-show completion menu after accepting a completion
-          show_on_accept_on_trigger_character = false,
-        },
-        documentation = {
-          auto_show = true, --  Show docs automatically when item selected
-          auto_show_delay_ms = 150,
-          -- auto_show = false, --  use c-h to toggle docs if needed
-          -- auto_show_delay_ms = 200, -- Delay before showing docs (ms)
-          window = {
-            border = "rounded",
-            max_width = 80,
-            max_height = 30,
-          },
-        },
-        menu = {
-          border = "rounded",
-        },
-      },
-      sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
-        -- Disable default transform that penalizes snippet scores
-        transform_items = function(_, items)
-          return items
-        end,
-        providers = {
-          lsp = {
-            score_offset = 100,
-            min_keyword_length = 0,
-            -- Filter out bracket-only completions from emmet (for HTML/CSS files)
-            transform_items = function(_, items)
-              return vim.tbl_filter(function(item)
-                local label = item.label or ""
-                if label:match("^[%{%}%(%)%[%]<>]+$") then
-                  return false
-                end
-                return true
-              end, items)
-            end,
-          },
-          snippets = {
-            score_offset = 100,
-            async = true,
-            min_keyword_length = 1,
-            should_show_items = true,
-          },
-          buffer = {
-            min_keyword_length = 3,
-            max_items = 5,
-          },
-        },
-      },
-      enabled = function()
-        local buftype = vim.bo.buftype
-        local filetype = vim.bo.filetype
-        if filetype:match("^Avante") or filetype == "AvanteInput" or buftype == "prompt" then
-          return false
-        end
-        return true
-      end,
-    },
-  },
 }

@@ -27,7 +27,7 @@ return {
       },
       nes = {
         enabled = true,
-        auto_trigger = true,
+        auto_trigger = false,
 
         -- NES persistence tuning. copilot-lsp's defaults are move_count_threshold=3
         -- and distance_threshold=40 -- aggressive enough that scrolling up to check

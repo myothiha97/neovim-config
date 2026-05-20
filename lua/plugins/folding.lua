@@ -187,7 +187,7 @@ return {
     end,
     opts = {
       provider_selector = function()
-        return { "treesitter", "indent" }
+        return { "indent" }
       end,
       fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
         local newVirtText = {}

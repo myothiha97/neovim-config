@@ -3,26 +3,20 @@
 -- Add any additional keymaps here
 --
 
--- Enhanced LSP floating previews: add inner padding via window options
 -- Neovim 0.12 has no pad_* in open_floating_preview, so we use foldcolumn
--- (left padding) and winbar (top padding) on the float window after creation
+-- (left padding) on the float window after creation.
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
   local bufnr, winid = orig_open_floating_preview(contents, syntax, opts)
-
   if winid and vim.api.nvim_win_is_valid(winid) then
-    -- foldcolumn creates left-side padding without modifying content
     vim.wo[winid].foldcolumn = "1"
-
-    -- Expand window width to compensate for foldcolumn space
     local config = vim.api.nvim_win_get_config(winid)
     if config.width then
       config.width = config.width + 2
     end
     vim.api.nvim_win_set_config(winid, config)
   end
-
   return bufnr, winid
 end
 
@@ -100,9 +94,6 @@ local comment_key = "<M-/>"
 vim.keymap.set("n", "<leader>va", "ggVG", { desc = "Select all the text in the current file" })
 vim.keymap.set("n", "<leader>ya", "ggyG", { desc = "Yank all text" })
 
--- Paste without losing the current clipboard content (override default p behavior)
--- vim.keymap.set("n", "<leader>p", ':let @/=@"<CR>"_dP', { silent = true })
-
 -- Copy current file path (relative) to clipboard for Claude Code CLI
 vim.keymap.set("n", "<leader>as", function()
   local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
@@ -150,14 +141,6 @@ vim.keymap.set({ "i", "n" }, "<M-i>", function()
   vim.lsp.buf.signature_help(hover_opts)
 end, { desc = "Signature Help" })
 
--- -- Enter insert mode and show completion menu (normal mode only)
--- vim.keymap.set("n", "<C-i>", function()
---   vim.cmd("startinsert")
---   vim.schedule(function()
---     require("blink.cmp").show()
---   end)
--- end, { desc = "Insert & Show Completion" })
-
 -- terminal mode
 vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { noremap = true })
 
@@ -186,7 +169,6 @@ vim.keymap.set("i", "<Tab>", function()
 end, { expr = true, desc = "NES Accept or Indent" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "Outdent" })
 
--- map(mode, key, result, options)
 vim.keymap.set("n", "gi", function()
   local _, winid = vim.diagnostic.open_float({
     focusable = true,
@@ -227,49 +209,6 @@ vim.keymap.set("n", "<S-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window He
 vim.keymap.set("n", "<S-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
 vim.keymap.set("n", "<S-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
 vim.keymap.set("n", "<S-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
-
--- 1. Global Indicator
-local logIndicator = " -> "
-
--- 2. Define Templates (Grouped for flexibility)
-local log_templates = {
-  javascript = "console.log('%s" .. logIndicator .. "', %s);",
-  typescript = "console.log('%s" .. logIndicator .. "', %s);",
-  javascriptreact = "console.log('%s" .. logIndicator .. "', %s);", -- For .jsx
-  typescriptreact = "console.log('%s" .. logIndicator .. "', %s);", -- For .tsx
-  python = "print(f'{%s=}')",
-  lua = "print('%s" .. logIndicator .. "', vim.inspect(%s))",
-  rust = 'println!("{}" .. logIndicator .. "{:?}", "%s", %s);',
-  go = 'fmt.Printf("%s' .. logIndicator .. '%%+v\\n", %s)',
-  cpp = 'std::cout << "%s' .. logIndicator .. '" << %s << std::endl;',
-}
-
--- 3. Dynamic logging function
-local function log_visual_selection()
-  -- Yank the current visual selection to register 'v'
-  vim.cmd('noautocmd normal! "vy')
-  local selection = vim.fn.getreg("v"):gsub("\n", "")
-  -- Get current filetype
-  local ft = vim.bo.filetype
-
-  -- UNCOMMENT THE LINE BELOW TO DEBUG:
-  -- print("Current Filetype detected as: " .. ft)
-
-  -- Lookup template
-  local template = log_templates[ft]
-
-  -- If not found in our table, use a generic print fallback
-  if not template then
-    template = "print('%s" .. logIndicator .. "', %s)"
-  end
-
-  -- Format and insert
-  local log_line = string.format(template, selection, selection)
-  vim.api.nvim_put({ log_line }, "l", true, true)
-end
-
--- 4. Mapping
-vim.keymap.set("v", "<leader>l", log_visual_selection, { desc = "Dynamic Log Selection" })
 
 -- Explicit state flags for fold toggle (foldlevel is unreliable with ufo)
 vim.g.folds_closed = false
@@ -525,11 +464,6 @@ vim.keymap.set("n", "gh", function()
   end
 end, { desc = "Go to Function End (Treesitter)" })
 
--- Avante ai agents
-vim.keymap.set("n", "<leader>am", "<cmd>AvanteModels<cr>", {
-  desc = "avante: select models",
-})
-
 -- Unsaved files popup: list all modified buffers with jump/save actions
 local function show_unsaved_files()
   local modified = {}
@@ -623,26 +557,3 @@ end
 
 vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" })
 
-vim.keymap.set("n", "<leader>ag", function()
-  local model = "claude-haiku-4.5"
-  local provider_name = "copilot"
-  local Config = require("avante.config")
-  local Providers = require("avante.providers")
-
-  if provider_name ~= Config.provider then
-    Providers.refresh(provider_name)
-  end
-
-  Config.override({
-    providers = {
-      [provider_name] = vim.tbl_deep_extend("force", Config.get_provider_config(provider_name), { model = model }),
-    },
-  })
-
-  local provider_cfg = Providers[provider_name]
-  if provider_cfg then
-    provider_cfg.model = model
-  end
-
-  vim.notify("Avante → " .. provider_name .. "/" .. model, vim.log.levels.INFO)
-end, { desc = "avante: switch to Haiku 4.5" })

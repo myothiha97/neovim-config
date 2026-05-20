@@ -1,4 +1,4 @@
-local debounce_text_change = 100
+local debounce_text_change = 300
 
 return {
   {
@@ -72,7 +72,7 @@ return {
               },
               tsserver = {
                 -- Give tsserver more heap (default is ~3GB, React projects can need more)
-                maxTsServerMemory = 8192,
+                maxTsServerMemory = 3072,
                 -- Don't watch node_modules for changes
                 watchOptions = {
                   watchFile = "useFsEvents",
@@ -132,45 +132,7 @@ return {
         callback = function(args)
           -- vim.schedule ensures this runs AFTER LazyVim's LspAttach keymaps
           vim.schedule(function()
-            -- vim.keymap.set("n", "gd", function()
-            --   vim.lsp.buf.definition({
-            --     on_list = function(options)
-            --       local items = options.items
-            --       if #items > 1 then
-            --         local filtered = {}
-            --         for _, item in ipairs(items) do
-            --           if not string.match(item.filename or "", "node_modules") then
-            --             table.insert(filtered, item)
-            --           end
-            --         end
-            --         if #filtered > 0 then
-            --           items = filtered
-            --         end
-            --       end
-            --
-            --       if #items == 1 then
-            --         local item = items[1]
-            --         vim.cmd("edit " .. vim.fn.fnameescape(item.filename))
-            --         vim.schedule(function()
-            --           local lnum = item.lnum or 1
-            --           local col = (item.col or 1) - 1
-            --           local line_count = vim.api.nvim_buf_line_count(0)
-            --           if lnum > line_count then
-            --             lnum = line_count
-            --           end
-            --           vim.api.nvim_win_set_cursor(0, { lnum, math.max(0, col) })
-            --         end)
-            --       else
-            --         vim.fn.setqflist({}, " ", { title = "LSP Definitions", items = items })
-            --         vim.cmd("copen")
-            --       end
-            --     end,
-            --   })
-            --
-            --
-            -- end, { buffer = args.buf, desc = "Goto Definition (Skip node_modules)" })
-            --
-            vim.keymap.set("n", "gd", function()
+              vim.keymap.set("n", "gd", function()
               vim.lsp.buf.definition({
                 on_list = function(options)
                   local items = options.items

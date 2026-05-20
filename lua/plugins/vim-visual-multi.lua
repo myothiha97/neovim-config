@@ -1,7 +1,7 @@
 return {
   "mg979/vim-visual-multi",
   branch = "master",
-  event = "BufReadPost",
+  event = "VeryLazy",
   init = function()
     vim.g.VM_maps = {
       -- Cmd+D: add next occurrence (VSCode/Zed Cmd+D)

@@ -149,7 +149,7 @@ vim.paste = (function(overridden)
 end)(vim.paste)
 
 -- Performance optimizations
-vim.opt.updatetime = 200 -- faster CursorHold (default 4000ms)
+vim.opt.updatetime = 400 -- faster CursorHold (default 4000ms)
 vim.opt.timeoutlen = 300 -- faster keymap timeout (default 1000ms)
 vim.opt.signcolumn = "yes" -- fixed signcolumn prevents layout shift
 -- vim.opt.lazyredraw = true -- DISABLED: causes async UI freezes with LSP
