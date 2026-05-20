@@ -17,6 +17,7 @@ return {
     --   vim.api.nvim_set_hl(0, "UfoFoldedBg", { bg = "NONE" })
     --   vim.api.nvim_set_hl(0, "UfoFoldCount", { fg = "#c9ba9b", italic = true })
     -- end,
+    -- Note: Folded/UfoFoldedBg highlights are cleared in themes.lua on_highlights
     keys = {
       {
         "zR",

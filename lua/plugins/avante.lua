@@ -5,6 +5,7 @@ return {
   enabled = true,
   cmd = {
     "AvanteAsk",
+    "AvanteDiff",
     "AvanteChat",
     "AvanteClear",
     "AvanteEdit",
@@ -19,7 +20,6 @@ return {
   init = function()
     vim.g.avante_show_selected_files = false
     vim.g.avante_show_todos = false
-
     local patched = false
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "Avante",
@@ -99,62 +99,84 @@ return {
   ---@module 'avante'
   ---@type avante.Config
   opts = {
-    provider = "copilot",
-    mode = "agentic",
-    -- Prevent avante from using copilot for per-keystroke suggestions
+    provider = "codex",
     auto_suggestions_provider = nil,
+    mode = "agentic",
 
     providers = {
-      copilot = {
-        model = "gpt-5.3-codex",
+      codex = {
+        endpoint = "acp",
+        model = "gpt-5.5",
+      },
+    },
+
+    acp_providers = {
+      ["codex"] = {
+        command = "codex-acp",
+        -- `-c key=value` overrides keys in ~/.codex/config.toml; value is parsed as TOML.
+        -- String values need their TOML quotes inside the argument.
+        args = {
+          "-c",
+          'model="gpt-5.5"',
+          "-c",
+          'model_reasoning_effort="high"', -- "low" | "medium" | "high"
+        },
+        env = {
+          NODE_NO_WARNINGS = "1",
+          OPENAI_API_KEY = os.getenv("OPENAI_API_KEY"),
+          PATH = os.getenv("PATH"),
+          HOME = os.getenv("HOME"),
+        },
       },
     },
 
     behaviour = {
-      -- We define all keymaps manually in `keys` below
       auto_set_keymaps = false,
+      auto_apply_diff_after_generation = true,
     },
+    -- Explicitly define conflict mappings here if you don't want standard keys
+    mappings = {
+      diff = {
+        ours = "co", -- Keep your current code block
+        theirs = "ct", -- Accept the incoming suggestion
+        all_theirs = "ca", -- Accept all suggested blocks globally
+        both = "cb", -- Merge both blocks together
+        cursor = "cc", -- Accept the block under cursor
+        next = "]x", -- Jump to next modification block
+        prev = "[x", -- Jump to previous modification block
+      },
+      sidebar = {
+        apply_all = "A", -- Apply all suggestions → opens diff view
+        apply_cursor = "a", -- Apply suggestion under cursor → opens diff view
+        switch_windows = "<Tab>",
+        reverse_switch_windows = "<S-Tab>",
+      },
+    },
+
     selection = {
       hint_display = "none",
     },
     windows = {
       input = {
-        height = 20,
-      },
-    },
-    -- Model is persisted to ~/.local/state/nvim/avante/config.json automatically.
-    -- Run :AvanteModels to select a model — never configure it here (causes model_not_supported).
-    mappings = {
-      diff = {
-        ours = "co",
-        theirs = "ct",
-        all_theirs = "ca",
-        both = "cb",
-        cursor = "cc",
-        next = "]x",
-        prev = "[x",
-      },
-      sidebar = {
-        apply_all = "A",
-        apply_cursor = "a",
-        switch_windows = "<Tab>",
-        reverse_switch_windows = "<S-Tab>",
-      },
-      submit = {
-        normal = "<CR>",
-        insert = "<C-s>",
-      },
-      cancel = {
-        normal = { "<C-c>", "q" },
-        insert = "<C-c>",
+        height = 10,
       },
     },
   },
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "MunifTanjim/nui.nvim",
+  },
   keys = {
     { "<leader>aa", "<cmd>AvanteAsk<cr>", desc = "Avante: Ask AI" },
-    { "<leader>aa", "<cmd>AvanteAsk<cr>", mode = "v", desc = "Avante: Ask AI (selection)" },
     { "<leader>ac", "<cmd>AvanteChat<cr>", desc = "Avante: Chat" },
-    { "<leader>ae", "<cmd>AvanteEdit<cr>", mode = "v", desc = "Avante: Edit selection" },
+    {
+      "<c-i>",
+      function()
+        require("avante.api").ask()
+      end,
+      mode = "v",
+      desc = "Avante: Ask with selection (Edit via agent)",
+    },
     { "<leader>at", "<cmd>AvanteToggle<cr>", desc = "Avante: Toggle sidebar" },
     { "<leader>ar", "<cmd>AvanteRefresh<cr>", desc = "Avante: Refresh" },
     { "<leader>aX", "<cmd>AvanteStop<cr>", desc = "Avante: Stop" },

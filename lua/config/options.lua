@@ -180,6 +180,14 @@ vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 
+-- Auto-reload buffers when an external process (e.g. agentic AI) writes to disk
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "CursorHold" }, {
+  callback = function()
+    vim.cmd("checktime")
+  end,
+})
+
 -- Auto-clear command line messages after inactivity (lightweight)
 local msg_clear_timer
 vim.api.nvim_create_autocmd("CursorHold", {

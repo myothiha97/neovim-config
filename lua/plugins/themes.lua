@@ -57,6 +57,10 @@ return {
         hl.DiagnosticVirtualTextWarn = { fg = "#e0af68", bg = c.none }
         hl.DiagnosticVirtualTextInfo = { bg = c.none }
         hl.DiagnosticVirtualTextHint = { fg = "#1abc9c", bg = c.none }
+
+        -- Remove fold background highlight
+        hl.Folded = { bg = "NONE" }
+        hl.UfoFoldedBg = { bg = "NONE" }
       end,
     },
   },
@@ -99,7 +103,9 @@ return {
         hl.CursorLine = { bg = "#212434" }
 
         -- Reduce Folded highlight intensity by 50% (blend toward bg)
-        hl.Folded = { bg = "#21283f" }
+        -- hl.Folded = { bg = "#21283f" }
+        hl.Folded = { bg = "NONE" }
+        hl.UfoFoldedBg = { bg = "NONE" }
 
         -- Make unused vars/imports visible (default is nearly black)
         hl.DiagnosticUnnecessary = { fg = "#737aa2", italic = true }
