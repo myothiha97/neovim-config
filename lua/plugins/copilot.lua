@@ -164,14 +164,36 @@ return {
       -- auto-trigger state and drives the lualine indicator color.
       vim.g.copilot_enabled = true
 
+      -- Gate NES rendering on vim.g.copilot_enabled. The TextChanged autocmd
+      -- in copilot-lsp/nes/init.lua:191 captures request_nes by upvalue at
+      -- LspAttach time, so we can't stop new requests post-hoc — but we can
+      -- block the render. Request still flies (cheap), nothing draws.
+      local nes_ui_ok, nes_ui = pcall(require, "copilot-lsp.nes.ui")
+      if nes_ui_ok and not nes_ui._toggle_wrapped then
+        local original_display = nes_ui._display_next_suggestion
+        nes_ui._display_next_suggestion = function(bufnr, ns_id, edits)
+          if not vim.g.copilot_enabled then
+            return false
+          end
+          return original_display(bufnr, ns_id, edits)
+        end
+        nes_ui._toggle_wrapped = true
+      end
+
       local function toggleCopilotSuggestions()
         suggestion.toggle_auto_trigger()
         vim.g.copilot_enabled = not vim.g.copilot_enabled
-        -- Belt-and-suspenders: when disabling, drop any ghost text that was
-        -- rendered just before the toggle. toggle_auto_trigger only stops
-        -- *future* requests; the current ghost can linger until next render.
-        if not vim.g.copilot_enabled and suggestion.is_visible() then
-          suggestion.dismiss()
+        -- Belt-and-suspenders: when disabling, drop any ghost text and any
+        -- pending NES that was rendered just before the toggle. The
+        -- toggle/render-gate only affects *future* draws.
+        if not vim.g.copilot_enabled then
+          if suggestion.is_visible() then
+            suggestion.dismiss()
+          end
+          local nes_ok, nes = pcall(require, "copilot-lsp.nes")
+          if nes_ok then
+            nes.clear()
+          end
         end
         local status = vim.g.copilot_enabled and "Enabled" or "Disabled"
         local level = vim.g.copilot_enabled and vim.log.levels.INFO or vim.log.levels.WARN
