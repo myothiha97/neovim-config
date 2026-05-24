@@ -130,8 +130,15 @@ vim.keymap.set("n", "<Tab>", function()
     if cfg.relative ~= "" and cfg.focusable ~= false then
       local buf = vim.api.nvim_win_get_buf(win)
       local ft = vim.bo[buf].filetype
-      if not ft:match("^snacks_picker") then
-        vim.api.nvim_set_current_win(win)
+      if not ft:match("^snacks_picker") and not vim.b[buf].mouse_hover_popup then
+        -- Defer the window switch: when NES delegates here via its expr=true
+        -- <Tab> wrapper, nvim_set_current_win raises E565 (no text/window
+        -- mutation allowed in expression context). Same fix as <Esc> above.
+        vim.schedule(function()
+          if vim.api.nvim_win_is_valid(win) then
+            vim.api.nvim_set_current_win(win)
+          end
+        end)
         return
       end
     end
@@ -559,4 +566,3 @@ local function show_unsaved_files()
 end
 
 vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" })
-
