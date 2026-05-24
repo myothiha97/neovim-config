@@ -72,6 +72,8 @@ vim.keymap.set("i", "<ScrollWheelUp>", "<C-o>3<C-y>", { noremap = true })
 
 -- Horizontal mouse/trackpad scroll: override Neovim's default 6-column jump
 -- with native sideways scrolling at a small 3-column step.
+-- the Horizontal scroll is still not very smooth compared to vertical scrolling, but in this current time thats the best we can do with Neovim's input system.
+-- may be in future Neovim or ghostty might add native support for smooth horizontal scrolling which we can then leverage here.
 vim.keymap.set({ "n", "v" }, "<ScrollWheelLeft>", "3zh", { noremap = true, silent = true })
 vim.keymap.set({ "n", "v" }, "<ScrollWheelRight>", "3zl", { noremap = true, silent = true })
 vim.keymap.set("i", "<ScrollWheelLeft>", "<C-o>3zh", { noremap = true, silent = true })

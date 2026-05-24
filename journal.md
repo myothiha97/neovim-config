@@ -1,3 +1,36 @@
+## May 2026 change summary
+
+### Runtime and performance
+- Optimized runtime behavior for large projects by trimming expensive UI/background work, reducing Treesitter usage on large files, and keeping fold behavior on UFO's async/manual path instead of global synchronous `foldexpr`.
+- Disabled or deferred nonessential plugins/features such as gitsigns, bufferline, some Treesitter-heavy helpers, and unused UI integrations where the runtime cost was higher than the current value.
+- Tuned completion and LSP debounce behavior, including Copilot debounce adjustments and LSP diagnostic/update settings.
+
+### Copilot, blink.cmp, and AI workflow
+- Stabilized Copilot ghost text by preventing LazyVim/mason-lspconfig from auto-starting the standalone `copilot-language-server`, so `copilot.lua` owns the Copilot client slot.
+- Upgraded Neovim from the broken 0.12.0 changetracking path to 0.12.2, removing the need for previous Copilot restart/workaround logic.
+- Reworked Copilot and blink.cmp coexistence: manual ghost-text flow, cleaner accept/cancel keymaps, and later a master toggle that silences Copilot NES with the same switch as ghost text.
+- Migrated Avante toward the Codex ACP provider with reasoning-effort configuration and buffer auto-sync, while keeping notes for future UI/UX refinement.
+
+### Folding
+- Added and refined `nvim-ufo` workflows, including `zv` for toggling all function folds via Treesitter queries with fallback behavior.
+- Re-enabled scoped Treesitter fold providers for JS/TS/JSX/TSX/Lua while keeping `indent` fallback and a large-file guard at `200KB`.
+- Preserved a follow-up note to revisit the current auto-fold-imports-on-open block in `lua/plugins/folding.lua`.
+
+### Mouse and popup workflow
+- Added `lua/config/mouse-hover.lua` for delayed LSP hover docs on mouse movement, while preserving native right-click popup behavior.
+- Fixed conflicts where hover popups could close right-click menus, steal focus unexpectedly, or prevent clicking into the hover popup.
+- Kept double-click/tap behavior on Neovim defaults after testing instant hover-on-double-tap and finding the UX worse.
+
+### UI, theme, and editor ergonomics
+- Refined solarized-osaka and tokyonight highlight overrides, including selection contrast, diagnostic virtual text, blink.cmp menu colors, and disabled CursorLine background while leaving previous color values commented for easy restore.
+- Added statusline visibility for unsaved buffers and a popup workflow for jumping/saving unsaved files.
+- Adjusted explorer, surround, right-click menu, jumplist, Harpoon/which-key visibility, and Neovide-specific configuration.
+
+### Config organization and repository cleanup
+- Extracted Neovide-specific setup into `lua/config/neovide.lua`.
+- Updated plugin lockfile pins and removed the old `oil.lua.popup-backup`.
+- Split TODO-style planning notes out of `journal.md` into `todo.md`.
+
 ## AI integration updates
 Feature -  custom popup for ai agents 
 Feature - async ai agents completions without blocking the UI
@@ -223,5 +256,4 @@ copilot auto-trigger eliminates the per-keystroke LSP request loop.
 2. Open a file → confirm tabline shows `1.  filename.ext` at the top with a `▎` indicator.
 3. If layout is still broken, capture `:messages` + `:hi BufferLineFill BufferLineBackground BufferLineBufferSelected` output to debug highlight resolution.
 4. If layout is fine, optionally restore the neo-tree `offsets` block as a separate iteration.
-
 

@@ -1,13 +1,5 @@
 # ISSUES / TODOs
 
-## Blink cmp bugs 
-- sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
-
-
-## Paste without losing the current clipboard content (override default p behavior)
- 
-- vim.keymap.set("n", "<leader>p", ':let @/=@"<CR>"_dP', { silent = true })
-
 
 ## ✅ Prune or remove unnecessary plugins 
 - currently there are still too many plugins install in the system, which dose not have a lot of use
@@ -23,6 +15,15 @@
 ## ✅ Solarized-osaka: refine solarized-osaka highlight color for grug far nvim search highlights, currently the color is too blend with the background and make it hard to see the search results
 
 ## ✅ Advance code folding features like folding imports blocks at initially when open the files initially, currently need to manually toggle with za keys , which is quite repetitive
+
+
+## Blink cmp bugs (currently not longer happen, but still need to check and monitor the issue to make sure it is completely fixed)
+- sometime in the middle of coding, using ENTER key to accept suggestions suddenly not working, instead it goes underline or next line, the issue have been persisting for a long time, so far not yet completely fix
+
+
+## Paste without losing the current clipboard content (override default p behavior)
+- vim.keymap.set("n", "<leader>p", ':let @/=@"<CR>"_dP', { silent = true })
+
 
 ## Solarized-osaka (Low priority): refine background color to be the solid color instead of transparent ones to improve the readability and reduce the eye strain, 
 
@@ -80,6 +81,11 @@ Add custom commands or keymaps for code analysis actions, such as:
 * Analyze all variables, functions, classes, objects, and other symbols used in specific files, including their usage counts, and display the results in a popup or dedicated pane
 
 
-## Comprehensive debuggin setup with nvim-dap and nvim-dap-ui
-* Main languages to implement first  - JS/TS, Python, Go for now  
-* Secondary target languages  - Rust, C, C# and bash 
+## Comprehensive Debugging Setup with nvim-dap and nvim-dap-ui
+
+Set up a complete debugging workflow in Neovim using nvim-dap and nvim-dap-ui.
+
+__Language Priorities__
+
+* Primary languages — JS/TS, Python, and Go
+* Secondary target languages — Rust, C, C#, and Bash
