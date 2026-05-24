@@ -94,6 +94,72 @@ return {
             },
           },
           actions = {
+            explorer_single_click = function(picker)
+              local pos = vim.fn.getmousepos()
+              local list_win = picker.list.win.win
+
+              -- Click outside the explorer list: replicate default
+              -- <LeftMouse> behavior (focus the clicked window, place
+              -- cursor at the click point). We have to do this manually
+              -- because intercepting <LeftMouse> suppresses the default.
+              if pos.winid ~= list_win then
+                if pos.winid > 0 and vim.api.nvim_win_is_valid(pos.winid) then
+                  vim.api.nvim_set_current_win(pos.winid)
+                  if pos.line > 0 then
+                    local col = math.max(0, pos.column - 1)
+                    pcall(vim.api.nvim_win_set_cursor, pos.winid, { pos.line, col })
+                  end
+                end
+                return
+              end
+
+              if pos.line < 1 then
+                return
+              end
+
+              local idx = picker.list:row2idx(pos.line)
+              local item = picker.list:get(idx)
+              if not item or not vim.api.nvim_win_is_valid(list_win) then
+                return
+              end
+
+              picker.list:view(idx)
+
+              if item.dir or picker.input.filter.meta.searching then
+                picker:action("confirm")
+                return
+              end
+
+              if not vim.api.nvim_win_is_valid(picker.main) then
+                return
+              end
+
+              local path = Snacks.picker.util.path(item)
+              if not path then
+                return
+              end
+
+              local buf = item.buf or vim.fn.bufadd(path)
+              vim.bo[buf].buflisted = true
+
+              if vim.api.nvim_win_get_buf(picker.main) ~= buf then
+                local ok, err = pcall(vim.fn.bufload, buf)
+                if not ok then
+                  Snacks.notify.error("Failed to load `" .. path .. "`:\n- " .. err)
+                  return
+                end
+
+                ok, err = pcall(vim.api.nvim_win_set_buf, picker.main, buf)
+                if not ok then
+                  Snacks.notify.error("Failed to open `" .. path .. "`:\n- " .. err)
+                  return
+                end
+              end
+
+              if vim.api.nvim_win_is_valid(list_win) then
+                vim.api.nvim_set_current_win(list_win)
+              end
+            end,
             explorer_toggle_focus = function(picker)
               local root = vim.uv.cwd()
               if picker:cwd() ~= root then
@@ -133,7 +199,15 @@ return {
                 ["<C-f>"] = { "explorer_close_all", mode = { "n" } },
                 ["<C-c>"] = { "close", mode = { "n" } },
                 ["."] = { "explorer_toggle_focus", mode = { "n" }, desc = "Toggle focus folder" },
-                -- ["<LeftMouse>"] = "confirm", -- not working well with nested dirs, when single clicking a folder instead of opening the dir it collapse the parent dir
+                -- Intercept <LeftMouse> (press) so the action and folder
+                -- toggle happen in a single redraw cycle — no visible
+                -- cursor jump between the click column and post-render
+                -- column 1. The handler manually replicates default
+                -- focus/cursor behavior for clicks outside the list.
+                ["<LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
+                ["<2-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
+                ["<3-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
+                ["<4-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
               },
             },
           },
