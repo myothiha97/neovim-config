@@ -207,7 +207,30 @@ return {
       })
     end,
     opts = {
-      provider_selector = function()
+      provider_selector = function(bufnr, filetype, buftype)
+        if buftype ~= "" then
+          return { "indent" }
+        end
+
+        local treesitter_folds = {
+          javascript = true,
+          javascriptreact = true,
+          typescript = true,
+          typescriptreact = true,
+          tsx = true,
+          jsx = true,
+          lua = true,
+        }
+
+        if treesitter_folds[filetype] then
+          local ok, stat = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
+          if ok and stat and stat.size > 200 * 1024 then
+            return { "indent" }
+          end
+
+          return { "treesitter", "indent" }
+        end
+
         return { "indent" }
       end,
       fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
