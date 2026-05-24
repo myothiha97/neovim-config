@@ -58,6 +58,11 @@ return {
         hl.BlinkCmpLabel = { fg = c.base1, bg = c.none }
         hl.BlinkCmpLabelMatch = { fg = c.blue300, bg = c.none }
 
+        hl.Pmenu = { fg = c.base1, bg = c.bg_float }
+        hl.PmenuSel = { fg = c.base2, bg = c.base02, bold = true }
+        hl.PmenuSbar = { bg = c.bg_highlight }
+        hl.PmenuThumb = { bg = c.base01 }
+
         hl.DiagnosticVirtualTextError = { fg = "#ff3b30", bg = c.none }
         hl.DiagnosticVirtualTextWarn = { fg = "#e0af68", bg = c.none }
         hl.DiagnosticVirtualTextInfo = { bg = c.none }
