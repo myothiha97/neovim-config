@@ -11,7 +11,7 @@
 
 local M = {}
 
-local DELAY_MS = 200
+local DELAY_MS = 400
 
 local SKIP_FT = {
   oil = true,
