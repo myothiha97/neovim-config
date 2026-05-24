@@ -47,6 +47,11 @@ return {
         hl.Visual = { bg = "#3b4261" }
         hl.VisualNOS = { bg = "#3b4261" }
 
+        -- Current line background highlight disabled.
+        -- Re-enable with a custom color if you want the current-line band back:
+        -- hl.CursorLine = { bg = "#073642" }
+        hl.CursorLine = { bg = "NONE" }
+
         hl.BlinkCmpMenu = { fg = c.base1, bg = c.bg_float }
         hl.BlinkCmpMenuBorder = { fg = c.base02, bg = c.bg_float }
         hl.BlinkCmpMenuSelection = { fg = c.base2, bg = c.base02, bold = true }
@@ -100,7 +105,8 @@ return {
         hl.Visual = { bg = "#264f78" }
         hl.LineNr = { fg = "#5b6268" }
         -- Reduce CursorLine intensity by 40% (blend toward bg)
-        hl.CursorLine = { bg = "#212434" }
+        -- hl.CursorLine = { bg = "#212434" }
+        hl.CursorLine = { bg = "NONE" }
 
         -- Reduce Folded highlight intensity by 50% (blend toward bg)
         -- hl.Folded = { bg = "#21283f" }

@@ -124,7 +124,12 @@ return {
                 ["q"] = false, -- don't close on q
                 ["/"] = false, -- use vim search instead of explorer filter
                 ["?"] = false, -- use vim search instead of help
-                ["<C-l>"] = { "confirm", mode = { "n", "i" }, desc = "Confirm selection" },
+                ["<C-l>"] = {
+                  function()
+                    vim.cmd.wincmd("l")
+                  end,
+                  desc = "Focus right window",
+                },
                 ["<C-f>"] = { "explorer_close_all", mode = { "n" } },
                 ["<C-c>"] = { "close", mode = { "n" } },
                 ["."] = { "explorer_toggle_focus", mode = { "n" }, desc = "Toggle focus folder" },

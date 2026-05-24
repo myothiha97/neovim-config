@@ -8,6 +8,7 @@ vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false
 vim.opt.listchars = { leadmultispace = "│ ", tab = "▸ ", trail = "·" }
+vim.opt.ttyfast = true
 
 -- animations
 vim.g.snacks_animate = false
@@ -35,11 +36,11 @@ pcall(vim.cmd, [[aunmenu PopUp.-LspExtras-]])
 local hover_opts_literal = [[{ border = "rounded", max_width = 80, max_height = 30 }]]
 
 vim.cmd([[anoremenu 1.10 PopUp.Go\ to\ definition <Cmd>lua vim.lsp.buf.definition()<CR>]])
-vim.cmd("anoremenu 1.20 PopUp.Show\\ Hover\\ Docs <Cmd>lua vim.lsp.buf.hover(" .. hover_opts_literal .. ")<CR>")
+vim.cmd([[anoremenu 1.20 PopUp.-LspExtras- <Nop>]])
 vim.cmd(
   "anoremenu 1.30 PopUp.Show\\ Signature\\ Help <Cmd>lua vim.lsp.buf.signature_help(" .. hover_opts_literal .. ")<CR>"
 )
-vim.cmd([[anoremenu 1.40 PopUp.-LspExtras- <Nop>]])
+vim.cmd("anoremenu 1.40 PopUp.Show\\ Hover\\ Docs <Cmd>lua vim.lsp.buf.hover(" .. hover_opts_literal .. ")<CR>")
 
 -- horizontal scroll setting
 vim.o.wrap = false

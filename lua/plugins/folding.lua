@@ -34,7 +34,7 @@ return {
         desc = "Close all folds",
       },
       {
-        "zK",
+        "zk",
         function()
           require("ufo").peekFoldedLinesUnderCursor()
         end,
@@ -126,30 +126,42 @@ return {
 
       local function get_first_import_line(bufnr)
         local ok_parser, parser = pcall(vim.treesitter.get_parser, bufnr)
-        if not ok_parser or not parser then return nil end
+        if not ok_parser or not parser then
+          return nil
+        end
         local tree = parser:parse()[1]
-        if not tree then return nil end
+        if not tree then
+          return nil
+        end
         local lang = parser:lang()
         local ok_q, query = pcall(vim.treesitter.query.parse, lang, [[ (import_statement) @import ]])
-        if not ok_q or not query then return nil end
+        if not ok_q or not query then
+          return nil
+        end
         for _, node in query:iter_captures(tree:root(), bufnr, 0, -1) do
-          return node:start() + 1  -- first import, 1-indexed
+          return node:start() + 1 -- first import, 1-indexed
         end
         return nil
       end
 
       local function try_fold(bufnr, line, retries)
-        if retries <= 0 or not vim.api.nvim_buf_is_valid(bufnr) then return end
+        if retries <= 0 or not vim.api.nvim_buf_is_valid(bufnr) then
+          return
+        end
 
         -- foldlevel == 0 means UFO hasn't computed this fold yet; retry
         if vim.fn.foldlevel(line) == 0 then
-          vim.defer_fn(function() try_fold(bufnr, line, retries - 1) end, 150)
+          vim.defer_fn(function()
+            try_fold(bufnr, line, retries - 1)
+          end, 150)
           return
         end
 
         -- Only act when this buffer is visible in the current window
         local win = vim.api.nvim_get_current_win()
-        if vim.api.nvim_win_get_buf(win) ~= bufnr then return end
+        if vim.api.nvim_win_get_buf(win) ~= bufnr then
+          return
+        end
 
         if vim.fn.foldclosed(line) == -1 then
           local saved = vim.api.nvim_win_get_cursor(win)
@@ -168,22 +180,30 @@ return {
         pattern = { "*.ts", "*.tsx", "*.js", "*.jsx" },
         callback = function(args)
           local bufnr = args.buf
-          folded[bufnr] = nil  -- fresh read = treat as new
+          folded[bufnr] = nil -- fresh read = treat as new
 
           local ok_stat, stat = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
-          if ok_stat and stat and stat.size > 102400 then return end
+          if ok_stat and stat and stat.size > 102400 then
+            return
+          end
 
           vim.defer_fn(function()
-            if folded[bufnr] or not vim.api.nvim_buf_is_valid(bufnr) then return end
+            if folded[bufnr] or not vim.api.nvim_buf_is_valid(bufnr) then
+              return
+            end
             local line = get_first_import_line(bufnr)
-            if line then try_fold(bufnr, line, 5) end
+            if line then
+              try_fold(bufnr, line, 5)
+            end
           end, 200)
         end,
       })
 
       -- Clean up tracking when buffer is removed so its number can be reused safely
       vim.api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
-        callback = function(args) folded[args.buf] = nil end,
+        callback = function(args)
+          folded[args.buf] = nil
+        end,
       })
     end,
     opts = {

@@ -51,8 +51,13 @@ return {
   -- dir="/dev/null" + virtual=true prevents LazyVim from showing a warning.
   { "nvim-mini/mini.ai", enabled = false, dir = "/dev/null", virtual = true },
 
-  -- Classic vim-surround: ys, ds, cs, S (visual)
-  { "tpope/vim-surround" },
+  -- Classic vim-surround: ys, ds, cs, s (visual — remapped from default S)
+  {
+    "tpope/vim-surround",
+    config = function()
+      vim.keymap.set("x", "s", "<Plug>VSurround", { desc = "Surround selection" })
+    end,
+  },
 
   {
     "nvim-lualine/lualine.nvim",
