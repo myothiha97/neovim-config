@@ -52,3 +52,7 @@ require("lazy").setup({
     },
   },
 })
+
+-- Freeze plugin versions. Blocks accidental :Lazy update/sync/restore and the
+-- :Lazy UI buttons. Unlock for planned updates with `NVIM_LAZY_UNLOCK=1 nvim`.
+require("config.lazy-freeze").setup()
