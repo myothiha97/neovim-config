@@ -78,3 +78,8 @@ Add custom commands or keymaps for code analysis actions, such as:
 
 * Check code coverage or code quality and display the results in a popup or dedicated pane
 * Analyze all variables, functions, classes, objects, and other symbols used in specific files, including their usage counts, and display the results in a popup or dedicated pane
+
+
+## Comprehensive debuggin setup with nvim-dap and nvim-dap-ui
+* Main languages to implement first  - JS/TS, Python, Go for now  
+* Secondary target languages  - Rust, C, C# and bash 
