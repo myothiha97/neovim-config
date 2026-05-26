@@ -111,15 +111,14 @@ vim.keymap.set("n", comment_key, "<cmd>normal gcc<CR>", { desc = "Toggle comment
 -- Visual mode: Comment the highlighted selection
 vim.keymap.set("v", comment_key, "<Esc>:normal gvgc<CR>", { desc = "Toggle comment block" })
 
--- Jumplist forward on <C-p> (default <C-i> is shadowed by the <Tab> mapping below)
-vim.keymap.set("n", "<C-p>", "<C-i>", { desc = "Jump Forward (jumplist)" })
-
 vim.keymap.set({ "n", "v" }, "<C-d>", "<C-d>zz", { desc = "Scroll Down and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down Page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up Page and Recenter" })
 
--- Tab in normal mode: accept NES if pending, else focus float or open hover
+-- Tab in normal mode: accept NES if pending, else focus float, else native
+-- jumplist forward (the built-in <C-i> behavior, since <Tab> and <C-i> share the
+-- same byte in the terminal). Hover is on K.
 vim.keymap.set("n", "<Tab>", function()
   local bufnr = vim.api.nvim_get_current_buf()
   if vim.b[bufnr].nes_state then
@@ -147,8 +146,10 @@ vim.keymap.set("n", "<Tab>", function()
       end
     end
   end
-  vim.lsp.buf.hover(hover_opts)
-end, { desc = "NES Accept / Hover / Focus Float" })
+  -- Fall through to native <C-i> jumplist-forward. "n" flag is noremap so this
+  -- bypasses the <Tab> mapping itself and hits the built-in behavior.
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-i>", true, false, true), "n", false)
+end, { desc = "NES Accept / Focus Float / Jump Forward" })
 
 -- Signature help for insert mode and normal mode (Option+i via Ghostty)
 vim.keymap.set({ "i", "n" }, "<M-i>", function()
