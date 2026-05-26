@@ -92,11 +92,11 @@ end
 
 local prompts = {
   commit = {
-    intro = "Generate a high-quality git commit message for the current changes.",
+    action = "Generate a high-quality git commit message for the current changes and perform git commit",
     focus = "Use Conventional Commits. Keep the subject short, imperative, and specific. If the changes mix or unrelated work, recommend splitting them into separate commits but only if the changes are very unrleated  if not summarize the changes to one single commit. Do not invent behavior that is not visible in the diff.",
   },
   codebase_analysis = {
-    intro = "Analyze this codebase as a senior engineer.",
+    action = "Analyze this codebase as a senior engineer.",
     focus = table.concat({
       "Analyze the repository architecture, maintainability, performance risks, Neovim/LazyVim configuration structure, plugin boundaries, language support, and testing or verification gaps.",
       "",
@@ -108,23 +108,23 @@ local prompts = {
     }, "\n"),
   },
   explain_current_file = {
-    intro = "Explain the codebase inside this file and the role of this file in the codebase.",
+    action = "Explain the codebase inside this file and the role of this file in the codebase.",
     focus = "Focus on purpose, main responsibilities, important dependencies, data flow, and how this file connects to nearby modules. Keep it concise, concrete, and reference specific lines or symbols.",
   },
   explain_current_symbol = {
-    intro = "Explain the specific function, class, or expressions near my cursor.If the cursor is inside the fucntion or class , explain that function or class as well as its relationship to the surrounding code.",
+    action = "Explain the specific function, class, or expressions near my cursor.If the cursor is inside the fucntion or class , explain that function or class as well as its relationship to the surrounding code.",
     focus = "Focus on purpose, inputs and outputs, control flow, dependencies, edge cases, and why this code exists. Keep it concise, concrete, and reference specific lines or symbols.",
   },
   explain_selection = {
-    intro = "Explain the selected code or text.",
+    action = "Explain the selected code or text.",
     focus = "Focus on meaning, key ideas, important details, dependencies or unfamiliar terms, and anything non-obvious. Also if the selection is the code block rather than just normal text then explain additionally about its role and  how this particular selection was used or fit in the file. Keep it concise and concrete but can be more detailed if necessary",
   },
   refactor = {
-    intro = "Refactor this code to improve readability, maintainability, and simplicity without changing behavior.",
+    action = "Refactor this code to improve readability, maintainability, and simplicity without changing behavior.",
     focus = "Keep the existing style and architecture. Avoid unnecessary abstractions. Explain the key changes and any tradeoffs.",
   },
   review_changes = {
-    intro = "Review the current local changes before commit.",
+    action = "Review the current local changes before commit.",
     focus = table.concat({
       "Take a code-review stance. Prioritize bugs, regressions, performance risks, maintainability issues, and missing verification. Be concrete and cite file paths and line numbers where possible. If no serious issues are found, say that clearly and list any residual risks.",
       "",
@@ -135,9 +135,9 @@ local prompts = {
   },
 }
 
--- Join: intro, optional context block, optional focus, optional trailing block. Blank line between each.
+-- Join: action, optional context block, optional focus, optional trailing block. Blank line between each.
 local function render(template, context, trailing)
-  local parts = { template.intro }
+  local parts = { template.action }
   local function append(block)
     if not block or #block == 0 then
       return
