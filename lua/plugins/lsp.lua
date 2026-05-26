@@ -58,6 +58,15 @@ return {
             debounce_text_changes = debounce_text_change,
           },
         },
+        lua_ls = {
+          settings = {
+            Lua = {
+              codeLens = {
+                enable = false,
+              },
+            },
+          },
+        },
         -- TypeScript LSP optimization (React/TSX focused)
         vtsls = {
           flags = {
