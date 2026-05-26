@@ -194,6 +194,7 @@ If you grep for a method name and get 200 hits, switch to LSP `gr` — it
 filters by *actual symbol references*, not text matches. Huge time saver
 in big codebases.
 
+
 ### Search history
 
 `/` then `<C-p>` walks backward through your search history. Reuse

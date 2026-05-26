@@ -146,9 +146,16 @@ vim.keymap.set("n", "<Tab>", function()
       end
     end
   end
-  -- Fall through to native <C-i> jumplist-forward. "n" flag is noremap so this
-  -- bypasses the <Tab> mapping itself and hits the built-in behavior.
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-i>", true, false, true), "n", false)
+  -- Fall through to native <C-i> jumplist-forward. The "1" count prefix is
+  -- required: without it, the bare <C-i> byte (0x09) gets stripped as
+  -- whitespace by :normal!'s argument parser and the command silently fails
+  -- with E471. :normal! bypasses user mappings so this can't re-enter the
+  -- <Tab> mapping. Scheduled + pcall'd to stay safe in expression-context
+  -- invocations (avoids E565, same reason as the deferred set_current_win
+  -- above) and to swallow E78 when the jumplist is exhausted.
+  vim.schedule(function()
+    pcall(vim.cmd, [[execute "normal! 1\<C-i>"]])
+  end)
 end, { desc = "NES Accept / Focus Float / Jump Forward" })
 
 -- Signature help for insert mode and normal mode (Option+i via Ghostty)
