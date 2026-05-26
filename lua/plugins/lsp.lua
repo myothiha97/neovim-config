@@ -21,6 +21,8 @@ return {
         ["*"] = {
           keys = {
             { "<c-k>", false, mode = "i" },
+            { "<leader>cc", false, mode = { "n", "x" } },
+            { "<leader>cC", false, mode = "n" },
           },
         },
         -- Disable nvim-lspconfig's stock copilot config so mason-lspconfig's automatic_enable

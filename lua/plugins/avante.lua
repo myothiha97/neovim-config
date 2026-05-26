@@ -2,7 +2,7 @@ return {
   "yetone/avante.nvim",
   event = "VeryLazy",
   build = "make",
-  enabled = true,
+  enabled = false,
   cmd = {
     "AvanteAsk",
     "AvanteDiff",
@@ -168,7 +168,7 @@ return {
   },
   keys = {
     { "<leader>aa", "<cmd>AvanteAsk<cr>", desc = "Avante: Ask AI" },
-    { "<leader>ac", "<cmd>AvanteChat<cr>", desc = "Avante: Chat" },
+    { "<leader>aC", "<cmd>AvanteChat<cr>", desc = "Avante: Chat" },
     {
       "<c-i>",
       function()

@@ -66,7 +66,7 @@ return {
         desc = "NES: Apply All Edits",
       },
       {
-        "<leader>ac",
+        "<leader>aC",
         function() require("sidekick.cli").toggle() end,
         desc = "Sidekick: Toggle CLI",
       },
