@@ -113,9 +113,6 @@ vim.opt.clipboard = "unnamedplus"
 --   }
 -- end
 
-vim.g.matchparen_timeout = 20
-vim.g.matchparen_insert_timeout = 20
-
 -- Fix paste in tmux + Ghostty: modifyOtherKeys / kitty keyboard protocol
 -- encodes control characters as CSI sequences instead of literal bytes.
 -- Decode them before passing to the default paste handler.
