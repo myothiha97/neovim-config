@@ -103,6 +103,8 @@ vim.keymap.set("n", "<leader>as", function()
   vim.notify("Copied: " .. path, vim.log.levels.INFO)
 end, { desc = "Copy File Path to Clipboard" })
 
+require("config.ai-prompts").setup()
+
 -- Normal mode: Comment the current line
 vim.keymap.set("n", comment_key, "<cmd>normal gcc<CR>", { desc = "Toggle comment line" })
 

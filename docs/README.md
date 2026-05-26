@@ -48,6 +48,13 @@ Performance-optimized [LazyVim](https://github.com/LazyVim/LazyVim) setup for fu
 | Key | Action |
 |-----|--------|
 | `<C-l>` | Accept Copilot suggestion |
+| `<leader>acc` | Copy commit-message prompt |
+| `<leader>aca` | Copy codebase-analysis prompt |
+| `<leader>ace` | Copy current-file explanation prompt |
+| `<leader>acf` | Copy refactor prompt |
+| `<leader>acr` | Copy pre-commit review prompt |
+| `<leader>acs` | Copy current-symbol explanation prompt |
+| `<leader>acd` (visual) | Copy selected-content explanation prompt |
 | `<leader>am` | Select Avante model |
 | `<leader>ag` | Switch to Haiku 4.5 |
 | `<leader>af` / `<leader>at` | Toggle files / todos panel |

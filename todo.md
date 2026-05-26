@@ -67,13 +67,21 @@ This will help us apply and reuse similar configurations across different langua
 * **Rust** — Not configured yet
 * **C** — Not configured yet
 
+### ✅ Quick AI prompt actions — done
+
+Implemented custom commands and `<leader>ac` keymaps that copy short, reusable prompts to the system clipboard for external AI agents like Claude or Codex.
+
+* `<leader>acc` / `:AICopyCommitPrompt` — Copy commit-message prompt
+* `<leader>aca` / `:AICopyCodebaseAnalysisPrompt` — Copy codebase-analysis prompt
+* `<leader>ace` / `:AICopyExplainCurrentContextPrompt` — Copy current-file explanation prompt
+* `<leader>acf` / `:AICopyRefactorPrompt` — Copy generic refactor prompt
+* `<leader>acr` / `:AICopyReviewChangesPrompt` — Copy pre-commit code/architecture review prompt
+* `<leader>acs` / `:AICopyExplainCurrentSymbolPrompt` — Copy current function/class/expression explanation prompt
+* `<leader>acd` (visual) / `:AICopyExplainSelectionPrompt` — Copy selected code/text explanation prompt
+
+LazyVim codelens keymaps are disabled because they are unused, keeping `<leader>c` reserved for pure code actions.
+
 ### Planned Improvements
-
-Add custom commands or keymaps for quick AI actions, such as:
-
-* Generate commit messages
-* Analyze the codebase
-* Review new changes
 
 Add custom commands or keymaps for code analysis actions, such as:
 
