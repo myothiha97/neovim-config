@@ -93,7 +93,7 @@ end
 local prompts = {
   commit = {
     intro = "Generate a high-quality git commit message for the current changes.",
-    focus = "Use Conventional Commits. Keep the subject short, imperative, and specific. If the changes mix unrelated work, recommend splitting them into separate commits. Do not invent behavior that is not visible in the diff.",
+    focus = "Use Conventional Commits. Keep the subject short, imperative, and specific. If the changes mix or unrelated work, recommend splitting them into separate commits but only if the changes are very unrleated  if not summarize the changes to one single commit. Do not invent behavior that is not visible in the diff.",
   },
   codebase_analysis = {
     intro = "Analyze this codebase as a senior engineer.",
