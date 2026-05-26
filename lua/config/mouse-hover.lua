@@ -11,7 +11,7 @@
 
 local M = {}
 
-local DELAY_MS = 400
+local DELAY_MS = 500
 
 local SKIP_FT = {
   oil = true,
@@ -45,6 +45,7 @@ local hover_win
 local hover_anchor -- { winid, line, col_start, col_end } — the word that triggered the popup
 local hover_geom -- { top, bottom, left, right } — popup's absolute screen rect, including border
 local pending_focus_win -- popup window that a deferred <LeftMouse> focus is trying to enter
+local enabled = true -- user-facing on/off via M.toggle; gates the menu-cooldown restore
 local mousemove_mapped = false
 local leftmouse_guard_mapped = false
 local leftmouse_previous_maps = {}
@@ -424,9 +425,36 @@ local function suppress_for_menu()
     MENU_COOLDOWN_MS,
     0,
     vim.schedule_wrap(function()
-      enable_mousemove()
+      -- Skip re-enable if the user toggled hover off during the cooldown,
+      -- otherwise the menu interaction would silently revive the feature.
+      if enabled then
+        enable_mousemove()
+      end
     end)
   )
+end
+
+function M.toggle()
+  enabled = not enabled
+  if enabled then
+    -- Discard stale request_ids and reset position cache so the first
+    -- post-enable MouseMove can't trigger an immediate hover from old state.
+    request_id = request_id + 1
+    last_line, last_col, last_winid = 0, 0, 0
+    last_move_at = 0
+    menu_suppress_until = 0
+    enable_mousemove()
+  else
+    if hover_timer then
+      hover_timer:stop()
+    end
+    if restore_timer then
+      restore_timer:stop()
+    end
+    close_hover()
+    disable_mousemove()
+  end
+  vim.notify("Mouse hover " .. (enabled and "enabled" or "disabled"), vim.log.levels.INFO, { title = "Mouse Hover" })
 end
 
 function M.setup()
@@ -437,6 +465,7 @@ function M.setup()
   hover_timer = vim.uv.new_timer()
   restore_timer = vim.uv.new_timer()
   LEFTMOUSE_TERMCODES = vim.api.nvim_replace_termcodes("<LeftMouse>", true, true, true)
+  enabled = true
   request_id = request_id + 1
   last_line, last_col, last_winid = 0, 0, 0
   last_move_at = 0
@@ -445,6 +474,8 @@ function M.setup()
   local group = vim.api.nvim_create_augroup("config_mouse_hover", { clear = true })
 
   enable_mousemove()
+
+  vim.keymap.set("n", "<leader>uH", M.toggle, { desc = "Toggle Mouse Hover" })
 
   -- Fires just before the native right-click popup menu is shown. Keep
   -- <RightMouse> unmapped so Neovim's mousemodel path behaves normally.
