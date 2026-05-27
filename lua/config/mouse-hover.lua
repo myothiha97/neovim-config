@@ -498,6 +498,16 @@ function M.setup()
         if hover_win and vim.api.nvim_win_is_valid(hover_win) and vim.api.nvim_get_current_win() == hover_win then
           return
         end
+        -- If focus shifted into ANY floating window (e.g. native LSP hover
+        -- via gk, signature help, diagnostic float), the user wants to
+        -- inspect it — don't tear down LSP previews from under them.
+        local cur = vim.api.nvim_get_current_win()
+        if
+          vim.api.nvim_win_is_valid(cur)
+          and vim.api.nvim_win_get_config(cur).relative ~= ""
+        then
+          return
+        end
         close_hover()
       end)
     end,

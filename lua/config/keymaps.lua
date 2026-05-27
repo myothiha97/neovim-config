@@ -9,7 +9,13 @@ local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
   local bufnr, winid = orig_open_floating_preview(contents, syntax, opts)
-  if winid and vim.api.nvim_win_is_valid(winid) then
+  -- Skip post-processing on the focus-reuse path: when the second `K` (or
+  -- second `<M-i>`) refocuses an existing popup, open_floating_preview
+  -- returns the already-open winid AND has just made it the current window.
+  -- Re-running our nvim_win_set_config with a `relative=cursor` config would
+  -- then anchor to the popup's own cursor and dismiss it.
+  local is_focus_reuse = winid and vim.api.nvim_get_current_win() == winid
+  if winid and vim.api.nvim_win_is_valid(winid) and not is_focus_reuse then
     vim.wo[winid].foldcolumn = "1"
     local config = vim.api.nvim_win_get_config(winid)
     if config.width then

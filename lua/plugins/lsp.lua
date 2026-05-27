@@ -23,6 +23,15 @@ return {
             { "<c-k>", false, mode = "i" },
             { "<leader>cc", false, mode = { "n", "x" } },
             { "<leader>cC", false, mode = "n" },
+            -- Override LazyVim's `K → vim.lsp.buf.hover()` (no opts) so popup
+            -- size/style is consistent across gopls / pyright / vtsls / etc.
+            {
+              "K",
+              function()
+                vim.lsp.buf.hover({ border = "rounded", max_width = 70, max_height = 40 })
+              end,
+              desc = "Hover",
+            },
           },
         },
         -- Disable nvim-lspconfig's stock copilot config so mason-lspconfig's automatic_enable
@@ -68,6 +77,11 @@ return {
           },
         },
         -- TypeScript LSP optimization (React/TSX focused)
+        gopls = {
+          flags = {
+            debounce_text_changes = debounce_text_change,
+          },
+        },
         vtsls = {
           flags = {
             debounce_text_changes = debounce_text_change,
@@ -104,6 +118,12 @@ return {
             },
           },
         },
+      },
+      -- Override LazyVim's extras/lang/go.lua workaround. It reads
+      -- client.config.capabilities.textDocument.semanticTokens, which can be nil
+      -- under blink.cmp, and we disable semanticTokensProvider globally below anyway.
+      setup = {
+        gopls = function() end,
       },
     },
     init = function()
@@ -143,7 +163,7 @@ return {
         callback = function(args)
           -- vim.schedule ensures this runs AFTER LazyVim's LspAttach keymaps
           vim.schedule(function()
-              vim.keymap.set("n", "gd", function()
+            vim.keymap.set("n", "gd", function()
               vim.lsp.buf.definition({
                 on_list = function(options)
                   local items = options.items
