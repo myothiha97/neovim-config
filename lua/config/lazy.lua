@@ -20,6 +20,9 @@ require("lazy").setup({
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
     -- import/override with your plugins
     { import = "plugins" },
+    -- Active colorscheme spec lives outside plugins/ so the alternate theme
+    -- files in lua/colorschemes/ stay un-imported (reference-only).
+    { import = "colorschemes.config" },
   },
   defaults = {
     -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.

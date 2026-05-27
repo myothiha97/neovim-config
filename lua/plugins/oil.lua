@@ -123,11 +123,11 @@ return {
 
         vim.keymap.set("n", "q", close_oil, { buffer = true })
 
+        -- <Esc> only clears search highlights — does not close the popup.
+        -- Use `q` to close.
         vim.keymap.set("n", "<ESC>", function()
           if vim.v.hlsearch == 1 then
             vim.cmd("nohlsearch")
-          else
-            close_oil()
           end
         end, { buffer = true })
       end,

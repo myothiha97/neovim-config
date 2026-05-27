@@ -4,11 +4,11 @@
     "snippets": [
       {
         "language": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-        "path": "./es6-javascript.json"
+        "path": "./js-ts/es6-javascript.json"
       },
       {
         "language": ["typescriptreact", "javascriptreact"],
-        "path": "./typescriptreact.json"
+        "path": "./js-ts/typescriptreact.json"
       }
     ]
   }

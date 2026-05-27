@@ -120,8 +120,8 @@ local prompts = {
     focus = "Focus on meaning, key ideas, important details, dependencies or unfamiliar terms, and anything non-obvious. Also if the selection is the code block rather than just normal text then explain additionally about its role and  how this particular selection was used or fit in the file. Keep it concise and concrete but can be more detailed if necessary",
   },
   refactor = {
-    action = "Refactor this code to improve readability, maintainability, and simplicity without changing behavior.",
-    focus = "Keep the existing style and architecture. Avoid unnecessary abstractions. Explain the key changes and any tradeoffs.",
+    action = "Refactor this code to improve readability, maintainability, scalability, and overall architecture without changing behavior.",
+    focus = "Make sure to prevent changes from impacting the exisiting behavior of the codes and only target on structures. Avoid unnecessary abstractions or complex design patterns if not necessary. Only use advance patterns if its really needed. Explain the key changes and any tradeoffs.",
   },
   review_changes = {
     action = "Review the current local changes before commit.",

@@ -160,6 +160,51 @@ return {
                 vim.api.nvim_set_current_win(list_win)
               end
             end,
+            -- Open the focused file in picker.main without ever moving focus
+            -- there. Uses nvim_win_set_buf (sets a buffer in a target window
+            -- without changing the current window) instead of snacks's default
+            -- `confirm` (which switches focus to the file's window). Avoids
+            -- the focus round-trip flicker and spurious WinLeave/WinEnter.
+            -- Folder / search-mode items fall through to confirm; that path
+            -- still triggers the upstream toggle flicker documented in
+            -- todos/snacks-explorer-folder-click-cursor-flicker.md.
+            explorer_open_keep_focus = function(picker)
+              local item = picker:current()
+              if not item then
+                return
+              end
+
+              if item.dir or picker.input.filter.meta.searching then
+                picker:action("confirm")
+                return
+              end
+
+              if not vim.api.nvim_win_is_valid(picker.main) then
+                return
+              end
+
+              local path = Snacks.picker.util.path(item)
+              if not path then
+                return
+              end
+
+              local buf = item.buf or vim.fn.bufadd(path)
+              vim.bo[buf].buflisted = true
+
+              if vim.api.nvim_win_get_buf(picker.main) ~= buf then
+                local ok, err = pcall(vim.fn.bufload, buf)
+                if not ok then
+                  Snacks.notify.error("Failed to load `" .. path .. "`:\n- " .. err)
+                  return
+                end
+
+                ok, err = pcall(vim.api.nvim_win_set_buf, picker.main, buf)
+                if not ok then
+                  Snacks.notify.error("Failed to open `" .. path .. "`:\n- " .. err)
+                  return
+                end
+              end
+            end,
             explorer_toggle_focus = function(picker)
               local root = vim.uv.cwd()
               if picker:cwd() ~= root then
@@ -187,7 +232,7 @@ return {
             list = {
               keys = {
                 ["<Esc>"] = false, -- don't close on Esc
-                ["q"] = false, -- don't close on q
+                ["q"] = { "close", mode = { "n" }, desc = "Close explorer" },
                 ["/"] = false, -- use vim search instead of explorer filter
                 ["?"] = false, -- use vim search instead of help
                 ["<C-l>"] = {
@@ -199,15 +244,20 @@ return {
                 ["<C-f>"] = { "explorer_close_all", mode = { "n" } },
                 ["<C-c>"] = { "close", mode = { "n" } },
                 ["."] = { "explorer_toggle_focus", mode = { "n" }, desc = "Toggle focus folder" },
-                -- Intercept <LeftMouse> (press) so the action and folder
-                -- toggle happen in a single redraw cycle — no visible
-                -- cursor jump between the click column and post-render
-                -- column 1. The handler manually replicates default
-                -- focus/cursor behavior for clicks outside the list.
-                ["<LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
-                ["<2-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
-                ["<3-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
-                ["<4-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
+                -- Double-click opens the file in the right pane without moving
+                -- focus there. <CR> is intentionally not bound — keyboard flow
+                -- uses snacks's default confirm (which switches focus to the
+                -- opened file). Single-click is also unbound, so snacks's
+                -- default (focus row, no open) runs.
+                ["<2-LeftMouse>"] = { "explorer_open_keep_focus", mode = { "n" }, desc = "Open (keep focus)" },
+                -- Previous single-click intercept (kept for reference). Re-enable
+                -- by uncommenting if you want click-to-open on the press event,
+                -- which avoids the cursor jump between click column and post-
+                -- render column 1 but requires manual handling for clicks
+                -- outside the list. See `explorer_single_click` action above.
+                -- ["<LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
+                -- ["<3-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
+                -- ["<4-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
               },
             },
           },
