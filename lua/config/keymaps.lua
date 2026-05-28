@@ -414,6 +414,20 @@ vim.keymap.set("n", "<leader>gb", function()
   vim.keymap.set("n", "<Esc>", "<cmd>close<cr>", { buffer = buf, nowait = true })
 end, { desc = "Git Blame Line" })
 
+-- Git file history (override LazyVim default):
+-- Open the Snacks file-log picker; pressing <CR> opens the selected commit's
+-- diff in Diffview (vs. its parent) instead of checking out the file.
+vim.keymap.set("n", "<leader>gf", function()
+  Snacks.picker.git_log_file({
+    confirm = function(picker, item)
+      picker:close()
+      if item and item.commit then
+        vim.cmd("DiffviewOpen " .. item.commit .. "^!")
+      end
+    end,
+  })
+end, { desc = "Git File History (diff on enter)" })
+
 -- Snacks picker: grep within current file
 vim.keymap.set("n", "<leader>sl", function()
   Snacks.picker.grep({
