@@ -1,5 +1,11 @@
 local debounce_text_change = 300
 
+local lsp_hover_popup_opts = {
+  border = "rounded",
+  max_width = 60,
+  max_height = 20,
+}
+
 return {
   {
     "neovim/nvim-lspconfig",
@@ -28,7 +34,7 @@ return {
             {
               "K",
               function()
-                vim.lsp.buf.hover({ border = "rounded", max_width = 70, max_height = 40 })
+                vim.lsp.buf.hover(lsp_hover_popup_opts)
               end,
               desc = "Hover",
             },

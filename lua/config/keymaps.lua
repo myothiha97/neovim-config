@@ -23,6 +23,16 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
     end
     vim.api.nvim_win_set_config(winid, config)
   end
+  -- Clean docs popup UI (Zed/WebStorm-style):
+  -- - nospell: hide SpellBad squiggles on identifiers like `stdout`, `vm`, `runInThisContext`
+  -- - conceallevel=3: fully hide markdown fences/emphasis markers
+  -- - concealcursor=n: keep them hidden even when cursor enters the float (no flicker
+  --   between rendered markdown and raw source when refocusing)
+  if winid and vim.api.nvim_win_is_valid(winid) then
+    vim.wo[winid].spell = false
+    vim.wo[winid].conceallevel = 3
+    vim.wo[winid].concealcursor = "n"
+  end
   return bufnr, winid
 end
 

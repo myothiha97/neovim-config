@@ -5,7 +5,7 @@ return {
   opts = {
     -- Solid bg (#001419) instead of terminal-transparent default.
     -- if u want solid bg, set transparent to false
-    transparent = true,
+    transparent = false,
     on_highlights = function(hl, c)
       hl.Visual = { bg = "#3b4261" }
       hl.VisualNOS = { bg = "#3b4261" }
