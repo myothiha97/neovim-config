@@ -1,7 +1,9 @@
-# Scroll Popup Without Focus (Ctrl-d / Ctrl-u)
+# ✅ Scroll Popup Without Focus (Ctrl-e / Ctrl-y)
+
+> Implemented in `lua/config/keymaps.lua`. Bound to `<C-e>` / `<C-y>` (semantically the right fit: vim's "scroll viewport by N lines without moving cursor" keys). Tunable rate via `POPUP_SCROLL_LINES` (currently 1).
 
 ## Goal
-`<C-d>` / `<C-u>` should scroll a visible info popup (hover docs, signature help, diagnostic float, any LSP info popup) without moving the cursor into it. When no popup is active, fall back to the native half-page scroll.
+`<C-e>` / `<C-y>` should scroll a visible info popup (hover docs, signature help, diagnostic float, any LSP info popup) without moving the cursor into it. Inside the popup the scroll is N lines (`POPUP_SCROLL_LINES`, currently 1) for smooth, fine-grained reading. When no popup is active, fall back to native `<C-e>` / `<C-y>` (no recenter — these are viewport nudges, not jumps).
 
 ## Motivation
 Reading long docs (e.g. JSDoc, multi-line Python docstrings) currently requires `K` then `gk` (or `KK`) to enter the popup, scroll, `<Esc>` to exit. With this binding, you stay in the buffer and just scroll the popup in place — same UX you'd get in VS Code / IntelliJ.

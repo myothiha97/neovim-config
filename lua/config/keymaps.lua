@@ -129,6 +129,43 @@ vim.keymap.set("v", comment_key, "<Esc>:normal gvgc<CR>", { desc = "Toggle comme
 
 vim.keymap.set({ "n", "v" }, "<C-d>", "<C-d>zz", { desc = "Scroll Down and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-u>", "<C-u>zz", { desc = "Scroll Up and Recenter" })
+
+-- <C-e> / <C-y>: scroll a visible info popup (LSP hover, signature help,
+-- diagnostic float) in place without moving focus into it. Semantically a
+-- match: <C-e>/<C-y> are vim's "scroll viewport by N lines without moving
+-- cursor" keys — ideal for smooth doc reading. POPUP_SCROLL_LINES tunes the
+-- per-press step. When no popup is visible, fall back to native <C-e>/<C-y>
+-- (no recenter — these are fine viewport nudges, not jumps). nvim_win_call
+-- runs `normal!` with the float temporarily current and restores focus; the
+-- buffer never changes, so the mouse-hover BufLeave-close path
+-- (mouse-hover.lua) won't fire. No collision with the existing scroll-wheel
+-- mappings — those use <C-e>/<C-y> on the RHS with noremap, hitting native.
+local POPUP_SCROLL_LINES = 1
+local popup_scroll_down = POPUP_SCROLL_LINES .. vim.api.nvim_replace_termcodes("<C-e>", true, true, true)
+local popup_scroll_up = POPUP_SCROLL_LINES .. vim.api.nvim_replace_termcodes("<C-y>", true, true, true)
+
+local function scroll_popup_or(popup_scroll_cmd, fallback_keys)
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local cfg = vim.api.nvim_win_get_config(win)
+    if cfg.relative ~= "" and cfg.focusable ~= false then
+      local buf = vim.api.nvim_win_get_buf(win)
+      if not vim.bo[buf].filetype:match("^snacks_picker") then
+        vim.api.nvim_win_call(win, function()
+          vim.cmd("normal! " .. popup_scroll_cmd)
+        end)
+        return
+      end
+    end
+  end
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(fallback_keys, true, true, true), "n", false)
+end
+
+vim.keymap.set("n", "<C-e>", function()
+  scroll_popup_or(popup_scroll_down, "<C-e>")
+end, { desc = "Scroll Popup Down / Viewport Down" })
+vim.keymap.set("n", "<C-y>", function()
+  scroll_popup_or(popup_scroll_up, "<C-y>")
+end, { desc = "Scroll Popup Up / Viewport Up" })
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down Page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up Page and Recenter" })
 
