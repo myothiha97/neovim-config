@@ -32,7 +32,7 @@ return {
             -- Override LazyVim's `K → vim.lsp.buf.hover()` (no opts) so popup
             -- size/style is consistent across gopls / pyright / vtsls / etc.
             {
-              "K",
+              "<leader>k",
               function()
                 vim.lsp.buf.hover(lsp_hover_popup_opts)
               end,
