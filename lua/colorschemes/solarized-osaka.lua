@@ -3,9 +3,9 @@ return {
   lazy = false,
   priority = 1000,
   opts = {
-    -- Solid bg (#001419) instead of terminal-transparent default.
-    -- if u want solid bg, set transparent to false
-    transparent = false,
+    -- Terminal-transparent so Ghostty's `background` + `background-opacity`
+    -- blend the wallpaper through. Set to false to force solid #001419.
+    transparent = true,
     on_highlights = function(hl, c)
       hl.Visual = { bg = "#3b4261" }
       hl.VisualNOS = { bg = "#3b4261" }
