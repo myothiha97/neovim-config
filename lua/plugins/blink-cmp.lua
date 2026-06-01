@@ -1,6 +1,37 @@
+-- Visual toggle for the blink.cmp menu, scoped to the current buffer.
+--
+-- Mechanism: blink's OWN native per-buffer gate. blink/cmp/config/init.lua
+-- M.enabled() checks `if vim.b.completion == false then return false end`
+-- early on every trigger, independent of (and before) the user `enabled`
+-- function. So flipping vim.b.completion off just stops the menu from drawing
+-- -- it does NOT touch blink's enabled logic, sources, scoring, LSP, or
+-- treesitter. Toggle ON = identical to default behavior in every way.
+local function toggle_blink()
+  if vim.b.completion == false then
+    vim.b.completion = true
+  else
+    vim.b.completion = false
+    -- enabled() gates *future* triggers; hide any menu that's open right now.
+    local ok, blink = pcall(require, "blink.cmp")
+    if ok then
+      blink.hide()
+    end
+  end
+  local on = vim.b.completion ~= false
+  vim.notify(
+    "Blink Completion: " .. (on and "Enabled" or "Disabled"),
+    on and vim.log.levels.INFO or vim.log.levels.WARN,
+    { title = "blink.cmp" }
+  )
+end
+
 return {
   {
     "saghen/blink.cmp",
+    keys = {
+      { "<leader>ab", toggle_blink, desc = "Blink: Toggle Completion Menu" },
+      { "<C-b>", toggle_blink, mode = "i", desc = "Blink: Toggle Completion Menu" },
+    },
     opts = {
       keymap = {
         preset = "none",
