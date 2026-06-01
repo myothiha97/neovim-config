@@ -8,6 +8,7 @@
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
+  -- so below exp is basically manipulating the bufnr, wind object hover docs pop up behavior
   local bufnr, winid = orig_open_floating_preview(contents, syntax, opts)
   -- Skip post-processing on the focus-reuse path: when the second `K` (or
   -- second `<M-i>`) refocuses an existing popup, open_floating_preview
