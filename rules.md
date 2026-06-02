@@ -27,3 +27,43 @@ Core setup is complete. From now on:
   Every change must go through a plan and a scheduled timeline (the monthly /
   3–4 month batch), so nvim tinkering never bleeds into time owed to the
   professional job.
+
+## Safe-editing quick reference (performance)
+
+> Full guide: [`notes/safe-config-editing-guide.md`](notes/safe-config-editing-guide.md).
+> Priority #1 is performance — zero hot-path cost. When in doubt, do less.
+
+**The one question before adding anything:** *How often does this run, and is
+it synchronous?* Per keystroke / cursor move / redraw = near-zero budget.
+
+**Hot-path autocmds — justify or avoid:** `CursorMoved(I)`, `TextChanged(I)`,
+`InsertCharPre`, `<MouseMove>` (fire thousands/session); `BufEnter`/`WinEnter`
+(keep O(1)); `CursorHold` (light idle work only — they all fire together).
+
+**Never on a hot path:** `vim.fn.system()`/`io.popen()` (blocking), synchronous
+treesitter parse or `query:iter_captures`, blocking LSP requests, looping all
+buffers/windows, `vim.notify`.
+
+**Settings to leave alone:** don't enable `lazyredraw` (UI freezes with LSP);
+don't set global `foldmethod=expr` (sync per-line scan — UFO handles it async);
+keep `update_in_insert=false`, semantic tokens off, `synmaxcol` low,
+`updatetime` ≥ 300.
+
+**Always:**
+
+- Wrap autocmds in a named augroup with `clear = true`.
+- Guard new buffer/file work with a size check before treesitter/regex.
+- `pcall` optional `require`s and any plugin-internal access.
+- Lazy-load new plugins (`event`/`ft`/`cmd`/`keys`) unless startup-critical.
+- Debounce/`vim.schedule` heavy work off the triggering event.
+- Check keymap/autocmd collisions (`:verbose map <lhs>`) — this config
+  overrides `gd`, `gf`, `K`, `<Tab>`, `<Esc>`, `<C-e>/<C-y>`.
+
+**Reuse proven patterns:** `mouse-hover.lua` (throttle + dedup + reused timer)
+for high-frequency handlers; `autocmds.lua`/`folding.lua` for large-file
+guards. Internal monkey-patching is only acceptable because plugins are
+version-frozen (`lazy-freeze.lua`).
+
+**Before commit:** startup still ~40ms (`nvim --headless --startuptime`);
+tested by typing/scrolling/switching in a large real file; behavior survives
+re-sourcing (no duplicate effects).
