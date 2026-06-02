@@ -48,7 +48,7 @@ What makes this feel less like vanilla Neovim:
 
 | Category | Plugin |
 |----------|--------|
-| **Completion** | blink.cmp — LSP · snippets · path · buffer |
+| **Completion** | blink.cmp — LSP · local snippets · path · buffer |
 | **AI** | copilot.lua (inline) + copilot-lsp (NES) + prompt-copy system |
 | **File nav** | Snacks — picker · explorer · dashboard · terminal · oil.nvim (float) |
 | **Code nav** | Trouble (symbols outline + quickfix views) · treesitter textobjects |
@@ -56,9 +56,26 @@ What makes this feel less like vanilla Neovim:
 | **Search** | grug-far — project/file search-replace & rename |
 | **Multi-cursor** | vim-visual-multi |
 | **Folding** | nvim-ufo — treesitter + indent, async |
-| **Formatting** | conform.nvim → prettierd |
+| **Formatting** | conform.nvim — prettierd for web/JSON/Markdown, goimports/gofumpt for Go |
+| **Languages** | TypeScript/React daily driver, Go + Python enabled, Rust lazy/deferred |
 | **UI** | lualine · noice (cmdline only) · fidget · which-key |
 | **Theme** | solarized-osaka |
+
+---
+
+## Language Support
+
+| Language | Status | Notes |
+|----------|--------|-------|
+| TypeScript / React | Daily driver | `vtsls`, package JSON auto-imports off, tsserver heap cap `4000`, semantic tokens/inlay hints off |
+| Go | Enabled | `gopls`, `goimports`, `gofumpt`, `delve`; project roots guarded to `go.mod` / `go.work` |
+| Python | Enabled | `basedpyright` + `ruff`, `openFilesOnly` diagnostics, safe roots for both servers, `venv-selector.nvim` lazy on Python |
+| JSON | Enabled | LazyVim JSON extra + `prettierd` |
+| Rust | Deferred | Lazy extra is installed but filetype-gated; no runtime cost until opening Rust/Cargo files |
+
+Python and Go root detection intentionally avoids treating `$HOME/.git` as a
+workspace. Loose files fall back to their own directory instead of making the
+language server scan the whole home directory.
 
 ---
 
@@ -178,6 +195,7 @@ The whole point. What's tuned, and what's off on purpose.
 - LSP semantic tokens · `document_color` · inlay hints off; `update_in_insert = false`
 - lualine throttled to 1000ms; git-diff component removed from the statusline
 - LSP `debounce_text_changes = 300ms` applied globally through `vim.lsp.config("*", ...)`
+- Python/Go LSP roots guard against `$HOME/.git` workspace scans
 - noice restricted to the cmdline popup; python/ruby/perl/node providers disabled
 
 **Disabled by decision** — don't re-add without a reason:
@@ -194,6 +212,13 @@ The whole point. What's tuned, and what's off on purpose.
 VSCode JSON format in `snippets/`, served through blink.cmp's built-in snippet
 provider (not LuaSnip) — JS/TS, React, Go, and Python helpers. `package.json`
 maps each file to its filetype.
+
+Current local snippet packs:
+
+- `snippets/js-ts/es6-javascript.json` — ES6 utilities, console helpers, functions, loops, classes
+- `snippets/js-ts/typescriptreact.json` — React hooks and JSX helpers
+- `snippets/go/go.json` — package/import/function/error/test/http/json helpers
+- `snippets/python/python.json` — imports, functions, classes, dataclasses, TypedDict, pytest helpers
 
 ---
 
@@ -214,6 +239,7 @@ docs/               CHANGELOG · agent instructions
 ## Requirements
 
 Neovim **0.12+**, a Nerd Font, `ripgrep` & `fd` (pickers/grep), `prettierd`
-(formatting, via Mason), and a GitHub Copilot subscription for the AI features.
+(web formatting, via Mason), Go/Python tooling installed through Mason for the
+enabled language extras, and a GitHub Copilot subscription for the AI features.
 Tuned for the [Ghostty](https://ghostty.org) terminal on macOS; works elsewhere,
 but some `<M-…>`/`<D-…>` keymaps assume Ghostty's key encoding.
