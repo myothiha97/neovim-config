@@ -54,9 +54,6 @@ return {
             -- "scss",
             -- "less",
           },
-          flags = {
-            debounce_text_changes = debounce_text_change,
-          },
         },
         -- ESLint disabled - TypeScript alone is sufficient for current project
         -- Re-enable by setting enabled = true when needed
@@ -69,9 +66,6 @@ return {
               { rule = "*", severity = "warn" },
             },
           },
-          flags = {
-            debounce_text_changes = debounce_text_change,
-          },
         },
         lua_ls = {
           settings = {
@@ -82,16 +76,70 @@ return {
             },
           },
         },
-        -- TypeScript LSP optimization (React/TSX focused)
-        gopls = {
-          flags = {
-            debounce_text_changes = debounce_text_change,
+        -- Python (basedpyright).
+        --
+        -- root_dir: $HOME is a git repo (~/.git), so the stock .git-based root
+        -- makes a loose .py file treat ALL of $HOME as its workspace, and
+        -- basedpyright tries to enumerate every file under it (">10s enumeration
+        -- of workspace source files"). Root on Python project markers ONLY; when
+        -- none are found, fall back to the file's own directory instead of
+        -- climbing to ~/.git. Real projects (with pyproject.toml etc.) still root
+        -- correctly and get full-project checking.
+        --
+        -- diagnosticMode: only type-check open files, never the whole tree —
+        -- matches the perf-first stance and is a second line of defense.
+        basedpyright = {
+          root_dir = function(bufnr, on_dir)
+            local markers =
+              { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json" }
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            local root = vim.fs.root(fname, markers)
+            if not root then
+              -- Real repos with no Python marker: fall back to the .git root so
+              -- cross-package imports resolve — but NEVER $HOME (~/.git would make
+              -- all of $HOME the workspace and trigger the 10s+ enumeration).
+              local git = vim.fs.root(fname, { ".git" })
+              if git and git ~= vim.uv.os_homedir() then
+                root = git
+              end
+            end
+            on_dir(root or vim.fs.dirname(fname))
+          end,
+          settings = {
+            basedpyright = {
+              analysis = {
+                diagnosticMode = "openFilesOnly",
+              },
+            },
           },
         },
+        ruff = {
+          root_dir = function(bufnr, on_dir)
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            local root = vim.fs.root(fname, { "pyproject.toml", "ruff.toml", ".ruff.toml" })
+            if not root then
+              local git = vim.fs.root(fname, { ".git" })
+              if git and git ~= vim.uv.os_homedir() then
+                root = git
+              end
+            end
+            on_dir(root or vim.fs.dirname(fname))
+          end,
+        },
+        -- Go (gopls). Same $HOME/.git footgun as basedpyright: a loose .go file
+        -- with no go.mod would climb to ~/.git and treat all of $HOME as the
+        -- module root (slow enumeration). Root on Go module markers only; fall
+        -- back to the file's own directory otherwise. Real Go projects always
+        -- have go.mod/go.work, so they root correctly with full module features.
+        gopls = {
+          root_dir = function(bufnr, on_dir)
+            local fname = vim.api.nvim_buf_get_name(bufnr)
+            on_dir(vim.fs.root(fname, { "go.work", "go.mod" }) or vim.fs.dirname(fname))
+          end,
+        },
+        -- TypeScript LSP optimization (React/TSX focused). Genuinely
+        -- TS-specific tuning only; shared behavior (debounce, keys) is global.
         vtsls = {
-          flags = {
-            debounce_text_changes = debounce_text_change,
-          },
           settings = {
             typescript = {
               suggest = {
@@ -102,8 +150,10 @@ return {
                 includePackageJsonAutoImports = "off",
               },
               tsserver = {
-                -- Give tsserver more heap (default is ~3GB, React projects can need more)
-                maxTsServerMemory = 3072,
+                -- Balanced tsserver heap cap: more React/TS headroom than the
+                -- ~3GB default without allowing the very large pauses possible
+                -- with an 8192MB heap. Raise only if tsserver OOMs in a large repo.
+                maxTsServerMemory = 4000,
                 -- Don't watch node_modules for changes
                 watchOptions = {
                   watchFile = "useFsEvents",
@@ -133,6 +183,17 @@ return {
       },
     },
     init = function()
+      -- Shared LSP defaults for EVERY language server (native 0.12 wildcard
+      -- config). Cross-cutting behavior lives here once; the per-server tables
+      -- above hold only what's genuinely server-specific (filetypes, settings).
+      -- This didChange debounce now keeps typing snappy on every language —
+      -- gopls, basedpyright, rust_analyzer, vtsls, lua_ls — not just a hand-
+      -- picked few. Per-language LSP/linter/DAP selection lives in the LazyVim
+      -- lang extras, not here.
+      vim.lsp.config("*", {
+        flags = { debounce_text_changes = debounce_text_change },
+      })
+
       -- Neovim 0.12 added vim.lsp.document_color with its own internal LspAttach autocmd
       -- that fires before any plugin-registered handler. Overriding the handler or clearing
       -- colorProvider in LspAttach is too late — the module is already polling. Replacing

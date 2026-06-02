@@ -1,0 +1,122 @@
+{
+  "Import": {
+    "prefix": "im",
+    "body": "import ${1:module}",
+    "description": "Import module"
+  },
+  "From Import": {
+    "prefix": "fr",
+    "body": "from ${1:module} import ${2:name}",
+    "description": "From import"
+  },
+  "Function": {
+    "prefix": "def",
+    "body": "def ${1:name}(${2})${3: -> None}:\n\t${0}",
+    "description": "Function definition"
+  },
+  "Async Function": {
+    "prefix": "adef",
+    "body": "async def ${1:name}(${2})${3: -> None}:\n\t${0}",
+    "description": "Async function definition"
+  },
+  "Main Guard": {
+    "prefix": "main",
+    "body": "if __name__ == \"__main__\":\n\t${0}",
+    "description": "Main guard"
+  },
+  "Class": {
+    "prefix": "cls",
+    "body": "class ${1:Name}:\n\tdef __init__(self${2}) -> None:\n\t\t${0}",
+    "description": "Class with initializer"
+  },
+  "Dataclass": {
+    "prefix": "dc",
+    "body": "@dataclass\nclass ${1:Name}:\n\t${2:field}: ${3:type}",
+    "description": "Dataclass"
+  },
+  "TypedDict": {
+    "prefix": "td",
+    "body": "class ${1:Name}(TypedDict):\n\t${2:key}: ${3:type}",
+    "description": "TypedDict"
+  },
+  "Protocol": {
+    "prefix": "proto",
+    "body": "class ${1:Name}(Protocol):\n\tdef ${2:method}(self${3}) -> ${4:None}:\n\t\t...",
+    "description": "Typing protocol"
+  },
+  "Print": {
+    "prefix": "pr",
+    "body": "print(${1})",
+    "description": "print"
+  },
+  "Pretty Print": {
+    "prefix": "pp",
+    "body": "pprint(${1:object})",
+    "description": "pprint"
+  },
+  "Try Except": {
+    "prefix": "try",
+    "body": "try:\n\t${1}\nexcept ${2:Exception} as ${3:exc}:\n\t${0}",
+    "description": "try/except block"
+  },
+  "Try Except Else Finally": {
+    "prefix": "tryf",
+    "body": "try:\n\t${1}\nexcept ${2:Exception} as ${3:exc}:\n\t${4}\nelse:\n\t${5}\nfinally:\n\t${0}",
+    "description": "try/except/else/finally block"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": "for ${1:item} in ${2:items}:\n\t${0}",
+    "description": "for loop"
+  },
+  "Enumerate Loop": {
+    "prefix": "enum",
+    "body": "for ${1:index}, ${2:item} in enumerate(${3:items}):\n\t${0}",
+    "description": "enumerate loop"
+  },
+  "If": {
+    "prefix": "if",
+    "body": "if ${1:condition}:\n\t${0}",
+    "description": "if statement"
+  },
+  "Elif": {
+    "prefix": "elif",
+    "body": "elif ${1:condition}:\n\t${0}",
+    "description": "elif statement"
+  },
+  "With Open": {
+    "prefix": "with",
+    "body": "with open(${1:path}, ${2:\"r\"}, encoding=\"utf-8\") as ${3:f}:\n\t${0}",
+    "description": "Open file with context manager"
+  },
+  "List Comprehension": {
+    "prefix": "lc",
+    "body": "[${1:item} for ${1:item} in ${2:items}]",
+    "description": "List comprehension"
+  },
+  "Dict Comprehension": {
+    "prefix": "dcmp",
+    "body": "{${1:key}: ${2:value} for ${3:item} in ${4:items}}",
+    "description": "Dict comprehension"
+  },
+  "Pytest Test": {
+    "prefix": "test",
+    "body": "def test_${1:name}() -> None:\n\t${0}",
+    "description": "pytest test function"
+  },
+  "Pytest Fixture": {
+    "prefix": "fix",
+    "body": "@pytest.fixture\ndef ${1:fixture_name}():\n\t${0}",
+    "description": "pytest fixture"
+  },
+  "Logging Setup": {
+    "prefix": "log",
+    "body": "logger = logging.getLogger(__name__)",
+    "description": "Module logger"
+  },
+  "Argument Parser": {
+    "prefix": "argp",
+    "body": "parser = argparse.ArgumentParser(description=\"${1:description}\")\nparser.add_argument(\"${2:name}\")\nargs = parser.parse_args()",
+    "description": "ArgumentParser setup"
+  }
+}

@@ -220,6 +220,9 @@ return {
           tsx = true,
           jsx = true,
           lua = true,
+          go = true,
+          python = true,
+          rust = true,
         }
 
         if treesitter_folds[filetype] then

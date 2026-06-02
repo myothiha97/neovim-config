@@ -1,0 +1,127 @@
+{
+  "Package": {
+    "prefix": "pkg",
+    "body": "package ${1:main}",
+    "description": "Package declaration"
+  },
+  "Import": {
+    "prefix": "im",
+    "body": "import ${1:\"${2:package}\"}",
+    "description": "Import package"
+  },
+  "Import Block": {
+    "prefix": "imb",
+    "body": "import (\n\t\"${1:package}\"\n)",
+    "description": "Import block"
+  },
+  "Function": {
+    "prefix": "fn",
+    "body": "func ${1:name}(${2}) ${3:returnType} {\n\t${0}\n}",
+    "description": "Function declaration"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": "func main() {\n\t${0}\n}",
+    "description": "Main function"
+  },
+  "Method": {
+    "prefix": "meth",
+    "body": "func (${1:r} ${2:Receiver}) ${3:name}(${4}) ${5:returnType} {\n\t${0}\n}",
+    "description": "Method declaration"
+  },
+  "Struct": {
+    "prefix": "st",
+    "body": "type ${1:Name} struct {\n\t${0}\n}",
+    "description": "Struct type"
+  },
+  "Interface": {
+    "prefix": "intf",
+    "body": "type ${1:Name} interface {\n\t${0}\n}",
+    "description": "Interface type"
+  },
+  "Context": {
+    "prefix": "ctx",
+    "body": "ctx context.Context",
+    "description": "Context argument"
+  },
+  "Println": {
+    "prefix": "fmt",
+    "body": "fmt.Println(${1})",
+    "description": "fmt.Println"
+  },
+  "Printf": {
+    "prefix": "pf",
+    "body": "fmt.Printf(\"${1:%+v}\\\\n\", ${2:value})",
+    "description": "fmt.Printf with newline"
+  },
+  "If Error Return Error": {
+    "prefix": "err",
+    "body": "if err != nil {\n\treturn err\n}",
+    "description": "Return err when err is not nil"
+  },
+  "If Error": {
+    "prefix": "ife",
+    "body": "if err != nil {\n\t${0}\n}",
+    "description": "If err is not nil"
+  },
+  "If Error Return Nil Error": {
+    "prefix": "ern",
+    "body": "if err != nil {\n\treturn nil, err\n}",
+    "description": "Return nil and err"
+  },
+  "Wrap Error": {
+    "prefix": "ew",
+    "body": "fmt.Errorf(\"${1:message}: %w\", err)",
+    "description": "Wrap error with fmt.Errorf"
+  },
+  "For Range": {
+    "prefix": "forr",
+    "body": "for ${1:_, item} := range ${2:items} {\n\t${0}\n}",
+    "description": "For range loop"
+  },
+  "For Loop": {
+    "prefix": "fori",
+    "body": "for ${1:i} := 0; ${1:i} < ${2:n}; ${1:i}++ {\n\t${0}\n}",
+    "description": "For index loop"
+  },
+  "Switch": {
+    "prefix": "sw",
+    "body": "switch ${1:value} {\ncase ${2:match}:\n\t${0}\ndefault:\n\t\n}",
+    "description": "Switch statement"
+  },
+  "Goroutine": {
+    "prefix": "go",
+    "body": "go func() {\n\t${0}\n}()",
+    "description": "Start anonymous goroutine"
+  },
+  "Defer Close": {
+    "prefix": "dc",
+    "body": "defer ${1:resource}.Close()",
+    "description": "Defer resource close"
+  },
+  "HTTP Handler": {
+    "prefix": "http",
+    "body": "http.HandleFunc(\"${1:/}\", func(w http.ResponseWriter, r *http.Request) {\n\t${0}\n})",
+    "description": "Register HTTP handler"
+  },
+  "JSON Encode Response": {
+    "prefix": "json",
+    "body": "if err := json.NewEncoder(${1:w}).Encode(${2:value}); err != nil {\n\t${3:return err}\n}",
+    "description": "Encode JSON response"
+  },
+  "Test Function": {
+    "prefix": "test",
+    "body": "func Test${1:Name}(t *testing.T) {\n\t${0}\n}",
+    "description": "Go test function"
+  },
+  "Table Test": {
+    "prefix": "tt",
+    "body": "func Test${1:Name}(t *testing.T) {\n\ttests := []struct {\n\t\tname string\n\t\t${2}\n\t}{\n\t\t{\n\t\t\tname: \"${3:case}\",\n\t\t\t${4}\n\t\t},\n\t}\n\n\tfor _, tt := range tests {\n\t\tt.Run(tt.name, func(t *testing.T) {\n\t\t\t${0}\n\t\t})\n\t}\n}",
+    "description": "Table-driven test"
+  },
+  "Benchmark Function": {
+    "prefix": "bench",
+    "body": "func Benchmark${1:Name}(b *testing.B) {\n\tfor i := 0; i < b.N; i++ {\n\t\t${0}\n\t}\n}",
+    "description": "Go benchmark function"
+  }
+}

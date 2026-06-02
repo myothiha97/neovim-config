@@ -25,11 +25,19 @@ return {
   ---@type snacks.Config
   lazy = false,
   init = function()
-    local function set_grep_hl()
+    -- Brighter indent-guide color — the theme's default links SnacksIndent to a
+    -- near-invisible group. Safe to override globally: SnacksIndent is used only
+    -- when Snacks indent is enabled. Tweak INDENT_GUIDE_FG to taste
+    -- (#586e75 = solarized base01 / comment brightness; #839496 = body-text bright).
+    local INDENT_GUIDE_FG = "#586e75"
+    local function set_snacks_hl()
       vim.api.nvim_set_hl(0, "SnacksPickerMatch", { link = "DiffText" })
+      vim.api.nvim_set_hl(0, "SnacksIndent", { fg = INDENT_GUIDE_FG, nocombine = true })
     end
-    set_grep_hl()
-    vim.api.nvim_create_autocmd("ColorScheme", { callback = set_grep_hl })
+    set_snacks_hl()
+    -- Re-apply on theme switch: snacks links its own groups with default=true,
+    -- so this explicit (non-default) definition always wins.
+    vim.api.nvim_create_autocmd("ColorScheme", { callback = set_snacks_hl })
   end,
   opts = {
     explorer = { enabled = true },
@@ -37,7 +45,7 @@ return {
     scroll = { enabled = false },
     animate = { enabled = false },
     words = { enabled = false }, -- CursorMoved buffer-wide search on every j/k
-    indent = { enabled = false }, -- per-scroll indent guide rendering
+    indent = { enabled = false }, -- decoration provider + scope listener on hot paths
     scope = { enabled = false }, -- treesitter scope tracking on every cursor move
     dim = { enabled = false },
     picker = {

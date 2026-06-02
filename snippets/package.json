@@ -9,6 +9,14 @@
       {
         "language": ["typescriptreact", "javascriptreact"],
         "path": "./js-ts/typescriptreact.json"
+      },
+      {
+        "language": ["go"],
+        "path": "./go/go.json"
+      },
+      {
+        "language": ["python"],
+        "path": "./python/python.json"
       }
     ]
   }

@@ -169,6 +169,56 @@
     "body": "const ${1:name} = async (${2:params}) => {\n\t${3}\n};",
     "description": "Async named arrow function"
   },
+  "Class": {
+    "prefix": "cls",
+    "body": "class ${1:Name} {\n\tconstructor(${2}) {\n\t\t${0}\n\t}\n}",
+    "description": "Class declaration"
+  },
+  "Class Extends": {
+    "prefix": "clse",
+    "body": "class ${1:Name} extends ${2:Base} {\n\tconstructor(${3}) {\n\t\tsuper(${4});\n\t\t${0}\n\t}\n}",
+    "description": "Class declaration with extends"
+  },
+  "Constructor": {
+    "prefix": "ctor",
+    "body": "constructor(${1}) {\n\t${0}\n}",
+    "description": "Class constructor"
+  },
+  "Class Field": {
+    "prefix": "cf",
+    "body": "${1:name} = ${2:value};",
+    "description": "Class field"
+  },
+  "Private Class Field": {
+    "prefix": "pcf",
+    "body": "#${1:name} = ${2:value};",
+    "description": "Private class field"
+  },
+  "Method": {
+    "prefix": "met",
+    "body": "${1:name}(${2:params}) {\n\t${0}\n}",
+    "description": "Class method"
+  },
+  "Async Method": {
+    "prefix": "amet",
+    "body": "async ${1:name}(${2:params}) {\n\t${0}\n}",
+    "description": "Async class method"
+  },
+  "Static Method": {
+    "prefix": "smet",
+    "body": "static ${1:name}(${2:params}) {\n\t${0}\n}",
+    "description": "Static class method"
+  },
+  "Getter": {
+    "prefix": "getr",
+    "body": "get ${1:name}() {\n\treturn this.${2:value};\n}",
+    "description": "Class getter"
+  },
+  "Setter": {
+    "prefix": "setr",
+    "body": "set ${1:name}(${2:value}) {\n\tthis.${3:value} = ${2:value};\n}",
+    "description": "Class setter"
+  },
   "For Of Loop": {
     "prefix": "fof",
     "body": "for (const ${1:item} of ${2:object}) {\n\t${3}\n}",

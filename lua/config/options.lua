@@ -178,6 +178,12 @@ vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
 
+-- Python LSP: use basedpyright (faster, free, more complete than pyright).
+-- Read by lazyvim.plugins.extras.lang.python at spec-resolution time, which is
+-- why this lives in options.lua (loaded before plugin specs are configured).
+vim.g.lazyvim_python_lsp = "basedpyright"
+vim.g.lazyvim_python_ruff = "ruff"
+
 -- Auto-reload buffers when an external process (e.g. agentic AI) writes to disk
 vim.opt.autoread = true
 vim.api.nvim_create_autocmd({ "FocusGained", "CursorHold" }, {
