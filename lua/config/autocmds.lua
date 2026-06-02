@@ -14,4 +14,20 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
+-- ── Trouble outline: scroll the code, don't highlight it ───────────────────
+-- When you move (or navigate the symbols panel), Trouble previews the symbol in
+-- the code window: it scrolls there (wanted) AND paints the range with the
+-- `TroublePreview` group (unwanted cue). Clearing that group removes the paint
+-- while keeping the auto-scroll. Re-applied on every ColorScheme so it survives
+-- theme switches; Trouble links its own groups with `default = true`, so this
+-- user-set (non-default) definition always wins.
+local function clear_trouble_preview_hl()
+  pcall(vim.api.nvim_set_hl, 0, "TroublePreview", {})
+end
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("trouble_no_code_highlight", { clear = true }),
+  callback = clear_trouble_preview_hl,
+})
+clear_trouble_preview_hl()
+
 require("config.mouse-hover").setup()

@@ -646,3 +646,54 @@ local function show_unsaved_files()
 end
 
 vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" })
+
+-- Quickfix / location list under the <leader>c cluster (Trouble views). This file loads
+-- after LazyVim's keymaps and Trouble's plugin keys, so these win. `:Trouble` lazy-loads
+-- the plugin on first use.
+vim.keymap.set("n", "<leader>ce", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
+vim.keymap.set("n", "<leader>cE", "<cmd>Trouble loclist toggle<cr>", { desc = "Location List (Trouble)" })
+
+-- Manually curate the quickfix list while reading code: <leader>m marks the current line
+-- (normal) or each selected line (visual); browse with <leader>ce, clear with <leader>cx.
+local function qf_add(lines)
+  local buf = vim.api.nvim_get_current_buf()
+  local items = {}
+  for _, l in ipairs(lines) do
+    items[#items + 1] = { bufnr = buf, lnum = l, col = 1, text = vim.trim(vim.fn.getline(l)) }
+  end
+  vim.fn.setqflist(items, "a") -- append; keep any existing entries
+  vim.notify(("Quickfix: +%d (%d total)"):format(#items, #vim.fn.getqflist()), vim.log.levels.INFO)
+end
+
+vim.keymap.set("n", "<leader>m", function()
+  qf_add({ vim.fn.line(".") })
+end, { desc = "Add line to Quickfix" })
+
+vim.keymap.set("x", "<leader>m", function()
+  local s, e = vim.fn.getpos("v")[2], vim.fn.getpos(".")[2]
+  if s > e then
+    s, e = e, s
+  end
+  local lines = {}
+  for l = s, e do
+    lines[#lines + 1] = l
+  end
+  qf_add(lines)
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+end, { desc = "Add selection to Quickfix" })
+
+vim.keymap.set("n", "<leader>cx", function()
+  vim.fn.setqflist({}, "r")
+  vim.notify("Quickfix cleared", vim.log.levels.INFO)
+end, { desc = "Clear Quickfix list" })
+
+-- Mason toggle on <leader>M.
+vim.keymap.set("n", "<leader>M", function()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "mason" then
+      vim.api.nvim_win_close(win, true)
+      return
+    end
+  end
+  vim.cmd("Mason")
+end, { desc = "Mason (toggle)" })

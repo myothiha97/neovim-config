@@ -1,7 +1,7 @@
 return {
   {
     "ThePrimeagen/harpoon",
-    enabled = true,
+    enabled = false, -- disabled for now (not used much); frees <leader>m / <leader>h / <leader>1-5
     branch = "harpoon2",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
