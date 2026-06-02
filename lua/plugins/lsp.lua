@@ -153,7 +153,7 @@ return {
                 -- Balanced tsserver heap cap: more React/TS headroom than the
                 -- ~3GB default without allowing the very large pauses possible
                 -- with an 8192MB heap. Raise only if tsserver OOMs in a large repo.
-                maxTsServerMemory = 4000,
+                maxTsServerMemory = 3072,
                 -- Don't watch node_modules for changes
                 watchOptions = {
                   watchFile = "useFsEvents",
