@@ -655,11 +655,11 @@ vim.keymap.set("n", "<leader>cE", "<cmd>Trouble loclist toggle<cr>", { desc = "L
 
 -- Manually curate the quickfix list while reading code: <leader>m marks the current line
 -- (normal) or each selected line (visual); browse with <leader>ce, clear with <leader>cx.
+local manual_qf = require("config.quickfix-persistence")
 local function qf_add(lines)
-  local buf = vim.api.nvim_get_current_buf()
   local items = {}
   for _, l in ipairs(lines) do
-    items[#items + 1] = { bufnr = buf, lnum = l, col = 1, text = vim.trim(vim.fn.getline(l)) }
+    items[#items + 1] = manual_qf.item(l, vim.trim(vim.fn.getline(l)))
   end
   vim.fn.setqflist(items, "a") -- append; keep any existing entries
   vim.notify(("Quickfix: +%d (%d total)"):format(#items, #vim.fn.getqflist()), vim.log.levels.INFO)
@@ -684,6 +684,7 @@ end, { desc = "Add selection to Quickfix" })
 
 vim.keymap.set("n", "<leader>cx", function()
   vim.fn.setqflist({}, "r")
+  manual_qf.clear()
   vim.notify("Quickfix cleared", vim.log.levels.INFO)
 end, { desc = "Clear Quickfix list" })
 

@@ -30,4 +30,21 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 })
 clear_trouble_preview_hl()
 
+-- ── Manual quickfix persistence ───────────────────────────────────────────
+-- Persist only entries created by <leader>m. This stays off interactive hot
+-- paths: one bounded read at startup and one bounded write on exit.
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = vim.api.nvim_create_augroup("manual_quickfix_persistence", { clear = true }),
+  callback = function()
+    require("config.quickfix-persistence").restore()
+  end,
+})
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  group = "manual_quickfix_persistence",
+  callback = function()
+    require("config.quickfix-persistence").save()
+  end,
+})
+
 require("config.mouse-hover").setup()
