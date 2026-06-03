@@ -1,57 +1,87 @@
 # Personal rules for this Neovim config
 
-> **The stakes.** Configuring Neovim is a proven time sink. Every "quick tweak"
-> pulls focus from real work and, left unchecked, degrades my productivity and
-> harms my professional career. The config is a *tool* for the job, not the job
-> itself. When the urge to tinker shows up, the default answer is **no** — write
-> it down, schedule it, get back to work. A config that boots and works is
-> "done."
+> **Important reminder:** Neovim configuration can easily become a time sink.
+> Every "quick tweak" can pull attention away from real work, and if it happens
+> too often it reduces my productivity and hurts my professional growth.
+>
+> This config is only a **tool for work** — it is not the work itself.
+>
+> When I feel the urge to change something, the default answer is **no**:
+> write the idea down, schedule it, and go back to real work.
+>
+> A config that starts correctly and works well is already **done enough**.
 
-This file is the short list of rules I actually follow. It stays one screen on
-purpose — I won't read a wall of text. The detailed reasoning and mechanics live
-in the linked docs under [`References`](#references).
+This file holds the rules I actually follow. It is intentionally short so I can
+read it in one pass. The detailed explanations live in the linked documents
+under [References](#references).
 
-## The rules
+---
 
-1. **Don't touch the config on impulse.** The default answer to any new idea is
-   **no** — capture it as a new file under `todos/` and move on. Never open a
-   spec file "just to take a quick look."
-   - **"It's trivial / quick" is not an exception — it's the trap.** Cosmetic
-     and small preference tweaks (theme or color change, scroll speed, a keymap
-     nudge, toggling an option) feel harmless *because* they're fast, and that
-     is exactly how the bad habit forms. They are still impulse changes: they go
-     into `todos/` and wait for the scheduled batch like everything else.
-   - This is **not** the 30-minute rule (rule #8). That rule is only for fixing
-     an actual bug or breakage — never for cosmetic or preference changes, no
-     matter how quick they are.
-2. **Edit mid-month only for critical must-fixes** — an actual error, bug, or
-   broken workflow blocking real work. Not "nicer," "annoying," or "cleaner."
-3. **New ideas need a plan and a scheduled date.** Batch them (monthly, or every
-   3–4 months). Never configure something the moment it occurs to me.
-4. **Never edit config on `main`.** Check out a `dev` or feature branch first,
-   make the change there, merge back after it's reviewed and tested.
-5. **Block ≥ 1–2 hr of dedicated, uninterrupted time** for any change. Fully
-   verify it's safe, stable, and breaks nothing else. No half-done states.
-6. **Never commit partial or half-done work.** Only complete, fully tested,
-   proven-safe changes get committed — a WIP commit here is a future broken
-   editor.
-7. **Performance is priority #1** — zero hot-path cost, above features and
-   polish. The one question before adding anything: *how often does this run,
-   and is it synchronous?*
-8. **30-minute rule for fixes:** a genuine quick fix (≤ 30 min) I do myself;
-   anything needing real analysis or extended time gets delegated — even if the
-   visible symptom looks small.
+## Rules
+
+1. **Do not change the config on impulse.**
+   The default answer to any new idea is **no**. Write the idea as a new file
+   under `todos/` and keep working. Never open a config or spec file "just to
+   quickly check something."
+
+   - **"It is quick" or "it is easy" is not an exception — it is the trap.**
+     Small changes feel harmless *because* they are fast, and that is exactly how
+     the bad habit starts. These still count as impulse changes:
+     - theme or color changes
+     - scroll speed changes
+     - small keymap changes
+     - option toggles
+     - minor visual or preference tweaks
+
+     Add them to `todos/` and handle them later in a scheduled config session.
+   - This is **not** the 30-minute fix rule (rule #8). That rule is only for real
+     bugs or broken workflows — never for cosmetic or preference changes.
+
+2. **Only edit the config mid-month for critical fixes.**
+   A critical fix is a real error, bug, or broken workflow that blocks actual
+   work. Do not edit just because something feels nicer, annoying, cleaner, more
+   beautiful, or slightly better.
+
+3. **Every new idea needs a plan and a scheduled date.**
+   Do not configure something the moment the idea appears. Collect ideas and
+   handle them in batches — about once a month, or once every 3–4 months.
+
+4. **Never edit the config directly on `main`.**
+   Always switch to a `dev` or feature branch first. Merge back only after the
+   change is reviewed, tested, and confirmed safe.
+
+5. **Reserve at least 1–2 hours of focused, uninterrupted time for any change.**
+   Do not make config changes in random small breaks. Every change must be
+   verified to be safe, stable, complete, and not breaking other parts of the
+   editor. Never leave the config in a half-finished state.
+
+6. **Never commit partial or unfinished work.**
+   Only commit changes that are complete, tested, and proven safe. A
+   work-in-progress commit here can become a broken editor later.
+
+7. **Performance is the top priority.**
+   It matters more than new features, polish, or visuals. Before adding anything,
+   ask: *how often does this run, and is it synchronous?* Avoid anything that
+   adds cost to hot editor paths — keystrokes, cursor moves, and redraws.
+
+8. **Use the 30-minute rule for real fixes only.**
+   A real bug that can be fixed in ≤ 30 minutes, I fix myself. Anything needing
+   deeper analysis or more time gets delegated — even if the visible issue looks
+   small.
+
+---
 
 ## References
 
-The detailed, reasoning-heavy versions of the above:
+The detailed, reasoning-heavy versions of the rules above:
 
-- **Config freeze policy** — default stance, allowed reasons, cadence, the
-  Lua-level `:Lazy` lock and its single-session escape hatch →
+- **Config freeze policy** — default stance, allowed reasons, the batch
+  schedule, the Lua-level `:Lazy` lock, and its single-session escape hatch.
   [`notes/config-freeze-policy.md`](notes/config-freeze-policy.md)
-- **Safe config editing (performance)** — the hot-path mental model, red-flag
-  events/functions/settings, plugin-loading rules, pre-commit checklist →
+- **Safe config editing guide** — the performance-first mindset, hot-path risks,
+  risky events/functions/settings, plugin-loading rules, and the pre-commit
+  checklist.
   [`notes/safe-config-editing-guide.md`](notes/safe-config-editing-guide.md)
-- **Maintenance & delegation** — the 30-minute rule in full, what stays mine vs.
-  what to delegate →
+- **Maintenance and delegation** — the full 30-minute rule, and what to handle
+  myself versus what to delegate.
   [`notes/config-maintenance-and-delegation.md`](notes/config-maintenance-and-delegation.md)
