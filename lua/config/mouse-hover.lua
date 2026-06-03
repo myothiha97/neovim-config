@@ -266,12 +266,22 @@ local function fire_hover(pos)
     if not contents or vim.tbl_isempty(contents) then
       return
     end
-    if #contents == 1 and contents[1] == "" then
+    -- Bail when there is no visible text. open_floating_preview strips blank
+    -- markdown lines internally; whitespace-only contents would collapse to
+    -- zero lines and crash nvim_open_win with "Invalid 'height'".
+    local has_text = false
+    for _, line in ipairs(contents) do
+      if line:match("%S") then
+        has_text = true
+        break
+      end
+    end
+    if not has_text then
       return
     end
 
     close_hover()
-    local pbuf, winid = vim.lsp.util.open_floating_preview(contents, "markdown", {
+    local ok, pbuf, winid = pcall(vim.lsp.util.open_floating_preview, contents, "markdown", {
       border = "rounded",
       max_width = 80,
       max_height = 20,
@@ -280,6 +290,9 @@ local function fire_hover(pos)
       anchor_bias = "below",
       close_events = {},
     })
+    if not ok then
+      return
+    end
     hover_win = winid
     shown = true
 
