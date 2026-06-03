@@ -1,8 +1,8 @@
 <div align="center">
 
-# Neovim Config
+# A Full-Stack IDE — Neovim Config
 
-**A performance-optimized, custom-tailored [LazyVim](https://github.com/LazyVim/LazyVim) setup for full-stack development.**
+**A [LazyVim](https://github.com/LazyVim/LazyVim) setup, customized for everyday coding and tuned to stay fast.**
 
 *Reads and navigates large codebases like an IDE — and keeps every keystroke instant.*
 
@@ -23,9 +23,11 @@ That principle is enforced, not just intended — `:Lazy update/sync/restore` is
 blocked at the Lua level, and a written editing policy keeps future changes from
 quietly regressing speed.
 
-> See [`rules.md`](rules.md) for the freeze policy and
-> [`notes/safe-config-editing-guide.md`](notes/safe-config-editing-guide.md)
-> for the performance rules every change is held to.
+> See [`rules.md`](rules.md) for the discipline rules,
+> [`notes/config-freeze-policy.md`](notes/config-freeze-policy.md) for the freeze
+> policy in full, and
+> [`notes/safe-config-editing-guide.md`](notes/safe-config-editing-guide.md) for
+> the performance rules every change is held to.
 
 ---
 
@@ -37,7 +39,7 @@ What makes this feel less like vanilla Neovim:
 |---|---|
 | 🖱️ **Hover docs on mouse-over** | LSP documentation appears when the pointer rests on a symbol (Zed/WebStorm parity), behind a throttled handler that's free while you type. |
 | 🤖 **AI inline + Next Edit Suggestions** | `copilot.lua` ghost text plus `copilot-lsp` NES — jump-and-apply multi-line edits with `<Tab>`, coexisting with the completion menu. |
-| 📋 **AI prompt-copy system** | `<leader>ac…` copies a context-aware prompt (commit, codebase analysis, explain, refactor, review) to the clipboard for an external CLI agent. |
+| 📋 **AI prompt-copy system** | `<leader>ac…` copies a context-aware prompt (commit, codebase analysis, explain, refactor, review) to the clipboard for an external CLI agent — or `<leader>aci` to pick a template / ask freeform interactively. |
 | 📌 **Persistent quickfix curation** | Mark lines with `<leader>m` while reading code; the list survives restarts, scoped per project. |
 | 🗂️ **Symbols outline** | `<leader>cs` opens an IDE-style structure pane that follows your cursor. |
 | 🔍 **In-buffer git blame** | `<leader>gw` / `<leader>gb` show compact and full blame as floats, without leaving the file. |
@@ -119,6 +121,9 @@ language server scan the whole home directory.
 
 </details>
 
+> Workflow guide: [`notes/reading-codebases-with-neovim.md`](notes/reading-codebases-with-neovim.md)
+> walks through navigating an unfamiliar codebase with these tools.
+
 <details>
 <summary><b>Editing</b></summary>
 
@@ -145,10 +150,11 @@ language server scan the whole home directory.
 | `<M-w>` · `<M-l>` | Accept word · line |
 | `<M-]>` · `<M-[>` | Cycle suggestions |
 | `<leader>ab` · `<C-b>` | Toggle blink completion menu |
-| `<leader>as` | Copy current file path (for CLI agents) |
+| `<leader>as` · `<leader>al` | Copy file path · path:line (visual: line range) — for CLI agents |
 | `<leader>acc` · `aca` · `ace` | Prompt — commit · codebase analysis · explain file |
 | `<leader>acs` · `acd` (visual) | Prompt — explain symbol · explain selection |
 | `<leader>acf` · `acr` | Prompt — refactor · pre-commit review |
+| `<leader>aci` | Prompt — interactive picker (template or freeform + one-off instruction) |
 
 </details>
 
@@ -204,6 +210,8 @@ The whole point. What's tuned, and what's off on purpose.
 
 **Version freeze** — `:Lazy update/sync/restore` is blocked at the Lua level
 (`lua/config/lazy-freeze.lua`). Unlock one session with `NVIM_LAZY_UNLOCK=1 nvim`.
+See [`notes/config-freeze-policy.md`](notes/config-freeze-policy.md) for the
+rationale, cadence, and escape hatch.
 
 ---
 
@@ -230,7 +238,9 @@ lua/config/         options · keymaps · autocmds · lazy · mouse-hover · ai-
 lua/plugins/        one file per plugin (disabled specs kept for reference)
 lua/colorschemes/   active theme (config.lua) + reference-only alternates
 snippets/           VSCode-format snippets
-notes/              working guides — safe-editing · reading codebases · journal
+rules.md            the discipline rules I follow when changing the config
+notes/              guides — safe-editing · freeze-policy · maintenance/delegation · reading codebases · learning · journal
+todos/              backlog — one file per future config idea (not done yet)
 docs/               CHANGELOG · agent instructions
 ```
 
