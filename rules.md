@@ -28,6 +28,18 @@ Core setup is complete. From now on:
   3–4 month batch), so nvim tinkering never bleeds into time owed to the
   professional job.
 
+## Branching policy (never edit config on `main`)
+
+- **Rule:** never add, change, or modify config directly on `main`. Always
+  `git checkout` a `dev` branch or a specific feature branch first, make the
+  changes there, then merge back via a reviewed/tested step.
+- **Applies to:** any new plugin spec, config tweak, refactor, or doc change
+  that touches behavior — not just big features.
+- **Why:** `main` is the known-good config that boots every day. Keeping it
+  clean means a broken experiment never leaves me with an unusable editor, and
+  I always have a working branch to fall back to. Branches make changes easy to
+  isolate, review, and discard if they don't pan out.
+
 ## Safe-editing quick reference (performance)
 
 > Full guide: [`notes/safe-config-editing-guide.md`](notes/safe-config-editing-guide.md).
