@@ -2,7 +2,7 @@
 
 # A Full-Stack IDE — Neovim Config
 
-**A [LazyVim](https://github.com/LazyVim/LazyVim) setup, customized for everyday coding and tuned to stay fast.**
+**Built on [LazyVim](https://github.com/LazyVim/LazyVim), customized for everyday coding and tuned to stay fast.**
 
 *Reads and navigates large codebases like an IDE — and keeps every keystroke instant.*
 
