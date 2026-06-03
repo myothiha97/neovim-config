@@ -93,7 +93,7 @@ end
 local prompts = {
   commit = {
     action = "Generate a high-quality git commit message for the current changes and perform git commit",
-    focus = "Use Conventional Commits. Keep the subject short, imperative, and specific. If the changes mix or unrelated work, recommend splitting them into separate commits but only if the changes are very unrleated  if not summarize the changes to one single commit. Do not invent behavior that is not visible in the diff.",
+    focus = "Use Conventional Commits. Keep the subject short, imperative, and specific. If the changes mix unrelated work, recommend splitting them into separate commits -- but only when they are genuinely unrelated; otherwise summarize everything into one commit. Do not invent behavior that is not visible in the diff. Do not add Co-Authored-By or tool-attribution lines.",
   },
   codebase_analysis = {
     action = "Analyze this codebase as a senior engineer.",
@@ -112,16 +112,16 @@ local prompts = {
     focus = "Focus on purpose, main responsibilities, important dependencies, data flow, and how this file connects to nearby modules. Keep it concise, concrete, and reference specific lines or symbols.",
   },
   explain_current_symbol = {
-    action = "Explain the specific function, class, or expressions near my cursor.If the cursor is inside the fucntion or class , explain that function or class as well as its relationship to the surrounding code.",
+    action = "Explain the specific function, class, or expressions near my cursor. If the cursor is inside the function or class, explain that function or class as well as its relationship to the surrounding code.",
     focus = "Focus on purpose, inputs and outputs, control flow, dependencies, edge cases, and why this code exists. Keep it concise, concrete, and reference specific lines or symbols.",
   },
   explain_selection = {
     action = "Explain the selected code or text.",
-    focus = "Focus on meaning, key ideas, important details, dependencies or unfamiliar terms, and anything non-obvious. Also if the selection is the code block rather than just normal text then explain additionally about its role and  how this particular selection was used or fit in the file. Keep it concise and concrete but can be more detailed if necessary",
+    focus = "Focus on meaning, key ideas, important details, dependencies or unfamiliar terms, and anything non-obvious. Also, if the selection is a code block rather than just normal text, then explain additionally about its role and how this particular selection was used or fits in the file. Keep it concise and concrete, but it can be more detailed if necessary.",
   },
   refactor = {
     action = "Refactor this code to improve readability, maintainability, scalability, and overall architecture without changing behavior.",
-    focus = "Make sure to prevent changes from impacting the exisiting behavior of the codes and only target on structures. Avoid unnecessary abstractions or complex design patterns if not necessary. Only use advance patterns if its really needed. Explain the key changes and any tradeoffs.",
+    focus = "Make sure to prevent changes from impacting the existing behavior of the code and only target the structure. Avoid unnecessary abstractions or complex design patterns if not necessary. Only use advanced patterns if it's really needed. Explain the key changes and any tradeoffs.",
   },
   review_changes = {
     action = "Review the current local changes before commit.",
@@ -268,10 +268,141 @@ local registry = {
     keymap_mode = "n",
     keymap_desc = "AI Prompt: Review Changes",
   },
+  {
+    key = "interactive",
+    title = "Interactive prompt",
+    command = "AICopyInteractivePrompt",
+    command_desc = "Pick an AI prompt template (or ask freeform) and optionally add a one-off instruction",
+    keymap = "<leader>aci",
+    keymap_mode = { "n", "x" },
+    keymap_desc = "AI Prompt: Interactive / Ask",
+    interactive = true,
+  },
 }
 
+-- Capture the active visual selection (or nil in normal mode). Must run while
+-- still in visual mode, before any UI popup steals focus.
+local function selection_context()
+  local mode = vim.fn.mode()
+  if mode ~= "v" and mode ~= "V" and mode ~= "\22" then
+    return nil
+  end
+  local text, start_line, end_line = visual_selection()
+  if text == "" then
+    return nil
+  end
+  return { text = text, start_line = start_line, end_line = end_line, path = current_buffer_path() }
+end
+
+-- A blank-canvas prompt: your own question plus a chosen amount of pointer context.
+--   located = false -> attach only the file name; ask broadly about the file.
+--   located = true  -> attach the exact file:line as a pointer and let the
+--                      assistant read the surrounding code itself. No enclosing
+--                      symbol: in nested config the nearest declaration is often
+--                      a far-away wrapper that mis-frames the question.
+local function freeform_prompt(question, sel, located)
+  local context, trailing, focus
+
+  if sel then
+    if located then
+      context = { "Source: " .. sel.path .. ":" .. sel.start_line .. "-" .. sel.end_line }
+    else
+      context = { "File: " .. sel.path }
+    end
+    trailing = { "Selected content:", sel.text }
+  elseif located then
+    local file, line = current_file_context()
+    context = { "Target: " .. file .. ":" .. line }
+  else
+    context = { "File: " .. current_buffer_path() }
+  end
+
+  if located then
+    focus =
+      "Anchor your answer to the cited location. Read the code at and around it -- including related references and nearby functions -- to give a precise, specific answer."
+  else
+    focus = "Keep it concise and concrete, but it can be more detailed if necessary."
+  end
+
+  return render({ action = question, focus = focus }, context, trailing)
+end
+
+-- Reuse an existing template's builder to produce its base prompt string.
+local function base_prompt(key, sel)
+  if key == "explain_selection" then
+    if not sel then
+      return nil
+    end
+    return M.explain_selection_prompt(sel.text, sel.start_line, sel.end_line)
+  end
+  local builder = M[key .. "_prompt"]
+  return builder and builder() or nil
+end
+
+-- Pick a template (or freeform), then optionally append a one-off instruction.
+function M.copy_interactive_prompt()
+  local sel = selection_context()
+
+  local items = {
+    {
+      label = "Freeform question (cursor + context)",
+      key = "__freeform_located__",
+      title = "Freeform (located) prompt",
+    },
+    { label = "Freeform question (file only)", key = "__freeform__", title = "Freeform prompt" },
+  }
+  for _, entry in ipairs(registry) do
+    if not entry.interactive and (entry.key ~= "explain_selection" or sel) then
+      table.insert(items, { label = entry.title, key = entry.key, title = entry.title })
+    end
+  end
+
+  -- vim.schedule lets the <Esc> queued by visual_selection() flush first,
+  -- otherwise it would immediately cancel the select popup.
+  vim.schedule(function()
+    vim.ui.select(items, {
+      prompt = "AI prompt template:",
+      format_item = function(item)
+        return item.label
+      end,
+    }, function(choice)
+      if not choice then
+        return
+      end
+
+      if choice.key == "__freeform__" or choice.key == "__freeform_located__" then
+        local located = choice.key == "__freeform_located__"
+        vim.ui.input({ prompt = "Your question: " }, function(question)
+          if not question or question == "" then
+            return
+          end
+          copy_prompt(freeform_prompt(question, sel, located), choice.title)
+        end)
+        return
+      end
+
+      local base = base_prompt(choice.key, sel)
+      if not base then
+        vim.notify("Could not build prompt", vim.log.levels.WARN, { title = "AI Prompt" })
+        return
+      end
+
+      vim.ui.input({ prompt = "Add instruction (optional): " }, function(extra)
+        local text = base
+        if extra and extra ~= "" then
+          text = text .. "\n\nAdditional instruction: " .. extra
+        end
+        copy_prompt(text, choice.title)
+      end)
+    end)
+  end)
+end
+
 for _, entry in ipairs(registry) do
-  if entry.with_range then
+  if entry.interactive then
+    -- Handler is defined above as M.copy_interactive_prompt.
+    M["copy_" .. entry.key .. "_prompt"] = M.copy_interactive_prompt
+  elseif entry.with_range then
     M["copy_" .. entry.key .. "_prompt"] = function(opts)
       local selection, start_line, end_line
       if opts and opts.range and opts.range > 0 then
@@ -304,7 +435,10 @@ function M.setup()
   local ok, wk = pcall(require, "which-key")
   if ok then
     wk.add({
-      { "<leader>ac", group = "AI prompts" },
+      -- <leader>a is the shared AI/assistant prefix (Avante, Copilot, Sidekick, ...).
+      -- mode n+x so the labels also show in visual mode.
+      { "<leader>a", group = "ai", mode = { "n", "x" } },
+      { "<leader>ac", group = "AI prompts", mode = { "n", "x" } },
     })
   end
 end
