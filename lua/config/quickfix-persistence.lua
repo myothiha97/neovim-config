@@ -116,6 +116,20 @@ local function read_saved_items()
   return items
 end
 
+local function write_items(items)
+  local file = state_file()
+  if not pcall(vim.fn.mkdir, vim.fs.dirname(file), "p") then
+    return
+  end
+
+  local ok_json, json = pcall(vim.json.encode, { items = items })
+  if not ok_json then
+    return
+  end
+
+  pcall(vim.fn.writefile, { json }, file)
+end
+
 function M.save()
   local ok, qflist = pcall(vim.fn.getqflist)
   if not ok then
@@ -141,18 +155,53 @@ function M.save()
   vim.list_extend(saved_items, items)
   items = dedupe(saved_items)
 
-  local file = state_file()
-  local ok_mkdir = pcall(vim.fn.mkdir, vim.fs.dirname(file), "p")
-  if not ok_mkdir then
+  write_items(items)
+end
+
+-- Stable identity for a quickfix entry. Matches live entries (which carry a bufnr)
+-- against persisted entries (which carry a filename) via filename_for(). Column is
+-- omitted on purpose: manual marks are always col 1 while Trouble reports a 0-based
+-- column, so matching on it would only cause false misses.
+local function entry_key(item)
+  local filename = filename_for(item) or ""
+  return table.concat({ vim.fs.normalize(filename), tostring(item.lnum or 0), vim.trim(item.text or "") }, "\0")
+end
+
+-- Permanently remove the given quickfix entries from BOTH the live list and the
+-- persisted state file, so they don't reappear when the list is reopened or after the
+-- next save(). `targets` are raw quickfix entries (bufnr/filename + lnum + text).
+function M.remove(targets)
+  if type(targets) ~= "table" or #targets == 0 then
     return
   end
 
-  local ok_json, json = pcall(vim.json.encode, { items = items })
-  if not ok_json then
-    return
+  local kill = {}
+  for _, target in ipairs(targets) do
+    kill[entry_key(target)] = true
   end
 
-  pcall(vim.fn.writefile, { json }, file)
+  -- 1. Prune the live quickfix list, preserving its title.
+  local ok_current, current = pcall(vim.fn.getqflist)
+  if ok_current then
+    local kept = vim.tbl_filter(function(item)
+      return not kill[entry_key(item)]
+    end, current)
+    local title = vim.fn.getqflist({ title = 0 }).title
+    pcall(vim.fn.setqflist, {}, "r", { title = title, items = kept })
+  end
+
+  -- 2. Prune the persisted state file so save() can't resurrect them.
+  local saved = read_saved_items()
+  if #saved > 0 then
+    local kept = vim.tbl_filter(function(item)
+      return not kill[entry_key(item)]
+    end, saved)
+    if #kept == 0 then
+      M.clear()
+    else
+      write_items(kept)
+    end
+  end
 end
 
 function M.restore()

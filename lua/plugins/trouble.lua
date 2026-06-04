@@ -34,6 +34,38 @@ local DEFAULT_KINDS = {
 -- Toggled by `a`; read by the symbols `filter` on every refresh.
 local show_all = false
 
+-- Remove the quickfix row(s) under the cursor (or visual selection) from the ACTUAL
+-- quickfix list, not just Trouble's in-memory tree. Trouble's built-in `dd`/`delete`
+-- only filters its own tree (view/tree.lua: node:delete()), so the entry returns the
+-- moment the list is re-read on reopen. We prune the live list + persisted state, then
+-- refresh — which re-fetches the now-smaller qflist source (view/section.lua: refresh).
+local function remove_from_qflist(view)
+  local targets = {}
+  local function collect(node)
+    local item = node.item
+    -- Leaf rows carry the entry; filename group headers don't — recurse into them so a
+    -- `dd` on a header removes all of that file's entries too.
+    if item and (not node.children or #node.children == 0) then
+      targets[#targets + 1] = {
+        bufnr = item.buf,
+        filename = item.filename,
+        lnum = item.pos and item.pos[1] or nil,
+        text = item.text,
+      }
+    end
+    for _, child in ipairs(node.children or {}) do
+      collect(child)
+    end
+  end
+
+  for _, node in ipairs(view:selection()) do
+    collect(node)
+  end
+
+  require("config.quickfix-persistence").remove(targets)
+  view:refresh()
+end
+
 return {
   "folke/trouble.nvim",
   opts = {
@@ -96,6 +128,21 @@ return {
             end
             return { { text = "<anonymous>", hl = "Comment" } }
           end,
+        },
+      },
+      -- Quickfix list (you use it as code pins, harpoon-style). Rebind delete so it
+      -- removes the entry from the real list + persisted state, not just the tree.
+      qflist = {
+        keys = {
+          dd = {
+            desc = "Remove from quickfix (live + persisted)",
+            action = remove_from_qflist,
+          },
+          d = {
+            mode = "v",
+            desc = "Remove from quickfix (live + persisted)",
+            action = remove_from_qflist,
+          },
         },
       },
     },
