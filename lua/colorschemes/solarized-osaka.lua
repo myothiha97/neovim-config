@@ -13,6 +13,11 @@ return {
       -- Re-enable with a custom color (e.g. "#073642") to restore the band.
       hl.CursorLine = { bg = "NONE" }
 
+      -- Dedicated current-row band for Oil only (CursorLine is disabled
+      -- globally above). Oil windows remap CursorLine -> OilCursorLine via
+      -- winhighlight, so the band returns in Oil without touching buffers.
+      hl.OilCursorLine = { bg = c.base02 }
+
       hl.BlinkCmpMenu = { fg = c.base1, bg = c.bg_float }
       hl.BlinkCmpMenuBorder = { fg = c.base02, bg = c.bg_float }
       hl.BlinkCmpMenuSelection = { fg = c.base2, bg = c.base02, bold = true }

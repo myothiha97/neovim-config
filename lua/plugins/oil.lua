@@ -93,6 +93,13 @@ return {
     default_file_explorer = true,
     skip_confirm_for_simple_edits = true,
     view_options = { show_hidden = true },
+    -- CursorLine is disabled globally (see colorschemes/solarized-osaka.lua),
+    -- so remap it to OilCursorLine for Oil windows only. Applied once per
+    -- window by Oil itself — no CursorMoved autocmd, zero hot-path cost.
+    win_options = {
+      cursorline = true,
+      winhighlight = "CursorLine:OilCursorLine",
+    },
     keymaps = {
       ["<C-l>"] = "actions.select",
     },
