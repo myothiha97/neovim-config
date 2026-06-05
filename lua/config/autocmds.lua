@@ -30,6 +30,23 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 })
 clear_trouble_preview_hl()
 
+-- ── Transparent winbar gap ────────────────────────────────────────────────
+-- options.lua sets `winbar = " "` for a 1-row gap at the top of each window.
+-- The theme paints WinBar with its own background, which shows as a colored
+-- band. Linking WinBar to Normal makes the gap match the editor exactly — so it
+-- reads as empty space (transparent today, solid bg if `transparent` is off).
+-- Re-applied on every ColorScheme because the theme re-sets WinBar on load,
+-- which is why setting this in options.lua alone never stuck.
+local function blend_winbar()
+  pcall(vim.api.nvim_set_hl, 0, "WinBar", { link = "Normal" })
+  pcall(vim.api.nvim_set_hl, 0, "WinBarNC", { link = "Normal" })
+end
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("transparent_winbar", { clear = true }),
+  callback = blend_winbar,
+})
+blend_winbar()
+
 -- ── Manual quickfix persistence ───────────────────────────────────────────
 -- Persist only entries created by <leader>m. This stays off interactive hot
 -- paths: one bounded read at startup and one bounded write on exit.

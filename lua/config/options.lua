@@ -67,10 +67,11 @@ if is_ghostty then
   vim.opt.termsync = true
 end
 
--- Create gap at top by adding empty winbar (pushes content down)
-vim.opt.winbar = " " -- Single space creates 1 line of padding
--- vim.api.nvim_set_hl(0, "WinBar", { bg = "NONE", sp = "NONE" })
--- vim.api.nvim_set_hl(0, "WinBarNC", { bg = "NONE", sp = "NONE" })
+-- Top breathing room: a 1-row winbar holding a single space. The string is
+-- static, so it is never re-evaluated on redraw (zero hot-path cost). WinBar is
+-- made transparent in autocmds.lua on every ColorScheme — setting the highlight
+-- here doesn't stick because the theme loads after options.lua and repaints it.
+vim.opt.winbar = " "
 
 vim.diagnostic.config({
   float = {
