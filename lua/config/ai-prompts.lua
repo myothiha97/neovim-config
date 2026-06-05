@@ -98,7 +98,8 @@ local prompts = {
   codebase_analysis = {
     action = "Analyze this codebase as a senior engineer.",
     focus = table.concat({
-      "Analyze the repository architecture, maintainability, performance risks, Neovim/LazyVim configuration structure, plugin boundaries, language support, and testing or verification gaps.",
+      -- Neovim/LazyVim configuration structure,
+      "Analyze the code architecture, maintainability, scalability, predictability (check if the code base easier to read, navigate and explore for someone who is new to the codebase),  performance risks, and overall quality. Identify the most important gaps, weaknesses, and risks in the codebase that a team should address to improve it. Be specific and concrete, and reference particular files, lines, or symbols where relevant.",
       "",
       "Return:",
       "1. Highest-impact findings first, with file references.",
