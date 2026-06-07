@@ -44,7 +44,7 @@ return {
         ["<C-i>"] = { "show", "hide" },
         -- <Esc>: cancel menu first (second Esc exits insert via copilot's handler)
         ["<ESC>"] = { "cancel", "fallback" },
-        ["<C-h>"] = { "show_documentation", "hide_documentation" },
+        ["<C-h>"] = { "show_documentation", "hide_documentation", "fallback" },
       },
       snippets = {
         score_offset = 0,
