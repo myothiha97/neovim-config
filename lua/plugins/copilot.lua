@@ -202,7 +202,9 @@ return {
       end
 
       map("n", "<leader>ad", toggleCopilotSuggestions, { desc = "Copilot: Toggle Suggestions" })
-      map("i", "<C-k>", toggleCopilotSuggestions, { desc = "Copilot: Toggle Suggestions" })
+      -- Cmd+K in insert mode (Ghostty sends Cmd as <M->). Moved off <C-k> to reclaim the
+      -- native insert-mode digraph entry. Neovide's Cmd mirror (<D-k>) is in config/neovide.lua.
+      map("i", "<M-k>", toggleCopilotSuggestions, { desc = "Copilot: Toggle Suggestions" })
 
       -- Accept word / line
       map("i", "<M-w>", function()

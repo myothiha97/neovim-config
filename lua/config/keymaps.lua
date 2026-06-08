@@ -245,7 +245,8 @@ vim.keymap.set("i", "<Tab>", function()
 end, { expr = true, desc = "NES Accept or Indent" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "Outdent" })
 
-vim.keymap.set("n", "gi", function()
+-- Relocated off native `gi` (resume insert at last edit position) to reclaim it.
+vim.keymap.set("n", "<leader>cd", function()
   local _, winid = vim.diagnostic.open_float({
     focusable = true,
     border = "rounded",
@@ -256,29 +257,9 @@ vim.keymap.set("n", "gi", function()
   end
 end, { desc = "Line Diagnostics (Focus)" })
 
---Configuration to only target Errors (min and max both set to ERROR for exact match)
-local error_only_config = {
-  severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
-  float = { border = "rounded", source = "always" },
-}
-
--- Go to next ERROR
-vim.keymap.set("n", "ge", function()
-  vim.diagnostic.jump({
-    count = 1,
-    severity = error_only_config.severity,
-    float = error_only_config.float,
-  })
-end, { desc = "Next Error" })
-
--- Go to previous ERROR
-vim.keymap.set("n", "gp", function()
-  vim.diagnostic.jump({
-    count = -1,
-    severity = error_only_config.severity,
-    float = error_only_config.float,
-  })
-end, { desc = "Prev Error" })
+-- Disabled g-prefixed error jumps (ge/gp) live in config/diagnostics-keymaps.lua;
+-- LazyVim's standard ]e/[e (and ]w/[w, ]d/[d) cover next/prev error instead.
+require("config.diagnostics-keymaps")
 
 -- Resize window using Shift + arrow keys
 vim.keymap.set("n", "<S-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
@@ -473,86 +454,9 @@ vim.keymap.set("n", "<leader>sl", function()
   })
 end, { desc = "Grep in Current File" })
 
--- =============================================
--- TREESITTER FUNCTION NAVIGATION
--- =============================================
-
--- Helper: Get treesitter node at cursor and find parent function
-local function get_function_node()
-  -- Use built-in vim.treesitter API (modern approach)
-  local node = vim.treesitter.get_node()
-  if not node then
-    return nil
-  end
-
-  -- Function node types for different languages
-  local function_types = {
-    "function_declaration", -- JS/TS/Go/Lua
-    "function_definition", -- Python/C/C++
-    "arrow_function", -- JS/TS
-    "method_definition", -- JS/TS class methods
-    "function_expression", -- JS/TS
-    "function_item", -- Rust
-    "func_literal", -- Go
-    "lambda_expression", -- Python
-    "lexical_declaration", -- const fn = () => {} wrapper
-  }
-
-  -- Walk up the tree to find function node
-  while node do
-    local node_type = node:type()
-    for _, fn_type in ipairs(function_types) do
-      if node_type == fn_type then
-        return node
-      end
-    end
-    -- Special case: variable declaration containing arrow function
-    if node_type == "lexical_declaration" or node_type == "variable_declaration" then
-      for child in node:iter_children() do
-        if child:type() == "variable_declarator" then
-          for subchild in child:iter_children() do
-            local subtype = subchild:type()
-            if subtype == "arrow_function" or subtype == "function_expression" then
-              return node
-            end
-          end
-        end
-      end
-    end
-    node = node:parent()
-  end
-  return nil
-end
-
--- [f / ]f navigation handled by nvim-treesitter-textobjects (see treesitter.lua)
-
--- Jump to function name/signature
-vim.keymap.set("n", "gf", function()
-  local node = get_function_node()
-  if node then
-    local start_row, start_col = node:start()
-    vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
-    -- Move to first non-whitespace character
-    vim.cmd("normal! ^")
-    vim.cmd("normal! zz")
-  else
-    vim.notify("No function found at cursor", vim.log.levels.WARN)
-  end
-end, { desc = "Go to Function Start (Treesitter)" })
-
--- Jump to end of current function (opposite of gf)
-vim.keymap.set("n", "gh", function()
-  local node = get_function_node()
-  if node then
-    local end_row, _ = node:end_()
-    vim.api.nvim_win_set_cursor(0, { end_row + 1, 0 })
-    -- Move to first non-whitespace character (the closing brace)
-    vim.cmd("normal! ^")
-    vim.cmd("normal! zz")
-  else
-    vim.notify("No function found at cursor", vim.log.levels.WARN)
-  end
-end, { desc = "Go to Function End (Treesitter)" })
+-- Disabled g-prefixed treesitter function nav (gf/gh) lives in config/treesitter-keymaps.lua;
+-- LazyVim's standard ]f/[f (function start), ]F/[F (end), ]c/[c (class), ]a/[a (param) cover it.
+require("config.treesitter-keymaps")
 
 -- Unsaved files popup: list all modified buffers with jump/save actions
 local function show_unsaved_files()

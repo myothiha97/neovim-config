@@ -41,6 +41,10 @@ vim.keymap.set("v", "<D-/>", "<Esc>:normal gvgc<CR>", { desc = "Toggle comment b
 vim.keymap.set("n", "<D-d>", "<Plug>(VM-Find-Under)", { desc = "Multi-cursor: add next" })
 vim.keymap.set("v", "<D-d>", "<Plug>(VM-Find-Subword-Under)", { desc = "Multi-cursor: add next" })
 
+-- Cmd+K: toggle Copilot suggestions in insert mode (Ghostty sends this as <M-k>).
+-- Remaps to the <M-k> handler defined in plugins/copilot.lua (avoids duplicating the toggle).
+vim.keymap.set("i", "<D-k>", "<M-k>", { remap = true, desc = "Copilot: Toggle Suggestions" })
+
 -- Clipboard: copy/paste with system clipboard
 vim.keymap.set({ "n", "v" }, "<D-c>", '"+y', { desc = "Copy to clipboard" })
 vim.keymap.set({ "n", "v" }, "<D-y>", '"+y', { desc = "Copy to clipboard" })
