@@ -5,7 +5,7 @@ return {
     -- nes/api.lua delegates to require("copilot-lsp.nes"), so NES needs this
     -- plugin on the runtimepath before copilot.lua's setup runs.
     dependencies = { "copilotlsp-nvim/copilot-lsp" },
-    enabled = true,
+    enabled = false,
     cmd = "Copilot",
     event = { "InsertEnter" },
     opts = {
@@ -225,30 +225,6 @@ return {
       -- Check / recover copilot status from normal mode
       map("n", "<leader>aS", "<cmd>Copilot status<cr>", { desc = "Copilot: Status" })
       map("n", "<leader>aR", "<cmd>Copilot restart<cr>", { desc = "Copilot: Restart" })
-
-      -- Copy "path:line" to the system clipboard. Companion to <leader>as
-      -- (keymaps.lua), which copies the bare relative path — this appends the
-      -- cursor line so the reference jumps straight to a location. The
-      -- `path:line` form is what Claude Code CLI / LSP / most editors parse as
-      -- a jump target. `:.` keeps the path cwd-relative, matching <leader>as.
-      map("n", "<leader>al", function()
-        local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
-        local ref = path .. ":" .. vim.fn.line(".")
-        vim.fn.setreg("+", ref)
-        vim.notify("Copied: " .. ref, vim.log.levels.INFO)
-      end, { desc = "Copy File Path + Line to Clipboard" })
-
-      -- Visual variant: copy "path:start-end" for the selected line range.
-      -- line("v") is the selection anchor, line(".") the cursor end; min/max
-      -- normalizes them so direction of selection doesn't matter.
-      map("v", "<leader>al", function()
-        local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
-        local a, b = vim.fn.line("v"), vim.fn.line(".")
-        local first, last = math.min(a, b), math.max(a, b)
-        local ref = first == last and (path .. ":" .. first) or (path .. ":" .. first .. "-" .. last)
-        vim.fn.setreg("+", ref)
-        vim.notify("Copied: " .. ref, vim.log.levels.INFO)
-      end, { desc = "Copy File Path + Line Range to Clipboard" })
     end,
   },
 }
