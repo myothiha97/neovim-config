@@ -4,6 +4,22 @@
 
 vim.o.number = true
 vim.o.scrolloff = 10
+-- smoothscroll only has any effect when a window has `wrap = true`. Our code
+-- editing uses `wrap = false` (see below), so this option is inert there — it
+-- only matters inside wrapped doc/float views (LSP hover, completion docs).
+--
+-- `true`  → the top of the window may park in the MIDDLE of a wrapped line, so
+--           <C-e>/<C-y>/wheel scroll one SCREEN ROW at a time. Smooth, fine-
+--           grained reading. Cost: Neovim draws a `<<<` indicator in the top-
+--           left to flag that the first line is partially scrolled (an info
+--           marker, not a glitch; it sits over the first ~3 cells of that row).
+-- `false` → a wrapped line is all-or-nothing at the top, so one scroll step
+--           jumps the ENTIRE multi-row logical line at once (and the mouse,
+--           mapped to 3<C-e>, jumps 3 logical lines). No marker, but reading
+--           long wrapped paragraphs in floats feels jarring/jumpy.
+--
+-- We keep `true`: our hover/completion docs are soft-wrapped long paragraphs
+-- where smooth per-row scrolling matters far more than hiding the `<<<` marker.
 vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false

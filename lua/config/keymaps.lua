@@ -5,6 +5,14 @@
 
 -- Neovim 0.12 has no pad_* in open_floating_preview, so we use foldcolumn
 -- (left padding) on the float window after creation.
+--
+-- This left gutter also fixes the smoothscroll `<<<` marker overlapping doc
+-- text: with smoothscroll on (see options.lua) the float draws `<<<` at
+-- absolute window column 1 to flag a partially-scrolled wrapped line. That
+-- marker is exactly 3 cells wide, so the gutter must be >= 3 to fully absorb
+-- it — otherwise the overflow eats the first chars of the line you're reading
+-- (foldcolumn=1 left "type" showing as "<<<pe"). foldcolumn=3 parks all three
+-- `<` on the empty gutter; the doc text is never occluded.
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
@@ -17,10 +25,11 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   -- then anchor to the popup's own cursor and dismiss it.
   local is_focus_reuse = winid and vim.api.nvim_get_current_win() == winid
   if winid and vim.api.nvim_win_is_valid(winid) and not is_focus_reuse then
-    vim.wo[winid].foldcolumn = "1"
+    vim.wo[winid].foldcolumn = "3"
     local config = vim.api.nvim_win_get_config(winid)
     if config.width then
-      config.width = config.width + 2
+      -- Widen by the gutter (3) so the text area keeps its full width.
+      config.width = config.width + 3
     end
     vim.api.nvim_win_set_config(winid, config)
   end
@@ -36,6 +45,22 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   end
   return bufnr, winid
 end
+
+-- Same smoothscroll `<<<` fix for blink.cmp's documentation popup. That float
+-- does NOT go through open_floating_preview (above), so it needs its own 3-cell
+-- left gutter to absorb the marker. blink opens it with style="minimal"
+-- (foldcolumn=0) and re-sets the buffer's filetype on every (re)open, so a
+-- FileType hook re-applies the gutter each time the popup appears. The window
+-- exists and is resolvable via bufwinid even though blink opens it unfocused.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "blink-cmp-documentation",
+  callback = function(args)
+    local win = vim.fn.bufwinid(args.buf)
+    if win ~= -1 then
+      vim.wo[win].foldcolumn = "3"
+    end
+  end,
+})
 
 local hover_opts = {
   border = "rounded",
