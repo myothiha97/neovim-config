@@ -3,16 +3,53 @@
 -- Add any additional keymaps here
 --
 
--- Neovim 0.12 has no pad_* in open_floating_preview, so we use foldcolumn
--- (left padding) on the float window after creation.
+-- Doc floats keep smoothscroll ON (global default, see options.lua) so long
+-- wrapped text scrolls one screen row per <C-e>/<C-y> — never a whole block at
+-- once. smoothscroll's cost is the hardcoded 3-cell `<<<` marker (hl-NonText; not
+-- disableable in 0.12 — verified: no fillchars/option exists, see neovim #8715)
+-- drawn at window column 1 whenever a wrapped line is partially scrolled. The
+-- marker REPLACES the text in its cells (there's no layer underneath, so opacity
+-- can't reveal it), so we handle it with two settings working together:
+--   1. foldcolumn = `pad` (>= 3): a left gutter the marker parks in, so it never
+--      eats doc text.
+--   2. hide_float_marker(): recolour NonText -> float bg so the `<<<` renders
+--      blank, turning the gutter into clean Zed-style left padding instead of a
+--      visible marker column (FoldColumn is also blended into the float bg).
+-- Net: smooth per-row scrolling, no visible marker, zero blocked text — at the
+-- cost of a constant 3-cell left padding.
 --
--- This left gutter also fixes the smoothscroll `<<<` marker overlapping doc
--- text: with smoothscroll on (see options.lua) the float draws `<<<` at
--- absolute window column 1 to flag a partially-scrolled wrapped line. That
--- marker is exactly 3 cells wide, so the gutter must be >= 3 to fully absorb
--- it — otherwise the overflow eats the first chars of the line you're reading
--- (foldcolumn=1 left "type" showing as "<<<pe"). foldcolumn=3 parks all three
--- `<` on the empty gutter; the doc text is never occluded.
+-- Theme-coupled: the hide colour must match the float bg, so recompute on
+-- ColorScheme. The gutter (pad >= 3) is the safety net: even if a transparent-bg
+-- theme makes the hide a no-op, the marker is in padding, so text is never eaten.
+local function sync_float_nontext_hl()
+  local function bg_of(name)
+    local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
+    return hl and hl.bg
+  end
+  local bg = bg_of("NormalFloat") or bg_of("Normal")
+  if bg then
+    -- fg == bg: the glyph is painted in the background colour, i.e. invisible.
+    vim.api.nvim_set_hl(0, "FloatNonTextHidden", { fg = bg, bg = bg })
+  end
+end
+sync_float_nontext_hl()
+-- Named augroup (clear = true) so re-sourcing keymaps.lua can't stack duplicate
+-- callbacks — shared by the ColorScheme refresh and the blink doc hook below.
+local float_doc_grp = vim.api.nvim_create_augroup("float_doc_ui", { clear = true })
+vim.api.nvim_create_autocmd("ColorScheme", { group = float_doc_grp, callback = sync_float_nontext_hl })
+
+-- Neutralise the `<<<` marker in `win`: remap NonText to the float bg (so the
+-- glyph renders invisibly) and FoldColumn to NormalFloat (so the gutter reads as
+-- plain padding, not a tinted strip). Append so we keep whatever winhighlight the
+-- float already set (e.g. Normal:NormalFloat); guard against duplicate entries on
+-- the focus-reuse / blink re-open paths.
+local function hide_float_marker(win)
+  local wh = vim.wo[win].winhighlight
+  if not wh:find("FloatNonTextHidden", 1, true) then
+    local add = "NonText:FloatNonTextHidden,FoldColumn:NormalFloat"
+    vim.wo[win].winhighlight = (wh ~= "" and wh .. "," or "") .. add
+  end
+end
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
@@ -25,11 +62,13 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   -- then anchor to the popup's own cursor and dismiss it.
   local is_focus_reuse = winid and vim.api.nvim_get_current_win() == winid
   if winid and vim.api.nvim_win_is_valid(winid) and not is_focus_reuse then
-    vim.wo[winid].foldcolumn = "3"
+    local pad = 3 -- left padding; the smoothscroll marker parks in this gutter (>= 3 keeps text clear)
+    vim.wo[winid].foldcolumn = tostring(pad)
+    hide_float_marker(winid)
     local config = vim.api.nvim_win_get_config(winid)
     if config.width then
-      -- Widen by the gutter (3) so the text area keeps its full width.
-      config.width = config.width + 3
+      -- Widen by the padding so the text area keeps its full width.
+      config.width = config.width + pad
     end
     vim.api.nvim_win_set_config(winid, config)
   end
@@ -46,18 +85,20 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   return bufnr, winid
 end
 
--- Same smoothscroll `<<<` fix for blink.cmp's documentation popup. That float
--- does NOT go through open_floating_preview (above), so it needs its own 3-cell
--- left gutter to absorb the marker. blink opens it with style="minimal"
--- (foldcolumn=0) and re-sets the buffer's filetype on every (re)open, so a
--- FileType hook re-applies the gutter each time the popup appears. The window
--- exists and is resolvable via bufwinid even though blink opens it unfocused.
+-- Same `<<<` hide for blink.cmp's documentation popup. That float does NOT go
+-- through open_floating_preview (above) and keeps smoothscroll on, so we hide its
+-- marker the same way. blink re-sets the buffer's filetype on every (re)open, so a
+-- FileType hook re-applies each time; the window is resolvable via bufwinid even
+-- though blink opens it unfocused. (If blink's doc bg differs from NormalFloat the
+-- hidden cells may show a faint smudge — link BlinkCmpDoc to NormalFloat to match.)
 vim.api.nvim_create_autocmd("FileType", {
+  group = float_doc_grp,
   pattern = "blink-cmp-documentation",
   callback = function(args)
     local win = vim.fn.bufwinid(args.buf)
     if win ~= -1 then
       vim.wo[win].foldcolumn = "3"
+      hide_float_marker(win)
     end
   end,
 })

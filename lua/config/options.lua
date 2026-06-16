@@ -18,8 +18,10 @@ vim.o.scrolloff = 10
 --           mapped to 3<C-e>, jumps 3 logical lines). No marker, but reading
 --           long wrapped paragraphs in floats feels jarring/jumpy.
 --
--- We keep `true`: our hover/completion docs are soft-wrapped long paragraphs
--- where smooth per-row scrolling matters far more than hiding the `<<<` marker.
+-- We keep `true` everywhere, including doc floats, so long wrapped text scrolls
+-- one screen row at a time (never a whole block per <C-e>). The `<<<` marker this
+-- normally draws is hidden inside the floats by recolouring NonText to the float
+-- bg — see keymaps.lua — so we get smooth scrolling without the marker or a gutter.
 vim.o.smoothscroll = true
 vim.g.material_style = "deep ocean"
 vim.opt.list = false
