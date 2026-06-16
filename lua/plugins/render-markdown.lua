@@ -27,9 +27,13 @@ return {
       --   * Hover/Avante popups: always fully rendered; cursor position is
       --     irrelevant (read-only, no insert mode).
       --   * Real .md files: the cursor line stays RENDERED in normal mode.
-      -- Editing toggles on MODE, not cursor line: `render_modes` defaults to
-      -- { "n", "c", "t" } (excludes insert), so entering insert mode shows raw
-      -- for editing and leaving it re-renders. No per-line flicker as you move.
+      -- Editing toggles on MODE, not cursor line. `render_modes` is an allowlist
+      -- of modes that stay RENDERED; the default { "n", "c", "t" } excludes both
+      -- insert AND visual, so selecting text would drop to raw. We add the three
+      -- visual variants ("v" charwise, "V" linewise, "\22" Ctrl-V blockwise) so
+      -- visual mode keeps rendering — only insert ("i", omitted) shows raw for
+      -- editing. No per-line flicker as you move.
+      render_modes = { "n", "c", "t", "v", "V", "\22" },
       anti_conceal = { enabled = false },
       -- Fenced code blocks in .md files: no background, no header bar — just a
       -- plain ` js` language label above the snippet, with treesitter colors on
@@ -40,12 +44,14 @@ return {
       -- teal bar stretching right of "js".
       code = { disable_background = true, language_border = "" },
       -- Keep markdown fences/emphasis concealed even when the cursor sits on the
-      -- line. `concealcursor = "n"` means conceal stays active in normal mode, so
-      -- the cursor line renders like every other line. `conceallevel = 3` fully
-      -- hides concealed text. Applies to markdown files and the popups.
+      -- line. `concealcursor` lists the modes where Vim keeps concealing the
+      -- cursor's own line; `"nvc"` covers normal, visual and command so inline
+      -- `code` backticks stay hidden while selecting — only insert (omitted)
+      -- reveals raw for editing. `conceallevel = 3` fully hides concealed text.
+      -- Applies to markdown files and the popups.
       win_options = {
         conceallevel = { default = 3, rendered = 3 },
-        concealcursor = { default = "n", rendered = "n" },
+        concealcursor = { default = "nvc", rendered = "nvc" },
       },
       -- Hover popups (buftype=nofile) get a tightened style: NormalFloat padding
       -- matches the float background, sign column off (signs look broken in
