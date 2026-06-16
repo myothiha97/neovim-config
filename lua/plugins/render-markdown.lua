@@ -13,6 +13,22 @@ return {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     ft = { "markdown", "Avante" },
+    -- Full raw/rendered toggle for the current buffer. The `render_modes` allowlist
+    -- above keeps normal/visual rendered and only insert raw — handy for reading, but
+    -- it hides backtick/asterisk symbols you need for vim motions while editing. This
+    -- flips the plugin OFF for the buffer so EVERY mode (normal + visual) shows raw
+    -- text; press again to restore rendering. Buffer-local, so it never touches other
+    -- .md buffers or the hover/Avante popups. Lazy-loaded as a keymap = zero hot-path cost.
+    keys = {
+      {
+        "<leader>uh",
+        function()
+          require("render-markdown").buf_toggle()
+        end,
+        mode = { "n", "x" },
+        desc = "Toggle Markdown render (raw/rendered)",
+      },
+    },
     opts = {
       file_types = { "markdown", "Avante" },
       -- We don't want render-markdown providing blink.cmp/cmp sources.
@@ -43,15 +59,21 @@ return {
       -- header line (highlighted via RenderMarkdownCodeBorder) — that was the
       -- teal bar stretching right of "js".
       code = { disable_background = true, language_border = "" },
-      -- Keep markdown fences/emphasis concealed even when the cursor sits on the
-      -- line. `concealcursor` lists the modes where Vim keeps concealing the
-      -- cursor's own line; `"nvc"` covers normal, visual and command so inline
-      -- `code` backticks stay hidden while selecting — only insert (omitted)
-      -- reveals raw for editing. `conceallevel = 3` fully hides concealed text.
+      -- Conceal control, split by render-markdown state:
+      --   * `rendered` = values applied while rendering is ON (normal viewing).
+      --     `conceallevel = 3` fully hides backticks/emphasis markers; treesitter
+      --     does the actual concealing. `concealcursor = "nvc"` (normal, visual,
+      --     command) keeps the cursor's own line concealed too — only insert
+      --     (omitted) reveals raw symbols for editing. No per-line flicker.
+      --   * `default` = values applied while rendering is OFF, i.e. after the
+      --     `<leader>uh` toggle. `conceallevel = 0` disables ALL conceal so every
+      --     raw symbol (`` ` ``, `*`, `#`) shows in every mode — that's the whole
+      --     point of the toggle. `concealcursor = ""` is moot at level 0 but kept
+      --     consistent.
       -- Applies to markdown files and the popups.
       win_options = {
-        conceallevel = { default = 3, rendered = 3 },
-        concealcursor = { default = "nvc", rendered = "nvc" },
+        conceallevel = { default = 0, rendered = 3 },
+        concealcursor = { default = "", rendered = "nvc" },
       },
       -- Hover popups (buftype=nofile) get a tightened style: NormalFloat padding
       -- matches the float background, sign column off (signs look broken in
