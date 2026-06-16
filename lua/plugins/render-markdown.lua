@@ -1,7 +1,6 @@
--- Polished markdown rendering for LSP hover popups and Avante windows.
--- Real `.md` files in the editor are out of scope here (user doesn't edit
--- markdown in this Neovim setup); if that ever changes, add a FileType
--- autocmd calling `buf_disable()` when `buftype ~= "nofile"`.
+-- Markdown rendering for real `.md` files plus LSP hover popups and Avante windows.
+-- Scope is controlled purely by `file_types` / `ft` below — never attaches to
+-- code buffers (lua, ts, go, etc.), the blink.cmp menu, or the blink doc window.
 
 return {
   {
@@ -11,7 +10,6 @@ return {
     opts = { ensure_installed = { "markdown", "markdown_inline" } },
   },
   {
-    enabled = false,
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     ft = { "markdown", "Avante" },
@@ -19,19 +17,32 @@ return {
       file_types = { "markdown", "Avante" },
       -- We don't want render-markdown providing blink.cmp/cmp sources.
       completions = { lsp = { enabled = false } },
-      -- Match the hover-popup behavior set in lua/config/keymaps.lua: keep
-      -- markdown fences/emphasis hidden even when the cursor sits on the line.
-      -- Plugin default is `concealcursor.rendered = ""` which reveals raw
-      -- markdown under the cursor — the "toggle between markdown and text"
-      -- you saw in Avante.
-      -- Pin BOTH `default` and `rendered` to the rendered values. The plugin
-      -- toggles between these two states during its render cycle (e.g. briefly
-      -- before each redraw, when the buffer enters a non-`render_modes` state).
-      -- If `default` is `""`, that toggle reveals raw markdown under the cursor
-      -- for a frame and the conceal can stick at `""` until a full re-render.
-      -- Pinning both eliminates any window where the fence becomes visible.
-      -- Safe in this setup because render-markdown only attaches to hover floats
-      -- and Avante — never to real markdown files where defaults matter.
+      -- Strip ALL heading color: `backgrounds = {}` drops the full-width line
+      -- block, `foregrounds = {}` drops the colored heading text/icon. Headings
+      -- still get their icon glyph, just in default text color. Applies
+      -- everywhere this plugin attaches (markdown files AND hover/Avante popups).
+      heading = { backgrounds = {}, foregrounds = {} },
+      -- Never reveal raw markdown on the cursor's line (the Obsidian-style
+      -- per-line raw/rendered toggle). With this off:
+      --   * Hover/Avante popups: always fully rendered; cursor position is
+      --     irrelevant (read-only, no insert mode).
+      --   * Real .md files: the cursor line stays RENDERED in normal mode.
+      -- Editing toggles on MODE, not cursor line: `render_modes` defaults to
+      -- { "n", "c", "t" } (excludes insert), so entering insert mode shows raw
+      -- for editing and leaving it re-renders. No per-line flicker as you move.
+      anti_conceal = { enabled = false },
+      -- Fenced code blocks in .md files: no background, no header bar — just a
+      -- plain ` js` language label above the snippet, with treesitter colors on
+      -- the code. `disable_background = true` removes the code fill; the default
+      -- `border = "hide"` conceals the ``` fences and surfaces the label.
+      -- `language_border = ""` drops the `█` fill char that padded out the
+      -- header line (highlighted via RenderMarkdownCodeBorder) — that was the
+      -- teal bar stretching right of "js".
+      code = { disable_background = true, language_border = "" },
+      -- Keep markdown fences/emphasis concealed even when the cursor sits on the
+      -- line. `concealcursor = "n"` means conceal stays active in normal mode, so
+      -- the cursor line renders like every other line. `conceallevel = 3` fully
+      -- hides concealed text. Applies to markdown files and the popups.
       win_options = {
         conceallevel = { default = 3, rendered = 3 },
         concealcursor = { default = "n", rendered = "n" },
@@ -51,8 +62,14 @@ return {
             sign = { enabled = false },
             -- Strip the code-block language header (the "lua"/"typescript" chip)
             -- in hover popups. `language = false` hides the header row while
-            -- keeping delimiter concealment intact.
-            code = { language = false, sign = false },
+            -- keeping delimiter concealment intact. `disable_background = true`
+            -- removes the RenderMarkdownCode background block behind fenced code
+            -- (e.g. function signatures in LSP hover) so the popup stays flat —
+            -- text/treesitter highlights remain, just no colored box.
+            -- `border = "hide"` keeps popups flat: it cancels the top-level
+            -- "thin" border so hover docs don't get the rule lines, just
+            -- concealed fences + treesitter colors.
+            code = { language = false, sign = false, disable_background = true, border = "hide" },
           },
         },
       },
