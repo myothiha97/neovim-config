@@ -22,7 +22,7 @@ Legend: ✅ done · 🔶 partial / verify · ⬜ todo · 💤 deferred (future)
 | Bash | ⬜ bashls | ⬜ shfmt | ⬜ shellcheck | ➖ | ➖ | ➖ | **Deferred** |
 | Lua | ✅ lua_ls | 🔶 stylua | ➖ | ➖ | ➖ | ✅ | Ready (install stylua) |
 | JSON | ✅ jsonls | ✅ prettierd | ➖ | ➖ | ➖ | ✅ | Ready |
-| Markdown | ➖ | ✅ prettierd | ➖ | ➖ | ➖ | ➖ | Ready (render-markdown off by choice) |
+| Markdown | ➖ | ✅ prettierd | ➖ | ➖ | ➖ | ➖ | Ready (render-markdown on for `.md` + `<leader>uh` raw toggle) |
 | Rust | 💤 rustaceanvim | 💤 rustfmt | 💤 | 💤 codelldb | 💤 | ✅ | **Dormant — needs rustup** |
 | C | 💤 clangd | 💤 clang-format | ➖ | 💤 codelldb | ➖ | ⬜ add fold | **Future — not enabled** |
 

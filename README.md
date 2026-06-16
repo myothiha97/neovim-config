@@ -43,6 +43,7 @@ What makes this feel less like vanilla Neovim:
 | 📌 **Persistent quickfix curation** | Mark lines with `<leader>m` while reading code; the list survives restarts, scoped per project. |
 | 🗂️ **Symbols outline** | `<leader>cs` opens an IDE-style structure pane that follows your cursor. |
 | 🔍 **In-buffer git blame** | `<leader>gw` / `<leader>gb` show compact and full blame as floats, without leaving the file. |
+| 📝 **Rendered markdown in-buffer** | `.md` files render inline (headings, code blocks, inline code) with flat no-highlight styling; `<leader>uh` flips the buffer back to raw for editing. Same renderer polishes LSP hover popups and Avante windows. |
 
 ---
 
@@ -52,7 +53,7 @@ What makes this feel less like vanilla Neovim:
 |----------|--------|
 | **Completion** | blink.cmp — LSP · local snippets · path · buffer |
 | **AI** | copilot.lua (inline) + copilot-lsp (NES) + prompt-copy system |
-| **File nav** | Snacks — picker · explorer · dashboard · terminal · oil.nvim (float) |
+| **File nav** | Snacks — picker · explorer · dashboard · terminal · oil.nvim (fullscreen) |
 | **Code nav** | Trouble (symbols outline + quickfix views) · treesitter textobjects |
 | **Git** | neogit + diffview.nvim + custom blame floats |
 | **Search** | grug-far — project/file search-replace & rename |
@@ -60,6 +61,7 @@ What makes this feel less like vanilla Neovim:
 | **Folding** | nvim-ufo — treesitter + indent, async |
 | **Formatting** | conform.nvim — prettierd for web/JSON/Markdown, goimports/gofumpt for Go |
 | **Languages** | TypeScript/React daily driver, Go + Python enabled, Rust lazy/deferred |
+| **Markdown** | render-markdown.nvim — `.md` files · LSP hover popups · Avante (flat, no-highlight) |
 | **UI** | lualine · noice (cmdline only) · fidget · which-key |
 | **Theme** | solarized-osaka |
 
@@ -95,7 +97,7 @@ language server scan the whole home directory.
 | `<leader>ff` · `<leader>fi` | Find files — root · current dir |
 | `<leader>fp` | Switch project |
 | `<leader>r` | Toggle Snacks explorer |
-| `<leader>e` | Oil floating file manager |
+| `<leader>e` | Oil file manager (fullscreen) |
 | `<leader>sl` | Grep within current file |
 | `<leader>sf` · `<leader>sF` | Search & replace — project · current file |
 | `<leader>sr` · `<leader>sR` | Rename word under cursor — file · project |
@@ -134,6 +136,7 @@ language server scan the whole home directory.
 | `<M-/>` | Toggle comment (line / selection) |
 | `ys` · `ds` · `cs` · `s` (visual) | Surround |
 | `zm` · `zn` | Toggle all folds — keep current open · fold all |
+| `<leader>uh` | Toggle markdown render — raw ⇄ rendered (current buffer) |
 | `zR` · `zM` · `zv` | Open all · close all · toggle function folds |
 | `K` · `<M-i>` | Hover docs · signature help |
 
@@ -206,7 +209,7 @@ The whole point. What's tuned, and what's off on purpose.
 
 **Disabled by decision** — don't re-add without a reason:
 > gitsigns · bufferline · flash · harpoon · spectre · avante · sidekick ·
-> nvim-lint · persistence · mini.\* · render-markdown · friendly-snippets
+> nvim-lint · persistence · mini.\* · friendly-snippets
 
 **Version freeze** — `:Lazy update/sync/restore` is blocked at the Lua level
 (`lua/config/lazy-freeze.lua`). Unlock one session with `NVIM_LAZY_UNLOCK=1 nvim`.
