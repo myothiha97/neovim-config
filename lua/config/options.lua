@@ -1,6 +1,6 @@
 -- Options are automatically loaded before lazy.nvim startup
--- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 -- Add any additional options here
+-- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 
 vim.o.number = true
 vim.o.scrolloff = 10
@@ -23,7 +23,10 @@ vim.o.scrolloff = 10
 -- normally draws is hidden inside the floats by recolouring NonText to the float
 -- bg — see keymaps.lua — so we get smooth scrolling without the marker or a gutter.
 vim.o.smoothscroll = true
-vim.g.material_style = "deep ocean"
+-- material.nvim variant. Loading the `material-oceanic` colorscheme (see
+-- colorschemes/config.lua) also sets this, but keep it aligned so a manual
+-- `:colorscheme material` resolves to the same variant.
+vim.g.material_style = "oceanic" -- note: this config will only effect if you set the colorscheme to material-oceanic
 vim.opt.list = false
 vim.opt.listchars = { leadmultispace = "│ ", tab = "▸ ", trail = "·" }
 vim.opt.ttyfast = true
