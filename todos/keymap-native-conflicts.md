@@ -22,12 +22,12 @@ When a map conflicts with a native binding, choose the *safest* resolution, not 
 
 | Key | Native meaning (lost) | Current override | Safe resolution |
 |-----|----------------------|------------------|-----------------|
-| `gi` | Resume insert at last edit position | Line diagnostics float (`keymaps.lua:248`) | Move to `<leader>cd`; `]d`/`[d` already nav diagnostics |
-| `ge` | Motion: back to end of prev word | Next ERROR (`keymaps.lua:266`) | Delete — LazyVim `]e` already does next error |
-| `gp` | Paste, cursor after pasted text | Prev ERROR (`keymaps.lua:275`) | Delete — LazyVim `[e` already does prev error |
-| `gf` | Go to file under cursor | Function start, treesitter (`keymaps.lua:530`) | Relocate; `[f`/`]f` already nav functions |
-| `gh` | Start Select mode | Function end, treesitter (`keymaps.lua:544`) | Relocate with `gf` |
-| `<C-k>` (insert) | Digraph entry (`<C-k>e'`→é, `->`→→) | Copilot toggle (`copilot.lua:205`) | Move to `<M-k>`; `<leader>ad` already toggles |
+| `gi` ✅ | Resume insert at last edit position | Line diagnostics float (`keymaps.lua:248`) | Done — moved to `<leader>cd`, native `gi` reclaimed |
+| `ge` ✅ | Motion: back to end of prev word | Next ERROR (`keymaps.lua:266`) | Done — commented out; LazyVim `]e` covers next error |
+| `gp` ✅ | Paste, cursor after pasted text | Prev ERROR (`keymaps.lua:275`) | Done — commented out; LazyVim `[e` covers prev error |
+| `gf` ✅ | Go to file under cursor | Function start, treesitter (`keymaps.lua:530`) | Done — commented out; LazyVim `]f`/`[f` nav functions |
+| `gh` ✅ | Start Select mode | Function end, treesitter (`keymaps.lua:544`) | Done — commented out; LazyVim `]F`/`[F` for function end |
+| `<C-k>` (insert) ✅ | Digraph entry (`<C-k>e'`→é, `->`→→) | Copilot toggle (`copilot.lua:205`) | Done — moved to `<M-k>` (+`<D-k>` Neovide mirror); native digraph reclaimed |
 
 ## 🟡 Medium
 
@@ -47,8 +47,9 @@ When a map conflicts with a native binding, choose the *safest* resolution, not 
 - `<S-arrows>` — resize; shadows rarely-used native scroll/word-motion.
 
 ## ⚠️ Non-native but real self-collisions (fix in the same pass)
-- `<leader>m` mapped **twice**: Harpoon "Add File" (`harpoon.lua:76`) vs "Add line to
-  Quickfix" (`keymaps.lua:669`). Load order silently kills one — pick a single owner.
+- ✅ `<leader>m` — Resolved. Quickfix "Add line to Quickfix" (`keymaps.lua:669`) is the
+  owner. Harpoon is `enabled = false`, so no live clash; a CONFLICT comment at
+  `harpoon.lua:76` flags it to relocate (→ `<leader>ha`) if harpoon is ever re-enabled.
 - `<M-i>` in both `keymaps.lua:216` and `mouse-hover.lua` — verify no collision.
 
 ## Notes

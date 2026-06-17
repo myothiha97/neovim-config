@@ -3,8 +3,53 @@
 -- Add any additional keymaps here
 --
 
--- Neovim 0.12 has no pad_* in open_floating_preview, so we use foldcolumn
--- (left padding) on the float window after creation.
+-- Doc floats keep smoothscroll ON (global default, see options.lua) so long
+-- wrapped text scrolls one screen row per <C-e>/<C-y> — never a whole block at
+-- once. smoothscroll's cost is the hardcoded 3-cell `<<<` marker (hl-NonText; not
+-- disableable in 0.12 — verified: no fillchars/option exists, see neovim #8715)
+-- drawn at window column 1 whenever a wrapped line is partially scrolled. The
+-- marker REPLACES the text in its cells (there's no layer underneath, so opacity
+-- can't reveal it), so we handle it with two settings working together:
+--   1. foldcolumn = `pad` (>= 3): a left gutter the marker parks in, so it never
+--      eats doc text.
+--   2. hide_float_marker(): recolour NonText -> float bg so the `<<<` renders
+--      blank, turning the gutter into clean Zed-style left padding instead of a
+--      visible marker column (FoldColumn is also blended into the float bg).
+-- Net: smooth per-row scrolling, no visible marker, zero blocked text — at the
+-- cost of a constant 3-cell left padding.
+--
+-- Theme-coupled: the hide colour must match the float bg, so recompute on
+-- ColorScheme. The gutter (pad >= 3) is the safety net: even if a transparent-bg
+-- theme makes the hide a no-op, the marker is in padding, so text is never eaten.
+local function sync_float_nontext_hl()
+  local function bg_of(name)
+    local hl = vim.api.nvim_get_hl(0, { name = name, link = false })
+    return hl and hl.bg
+  end
+  local bg = bg_of("NormalFloat") or bg_of("Normal")
+  if bg then
+    -- fg == bg: the glyph is painted in the background colour, i.e. invisible.
+    vim.api.nvim_set_hl(0, "FloatNonTextHidden", { fg = bg, bg = bg })
+  end
+end
+sync_float_nontext_hl()
+-- Named augroup (clear = true) so re-sourcing keymaps.lua can't stack duplicate
+-- callbacks — shared by the ColorScheme refresh and the blink doc hook below.
+local float_doc_grp = vim.api.nvim_create_augroup("float_doc_ui", { clear = true })
+vim.api.nvim_create_autocmd("ColorScheme", { group = float_doc_grp, callback = sync_float_nontext_hl })
+
+-- Neutralise the `<<<` marker in `win`: remap NonText to the float bg (so the
+-- glyph renders invisibly) and FoldColumn to NormalFloat (so the gutter reads as
+-- plain padding, not a tinted strip). Append so we keep whatever winhighlight the
+-- float already set (e.g. Normal:NormalFloat); guard against duplicate entries on
+-- the focus-reuse / blink re-open paths.
+local function hide_float_marker(win)
+  local wh = vim.wo[win].winhighlight
+  if not wh:find("FloatNonTextHidden", 1, true) then
+    local add = "NonText:FloatNonTextHidden,FoldColumn:NormalFloat"
+    vim.wo[win].winhighlight = (wh ~= "" and wh .. "," or "") .. add
+  end
+end
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
@@ -17,10 +62,13 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   -- then anchor to the popup's own cursor and dismiss it.
   local is_focus_reuse = winid and vim.api.nvim_get_current_win() == winid
   if winid and vim.api.nvim_win_is_valid(winid) and not is_focus_reuse then
-    vim.wo[winid].foldcolumn = "1"
+    local pad = 3 -- left padding; the smoothscroll marker parks in this gutter (>= 3 keeps text clear)
+    vim.wo[winid].foldcolumn = tostring(pad)
+    hide_float_marker(winid)
     local config = vim.api.nvim_win_get_config(winid)
     if config.width then
-      config.width = config.width + 2
+      -- Widen by the padding so the text area keeps its full width.
+      config.width = config.width + pad
     end
     vim.api.nvim_win_set_config(winid, config)
   end
@@ -36,6 +84,24 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   end
   return bufnr, winid
 end
+
+-- Same `<<<` hide for blink.cmp's documentation popup. That float does NOT go
+-- through open_floating_preview (above) and keeps smoothscroll on, so we hide its
+-- marker the same way. blink re-sets the buffer's filetype on every (re)open, so a
+-- FileType hook re-applies each time; the window is resolvable via bufwinid even
+-- though blink opens it unfocused. (If blink's doc bg differs from NormalFloat the
+-- hidden cells may show a faint smudge — link BlinkCmpDoc to NormalFloat to match.)
+vim.api.nvim_create_autocmd("FileType", {
+  group = float_doc_grp,
+  pattern = "blink-cmp-documentation",
+  callback = function(args)
+    local win = vim.fn.bufwinid(args.buf)
+    if win ~= -1 then
+      vim.wo[win].foldcolumn = "3"
+      hide_float_marker(win)
+    end
+  end,
+})
 
 local hover_opts = {
   border = "rounded",
@@ -119,6 +185,26 @@ vim.keymap.set("n", "<leader>as", function()
   vim.fn.setreg("+", path)
   vim.notify("Copied: " .. path, vim.log.levels.INFO)
 end, { desc = "Copy File Path to Clipboard" })
+
+-- Copy "path:line" to the system clipboard. Companion to <leader>as, which
+-- copies the bare relative path. The `path:line` form is what Claude Code CLI /
+-- LSP / most editors parse as a jump target.
+vim.keymap.set("n", "<leader>al", function()
+  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  local ref = path .. ":" .. vim.fn.line(".")
+  vim.fn.setreg("+", ref)
+  vim.notify("Copied: " .. ref, vim.log.levels.INFO)
+end, { desc = "Copy File Path + Line to Clipboard" })
+
+-- Visual variant: copy "path:start-end" for the selected line range.
+vim.keymap.set("v", "<leader>al", function()
+  local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+  local a, b = vim.fn.line("v"), vim.fn.line(".")
+  local first, last = math.min(a, b), math.max(a, b)
+  local ref = first == last and (path .. ":" .. first) or (path .. ":" .. first .. "-" .. last)
+  vim.fn.setreg("+", ref)
+  vim.notify("Copied: " .. ref, vim.log.levels.INFO)
+end, { desc = "Copy File Path + Line Range to Clipboard" })
 
 require("config.ai-prompts").setup()
 
@@ -245,7 +331,8 @@ vim.keymap.set("i", "<Tab>", function()
 end, { expr = true, desc = "NES Accept or Indent" })
 vim.keymap.set("i", "<S-Tab>", "<C-d>", { desc = "Outdent" })
 
-vim.keymap.set("n", "gi", function()
+-- Relocated off native `gi` (resume insert at last edit position) to reclaim it.
+vim.keymap.set("n", "<leader>cd", function()
   local _, winid = vim.diagnostic.open_float({
     focusable = true,
     border = "rounded",
@@ -256,29 +343,9 @@ vim.keymap.set("n", "gi", function()
   end
 end, { desc = "Line Diagnostics (Focus)" })
 
---Configuration to only target Errors (min and max both set to ERROR for exact match)
-local error_only_config = {
-  severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
-  float = { border = "rounded", source = "always" },
-}
-
--- Go to next ERROR
-vim.keymap.set("n", "ge", function()
-  vim.diagnostic.jump({
-    count = 1,
-    severity = error_only_config.severity,
-    float = error_only_config.float,
-  })
-end, { desc = "Next Error" })
-
--- Go to previous ERROR
-vim.keymap.set("n", "gp", function()
-  vim.diagnostic.jump({
-    count = -1,
-    severity = error_only_config.severity,
-    float = error_only_config.float,
-  })
-end, { desc = "Prev Error" })
+-- Disabled g-prefixed error jumps (ge/gp) live in config/diagnostics-keymaps.lua;
+-- LazyVim's standard ]e/[e (and ]w/[w, ]d/[d) cover next/prev error instead.
+require("config.diagnostics-keymaps")
 
 -- Resize window using Shift + arrow keys
 vim.keymap.set("n", "<S-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
@@ -473,86 +540,9 @@ vim.keymap.set("n", "<leader>sl", function()
   })
 end, { desc = "Grep in Current File" })
 
--- =============================================
--- TREESITTER FUNCTION NAVIGATION
--- =============================================
-
--- Helper: Get treesitter node at cursor and find parent function
-local function get_function_node()
-  -- Use built-in vim.treesitter API (modern approach)
-  local node = vim.treesitter.get_node()
-  if not node then
-    return nil
-  end
-
-  -- Function node types for different languages
-  local function_types = {
-    "function_declaration", -- JS/TS/Go/Lua
-    "function_definition", -- Python/C/C++
-    "arrow_function", -- JS/TS
-    "method_definition", -- JS/TS class methods
-    "function_expression", -- JS/TS
-    "function_item", -- Rust
-    "func_literal", -- Go
-    "lambda_expression", -- Python
-    "lexical_declaration", -- const fn = () => {} wrapper
-  }
-
-  -- Walk up the tree to find function node
-  while node do
-    local node_type = node:type()
-    for _, fn_type in ipairs(function_types) do
-      if node_type == fn_type then
-        return node
-      end
-    end
-    -- Special case: variable declaration containing arrow function
-    if node_type == "lexical_declaration" or node_type == "variable_declaration" then
-      for child in node:iter_children() do
-        if child:type() == "variable_declarator" then
-          for subchild in child:iter_children() do
-            local subtype = subchild:type()
-            if subtype == "arrow_function" or subtype == "function_expression" then
-              return node
-            end
-          end
-        end
-      end
-    end
-    node = node:parent()
-  end
-  return nil
-end
-
--- [f / ]f navigation handled by nvim-treesitter-textobjects (see treesitter.lua)
-
--- Jump to function name/signature
-vim.keymap.set("n", "gf", function()
-  local node = get_function_node()
-  if node then
-    local start_row, start_col = node:start()
-    vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
-    -- Move to first non-whitespace character
-    vim.cmd("normal! ^")
-    vim.cmd("normal! zz")
-  else
-    vim.notify("No function found at cursor", vim.log.levels.WARN)
-  end
-end, { desc = "Go to Function Start (Treesitter)" })
-
--- Jump to end of current function (opposite of gf)
-vim.keymap.set("n", "gh", function()
-  local node = get_function_node()
-  if node then
-    local end_row, _ = node:end_()
-    vim.api.nvim_win_set_cursor(0, { end_row + 1, 0 })
-    -- Move to first non-whitespace character (the closing brace)
-    vim.cmd("normal! ^")
-    vim.cmd("normal! zz")
-  else
-    vim.notify("No function found at cursor", vim.log.levels.WARN)
-  end
-end, { desc = "Go to Function End (Treesitter)" })
+-- Disabled g-prefixed treesitter function nav (gf/gh) lives in config/treesitter-keymaps.lua;
+-- LazyVim's standard ]f/[f (function start), ]F/[F (end), ]c/[c (class), ]a/[a (param) cover it.
+require("config.treesitter-keymaps")
 
 -- Unsaved files popup: list all modified buffers with jump/save actions
 local function show_unsaved_files()

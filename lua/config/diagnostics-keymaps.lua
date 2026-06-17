@@ -1,0 +1,33 @@
+-- =============================================
+-- DIAGNOSTICS KEYMAPS (currently all disabled)
+-- =============================================
+-- Parked here, required from config/keymaps.lua. Every binding below is commented out
+-- because LazyVim's standard brackets already cover them: ]e/[e (next/prev error),
+-- ]w/[w (warning), ]d/[d (any diagnostic). These g-prefixed versions shadowed native
+-- `ge` (back to end of prev word) and `gp` (paste with cursor after), so they were
+-- disabled to reclaim the native keys. To bring one back, just uncomment its block —
+-- this file is already required, so no extra wiring is needed.
+
+-- Configuration to only target Errors (min and max both set to ERROR for exact match)
+-- local error_only_config = {
+--   severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
+--   float = { border = "rounded", source = "always" },
+-- }
+--
+-- -- Go to next ERROR
+-- vim.keymap.set("n", "ge", function()
+--   vim.diagnostic.jump({
+--     count = 1,
+--     severity = error_only_config.severity,
+--     float = error_only_config.float,
+--   })
+-- end, { desc = "Next Error" })
+--
+-- -- Go to previous ERROR
+-- vim.keymap.set("n", "gp", function()
+--   vim.diagnostic.jump({
+--     count = -1,
+--     severity = error_only_config.severity,
+--     float = error_only_config.float,
+--   })
+-- end, { desc = "Prev Error" })

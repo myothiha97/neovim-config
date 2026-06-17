@@ -36,6 +36,12 @@ return {
 
       hl.Folded = { bg = "NONE" }
       hl.UfoFoldedBg = { bg = "NONE" }
+
+      -- grug-far matched-keyword highlight. Defaults to linking DiffText,
+      -- which in this theme is a near-black green band (c.green900) -> the
+      -- match looks faded. Override with a vivid bg + dark fg so the matched
+      -- keyword stands out clearly in the results list.
+      hl.GrugFarResultsMatch = { fg = c.base04, bg = c.magenta300, bold = false }
     end,
   },
 }

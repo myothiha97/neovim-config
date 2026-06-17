@@ -73,6 +73,9 @@ return {
           vim.notify("Removed from Harpoon: " .. label, vim.log.levels.WARN, { title = "Harpoon" })
         end,
       })
+      -- CONFLICT: <leader>m is owned by "Add line to Quickfix" (config/keymaps.lua).
+      -- Harpoon is disabled, so nothing clashes today; if you re-enable this plugin,
+      -- relocate this map (e.g. <leader>ha) before it silently overrides the quickfix one.
       vim.keymap.set("n", "<leader>m", function()
         add_current_file_to_harpoon()
       end, { desc = "Harpoon Add File" })

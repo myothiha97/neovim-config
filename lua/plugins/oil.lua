@@ -2,6 +2,11 @@ local backdrop_buf = nil
 local backdrop_win = nil
 local saved_winhl = {}
 
+-- Flip to `true` to switch <leader>e back to the floating popup (original
+-- implementation, fully preserved below). `false` opens Oil fullscreen in
+-- the current window instead.
+local USE_FLOAT = false
+
 local function close_backdrop()
   -- Restore search highlights in background windows
   for win, hl in pairs(saved_winhl) do
@@ -68,7 +73,7 @@ local function is_oil_float_open()
   return false, nil
 end
 
-local function toggle_oil()
+local function toggle_oil_float()
   local open, win = is_oil_float_open()
   if open then
     close_backdrop()
@@ -82,12 +87,41 @@ local function toggle_oil()
   end
 end
 
+local function toggle_oil_fullscreen()
+  if vim.bo.filetype == "oil" then
+    local win = vim.api.nvim_get_current_win()
+    require("oil").close()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.wo[win].winbar = " "
+    end
+  else
+    require("oil").open()
+  end
+end
+
+local function toggle_oil()
+  if USE_FLOAT then
+    toggle_oil_float()
+  else
+    toggle_oil_fullscreen()
+  end
+end
+
+-- Path label followed by a horizontal divider that fills the rest of the
+-- row, separating it from the file list on the line below.
+local function set_oil_winbar(win)
+  local title = require("oil.util").get_title(win)
+  local used = vim.fn.strdisplaywidth(title) + 2 -- leading space + space before divider
+  local divider = string.rep("─", math.max(0, vim.api.nvim_win_get_width(win) - used))
+  vim.wo[win].winbar = " %#FloatTitle#" .. title .. "%* %#WinSeparator#" .. divider .. "%*"
+end
+
 return {
   "stevearc/oil.nvim",
   lazy = false,
   dependencies = { "nvim-tree/nvim-web-devicons" },
   keys = {
-    { "<leader>e", toggle_oil, desc = "Toggle Oil Float" },
+    { "<leader>e", toggle_oil, desc = "Toggle Oil" },
   },
   opts = {
     default_file_explorer = true,
@@ -125,7 +159,11 @@ return {
       callback = function()
         local close_oil = function()
           close_backdrop()
+          local win = vim.api.nvim_get_current_win()
           require("oil").close()
+          if vim.api.nvim_win_is_valid(win) then
+            vim.wo[win].winbar = " "
+          end
         end
 
         vim.keymap.set("n", "q", close_oil, { buffer = true })
@@ -148,6 +186,39 @@ return {
             close_backdrop()
           end
         end)
+      end,
+    })
+
+    -- Fullscreen Oil has no float border to show a title on, so the global
+    -- 1-row winbar (set in options.lua) is repurposed to show the current
+    -- directory path. Fires on every directory navigation (each becomes a
+    -- new "oil" buffer) and resets to the default " " once Oil buffer leaves.
+    vim.api.nvim_create_autocmd("BufWinEnter", {
+      callback = function(args)
+        local win = vim.api.nvim_get_current_win()
+        if vim.api.nvim_win_get_config(win).relative ~= "" then
+          return
+        end
+        if vim.bo[args.buf].filetype == "oil" then
+          set_oil_winbar(win)
+        else
+          vim.wo[win].winbar = " "
+        end
+      end,
+    })
+
+    -- Recompute the divider width when the Oil window is resized (e.g.
+    -- terminal resize, split toggled) so it keeps spanning the full row.
+    vim.api.nvim_create_autocmd("WinResized", {
+      callback = function()
+        for _, win in ipairs(vim.v.event.windows) do
+          if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_config(win).relative == "" then
+            local buf = vim.api.nvim_win_get_buf(win)
+            if vim.bo[buf].filetype == "oil" then
+              set_oil_winbar(win)
+            end
+          end
+        end
       end,
     })
   end,

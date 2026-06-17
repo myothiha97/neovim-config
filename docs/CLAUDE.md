@@ -38,6 +38,10 @@
 - vtsls: TypeScript LSP with 200ms debounce
 - Custom `gd` mapping filters out node_modules
 
+## Committing the changes
+- when asked to commit the changes, automatically load the /perf-review skill to analyze the changes for performance safety
+- only proceed to commit if the changes pass the check from the /perf-review skill
+
 ## Treesitter
 - textobjects configured via `nvim-treesitter-textobjects` plugin (NOT through nvim-treesitter opts)
 - LazyVim only auto-creates keymaps for `move` - `select` keymaps (af/if/ac/ic/aa/ia) MUST be created manually via lazy.nvim `keys` spec
