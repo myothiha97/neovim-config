@@ -5,7 +5,7 @@ return {
     -- nes/api.lua delegates to require("copilot-lsp.nes"), so NES needs this
     -- plugin on the runtimepath before copilot.lua's setup runs.
     dependencies = { "copilotlsp-nvim/copilot-lsp" },
-    enabled = false,
+    enabled = true,
     cmd = "Copilot",
     event = { "InsertEnter" },
     opts = {
@@ -20,7 +20,11 @@ return {
         -- before the next keystroke cancels the in-flight request. WebStorm uses
         -- a similar window (~300-400ms). Lower if you want snappier single-token
         -- suggestions at the cost of multi-line ones.
-        auto_trigger = true,
+        -- Default OFF. The real source of truth at runtime is vim.g.copilot_enabled
+        -- (also false by default), synced onto each buffer via BufEnter in config().
+        -- This opt is the fallback for any buffer entered before that sync runs, so
+        -- it must match the default-off state too.
+        auto_trigger = false,
         hide_during_completion = false,
         debounce = 300,
         keymap = { accept = false },
@@ -160,9 +164,25 @@ return {
       end, { desc = "Copilot: Trigger / cycle suggestion" })
 
       -- Toggle auto-trigger only (Copilot LSP stays loaded so manual <C-j> and
-      -- blink.cmp coexistence keep working). vim.g.copilot_enabled mirrors the
-      -- auto-trigger state and drives the lualine indicator color.
-      vim.g.copilot_enabled = true
+      -- blink.cmp coexistence keep working). vim.g.copilot_enabled is the single
+      -- source of truth: it drives the lualine indicator, the NES render gate, and
+      -- (via the BufEnter sync below) the per-buffer auto-trigger decision.
+      -- Default OFF: copilot loads and the LSP stays connected, but no ghost text
+      -- auto-fires until you toggle it on with <leader>ad / <M-k>.
+      vim.g.copilot_enabled = false
+
+      -- copilot.lua's auto-trigger check reads vim.b.copilot_suggestion_auto_trigger
+      -- and only falls back to the global opt when that buffer-local var is nil.
+      -- suggestion.toggle_auto_trigger() flips that buffer-local var, so a toggle
+      -- only sticks in the buffer it was pressed in -- switching to a fresh buffer
+      -- (oil, a picker result, an untouched file) reverts to the opt default and
+      -- silently re-enables copilot. Project the global state onto every buffer on
+      -- entry so the toggle behaves globally.
+      vim.api.nvim_create_autocmd({ "BufEnter", "BufNewFile" }, {
+        callback = function()
+          vim.b.copilot_suggestion_auto_trigger = vim.g.copilot_enabled
+        end,
+      })
 
       -- Gate NES rendering on vim.g.copilot_enabled. The TextChanged autocmd
       -- in copilot-lsp/nes/init.lua:191 captures request_nes by upvalue at
@@ -181,8 +201,12 @@ return {
       end
 
       local function toggleCopilotSuggestions()
-        suggestion.toggle_auto_trigger()
+        -- Flip the global first, then push it to the current buffer. The BufEnter
+        -- sync above carries it to every other buffer as you move between them, so
+        -- the toggle is effectively global. (We set vim.b directly rather than call
+        -- suggestion.toggle_auto_trigger(), which would only flip this one buffer.)
         vim.g.copilot_enabled = not vim.g.copilot_enabled
+        vim.b.copilot_suggestion_auto_trigger = vim.g.copilot_enabled
         -- Belt-and-suspenders: when disabling, drop any ghost text and any
         -- pending NES that was rendered just before the toggle. The
         -- toggle/render-gate only affects *future* draws.
@@ -194,6 +218,12 @@ return {
           if nes_ok then
             nes.clear()
           end
+        elseif vim.api.nvim_get_mode().mode:find("i") then
+          -- Enabling while in insert mode: fire a suggestion now instead of waiting
+          -- for the next keystroke, so ghost text appears the moment you toggle on.
+          vim.schedule(function()
+            suggestion.next()
+          end)
         end
         local status = vim.g.copilot_enabled and "Enabled" or "Disabled"
         local level = vim.g.copilot_enabled and vim.log.levels.INFO or vim.log.levels.WARN
