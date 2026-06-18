@@ -142,6 +142,39 @@ return {
       end
       opts.sections.lualine_c = lualine_c
 
+      -- Custom percent badge styling: keep the same statusline background as the
+      -- line indicator, but use a Solarized Osaka accent for the text.
+      -- If the colorscheme or lualine theme changes, revisit this block.
+      -- Previous green fallback, if yellow reads worse:
+      -- { fg = "#849900", bg = "#002c38", gui = "bold" }
+      local percent_color = { fg = "#b28500", bg = "#002c38", gui = "bold" }
+      local ok, solarized_colors = pcall(require, "solarized-osaka.colors")
+      if ok then
+        local colors = solarized_colors.setup({ transform = true })
+        percent_color = { fg = colors.yellow500 or colors.yellow, bg = colors.bg_statusline, gui = "bold" }
+      end
+
+      opts.sections.lualine_y = {
+        {
+          function()
+            local current = vim.fn.line(".")
+            local total = vim.api.nvim_buf_line_count(0)
+            return string.format("line %d/%d", current, total)
+          end,
+          padding = { left = 1, right = 1 },
+        },
+        {
+          function()
+            local current = vim.fn.line(".")
+            local total = vim.api.nvim_buf_line_count(0)
+            local percent = total > 0 and math.floor((current / total) * 100 + 0.5) or 0
+            return string.format("%d%%%%", percent)
+          end,
+          color = percent_color,
+          padding = { left = 2, right = 1 },
+        },
+      }
+
       -- Copilot status indicator (LSP status + autocomplete toggle state)
       -- Color reflects vim.g.copilot_enabled (toggled via <leader>ad / <C-k>):
       --   enabled  -> color from LSP status (green/yellow/red)
@@ -184,5 +217,4 @@ return {
       return opts
     end,
   },
-
 }

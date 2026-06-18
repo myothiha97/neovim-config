@@ -109,6 +109,27 @@ return {
         },
       },
 
+      -- Cmdline completion: keep blink's defaults, but go silent while typing a
+      -- `:CodeCompanion ...` prompt. That text is free-form input for the AI, not
+      -- a command/argument, so the adapter=/slash-command suggestions are just
+      -- noise. Command-name completion still works while typing `:CodeC...` --
+      -- suppression only kicks in once the full command name is on the line.
+      cmdline = {
+        sources = function()
+          if vim.fn.getcmdline():find("CodeCompanion") then
+            return {}
+          end
+          local type = vim.fn.getcmdtype()
+          if type == "/" or type == "?" then
+            return { "buffer" }
+          end
+          if type == ":" or type == "@" then
+            return { "cmdline" }
+          end
+          return {}
+        end,
+      },
+
       enabled = function()
         local ft = vim.bo.filetype
         return not (ft:match("^Avante") or ft == "AvanteInput" or vim.bo.buftype == "prompt")

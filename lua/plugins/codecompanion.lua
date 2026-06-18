@@ -1,0 +1,546 @@
+return {
+  {
+    "olimorris/codecompanion.nvim",
+    enabled = true,
+    -- Lazy-load only on its commands/keymaps so there is zero startup cost.
+    -- The `keys` trigger loads the plugin before feeding the mapping; `cmd`
+    -- covers typing `:CodeCompanion ...` directly at the cmdline.
+    cmd = { "CodeCompanion", "CodeCompanionChat" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    ---@module 'codecompanion'
+    ---@type CodeCompanion.Config
+    opts = {
+      -- Inline-only usage: ask the AI to write/complete/edit code in place.
+      -- Reuses the GitHub Copilot OAuth token that copilot.lua already
+      -- provisions, so there is no extra API key or billing.
+      --
+      -- MODEL: left unset = Copilot's default model. To pin one, e.g.:
+      --   inline = { adapter = { name = "copilot", model = "claude-sonnet-4" } }
+      -- Discover the exact model ids your Copilot sub exposes by opening a chat
+      -- (<leader>aC) and pressing `ga` (Select Adapter -> Select Model).
+      -- Plain chats stay tool-free (conversational). The agentic chat gets its
+      -- edit tools injected per-keymap instead (see <leader>aa below), so we don't
+      -- make every chat agentic globally. (Chat adapter already defaults to copilot.)
+      -- ── Switching the CHAT provider: Copilot <-> Claude Code ──────────────────
+      -- Both are key-free (no paid API key). Pick one on `interactions.chat.adapter`
+      -- below:
+      --   "copilot"      Copilot subscription. Default. Nothing to install.
+      --   "claude_code"  Claude *subscription* via the ACP bridge. One-time shell
+      --                  setup first:
+      --                    npm install -g @agentclientprotocol/claude-agent-acp
+      --                    claude setup-token
+      --                    export CLAUDE_CODE_OAUTH_TOKEN="<token>"   # in ~/.zshrc
+      --                  Neovim must inherit CLAUDE_CODE_OAUTH_TOKEN (restart tmux/
+      --                  shell so the adapter's auth, which requires it, can see it).
+      -- To switch: set `interactions.chat.adapter` below to "copilot" (string) or
+      -- claude_code (string for its default model, or a table to pin one -- see the
+      -- model note there). Restart Neovim after. Inline always stays on Copilot.
+      --
+      -- The claude_code adapter's default command is already `claude-agent-acp`
+      -- (the binary the package above installs), so no command override is needed --
+      -- the built-in adapter works as-is once the binary + token are in place.
+      --
+      -- ── Thinking / reasoning "effort" (REFERENCE) ─────────────────────────────
+      -- CodeCompanion does NOT manage or auto-tune reasoning effort. It's a pass-
+      -- through: it sends your prompt and renders the reply. How hard the model
+      -- "thinks" is decided model-side, and you steer it -- not CodeCompanion.
+      --
+      --   Claude Code (claude_code, ACP):
+      --     * No low/medium/high enum (unlike Codex/OpenAI `reasoning_effort`).
+      --     * The Claude Code AGENT auto-decides a thinking budget from task
+      --       complexity. Good default -- usually leave it alone.
+      --     * Per-prompt override: include a thinking keyword in your message,
+      --       escalating: `think` < `think hard` < `think harder` < `ultrathink`.
+      --       The AGENT (not CodeCompanion) interprets these.
+      --     * Global ceiling: `MAX_THINKING_TOKENS` env (read by the bridge + Claude
+      --       Code SDK). Higher = more reasoning. Simplest is a shell export in
+      --       ~/.zshrc (the spawned claude-agent-acp child inherits it):
+      --         export MAX_THINKING_TOKENS=10000      # ~4000 light · 10000 heavy
+      --       Or set it from this config by re-introducing an adapter extend:
+      --         adapters = {
+      --           acp = {
+      --             claude_code = function()
+      --               return require("codecompanion.adapters").extend("claude_code", {
+      --                 env = { MAX_THINKING_TOKENS = "10000" },
+      --               })
+      --             end,
+      --           },
+      --         },
+      --
+      --   Copilot (copilot, HTTP):
+      --     * No reasoning-effort knob exposed either. "Effort" is just whichever
+      --       MODEL you pick (via `ga` -> Select Model, or by pinning a model in the
+      --       adapter). A stronger model = more capability; there is no separate
+      --       effort dial. Reasoning-capable models reason on their own.
+      --
+      -- TL;DR: choose effort via MODEL (both providers) + thinking KEYWORDS or
+      -- MAX_THINKING_TOKENS (Claude Code only). CodeCompanion adds nothing automatic.
+      adapters = {
+        acp = {
+          -- Optional Codex ACP adapter. Chat still defaults to Claude Code below;
+          -- this only affects choosing "codex" from `ga`.
+          --
+          -- Use the same ChatGPT/Codex login as the Codex CLI. The adapter default is
+          -- `openai-api-key`, which can hit API billing/quota even when the CLI itself
+          -- works through `codex login`.
+          --
+          -- Pin only CodeCompanion's Codex model default. Chat and inline still use
+          -- the adapters configured below.
+          codex = function()
+            return require("codecompanion.adapters").extend("codex", {
+              defaults = {
+                auth_method = "chatgpt",
+                session_config_options = {
+                  model = "gpt-5.5",
+                },
+              },
+            })
+          end,
+        },
+      },
+
+      interactions = {
+        -- Inline stays on Copilot (HTTP) -- ACP adapters aren't suited to inline.
+        inline = {
+          adapter = "copilot",
+        },
+        chat = {
+          -- Chat provider: "copilot" (active) or "claude_code" (see notes above).
+          -- String form uses the adapter's default model; the table form pins a
+          -- model. Here claude_code is pinned to Sonnet (currently 4.6). Model ids
+          -- the ACP bridge accepts: "default" | "sonnet" | "sonnet[1m]" (1M context)
+          -- | "opus" | "haiku". (Copilot form would be { name = "copilot", model = .. }.)
+          adapter = { name = "claude_code", model = "sonnet" },
+          -- adapter = { name = "codex" },
+          -- adapter = {
+          -- name = "copilot", -- currently having error when open the chat panel with leader aa
+          -- },
+          -- Chat-buffer keymaps. By default `q` (normal) = stop request and
+          -- `<C-c>` = close, which is backwards from every other panel (quickfix,
+          -- help, oil) where `q` closes. So we SWAP them: `q` closes the chat,
+          -- `<C-c>` stops the in-flight request. setup() deep-merges (force) over
+          -- the defaults, so overriding `modes` keeps each keymap's callback,
+          -- index, and description intact. Insert-mode `<C-c>` close is preserved.
+          -- keymaps = {
+          --   close = { modes = { n = "q", i = "<C-c>" } },
+          --   stop = { modes = { n = "<C-c>" } },
+          -- },
+          tools = {
+            -- `require_approval_before` decides whether the agent PAUSES and waits
+            -- for your go-ahead BEFORE this tool runs -- the "Approval Required:
+            -- Read <file>? (g1/g2/g3/g4)" prompt you see in the chat.
+            --   true  = every time the agent wants to read a file it stops and
+            --           asks. Safe, but noisy: it interrupts with a "Read demo.go?"
+            --           step whenever it re-reads a file mid-task. (No `gv` is shown
+            --           here -- a read has nothing to preview, only g1-g4.)
+            --   false = the tool runs immediately, no prompt.
+            -- We set it false for read_file specifically because it is READ-ONLY --
+            -- it cannot change your code, so there's nothing to guard against. The
+            -- edit tool (insert_edit_into_file) keeps its own separate confirmation,
+            -- so your buffers are still never written without review.
+            ["read_file"] = {
+              opts = {
+                require_approval_before = false,
+              },
+            },
+          },
+        },
+      },
+
+      -- Diff rendering REFERENCE (not used at runtime -- the present_diff override
+      -- in config() below is what we actually use). `threshold_for_chat` is the max
+      -- changed-line count that renders the diff as an inline `````diff````` preview
+      -- in the chat (approval_prompt.lua gates on: changed_lines <= threshold):
+      --   0    -> diff opens in the SOURCE buffer (Cursor-style inline hunks); most
+      --           intrusive, mutates the buffer you may be editing.
+      --   6    -> plugin default: tiny diffs preview in chat, bigger edits show
+      --           nothing inline and need `gv`.
+      --   1000 -> ALWAYS render the full diff inline in the chat. Non-intrusive, but
+      --           a large edit becomes a huge, hard-to-scan wall of diff -- which is
+      --           why we override present_diff to show a short "review with gv" line
+      --           instead. To switch back to inline previews, delete that override
+      --           and uncomment the block below.
+      -- display = { diff = { threshold_for_chat = 1000 } },
+    },
+    config = function(_, opts)
+      require("codecompanion").setup(opts)
+
+      -- Surgically remap ONLY the edit-confirmation keys -- not a full reset of the
+      -- keymap table. We touch just `modes` + `index` and leave every callback,
+      -- description, and opt intact. These keymaps live in `interactions.shared.keymaps`
+      -- (what the tool prompt/diff labels actually read), so we patch them there
+      -- after setup. Goal: move the destructive "Always accept" off g1 (it sat right
+      -- next to "Accept", easy to hit by accident) out to g4. `index` sets the menu
+      -- order so it matches. gv (view diff) and }/{ (next/prev hunk) are untouched.
+      --   g1 Accept · g2 Reject · g3 Cancel · g4 Always accept
+      local shared_keys = require("codecompanion.config").interactions.shared.keymaps
+      local remap = {
+        accept_change = { key = "g1", index = 1 },
+        reject_change = { key = "g2", index = 2 },
+        cancel = { key = "g3", index = 3 },
+        always_accept = { key = "g4", index = 4 },
+      }
+      for name, m in pairs(remap) do
+        if shared_keys[name] then
+          shared_keys[name].modes = { n = m.key }
+          shared_keys[name].index = m.index
+        end
+      end
+
+      -- Agentic edit confirmation: don't dump the diff into the chat. A small diff
+      -- is fine but a large edit becomes an unreadable wall of diff, and we review
+      -- with `gv` anyway. Replace the chat-side diff preview with a short message so
+      -- it's never a blank prompt. present_diff is an exported module function whose
+      -- `prompt` field is what renders above the option list; we wrap it and fall
+      -- back to the original if the internal contract ever changes (update-safe).
+      local ok_ap, approval = pcall(require, "codecompanion.interactions.chat.helpers.approval_prompt")
+      if ok_ap and type(approval.present_diff) == "function" then
+        local orig_present_diff = approval.present_diff
+        approval.present_diff = function(diff_opts)
+          local ok = pcall(function()
+            diff_opts.approve({
+              title = diff_opts.title,
+              -- Short status only -- the key list ("Please select an option") is
+              -- rendered right below by CodeCompanion, so don't repeat the keys here.
+              prompt = "Edit complete — review the proposed diff before accepting.",
+            })
+          end)
+          if not ok then
+            return orig_present_diff(diff_opts)
+          end
+        end
+      end
+
+      -- Move the "Always accept" choice to the BOTTOM of the option list. The order
+      -- is hardcoded in diff.lua's build_approval_choices (view -> always_accept ->
+      -- accept -> reject -> cancel) and ignores the keymap `index`, so we reorder the
+      -- choices on the exported request() instead -- the one place every approval
+      -- prompt funnels through. Keeps the destructive option visually last to match
+      -- its g4 key. pcall-guarded; on any failure the original order passes through.
+      if ok_ap and type(approval.request) == "function" then
+        local labels = require("codecompanion.interactions.chat.tools.labels")
+        local orig_request = approval.request
+        approval.request = function(chat, request_opts)
+          pcall(function()
+            if request_opts and type(request_opts.choices) == "table" then
+              local reordered, always = {}, nil
+              for _, c in ipairs(request_opts.choices) do
+                if c.label == labels.always_accept then
+                  always = c
+                else
+                  reordered[#reordered + 1] = c
+                end
+              end
+              if always then
+                reordered[#reordered + 1] = always
+                request_opts.choices = reordered
+              end
+            end
+          end)
+          return orig_request(chat, request_opts)
+        end
+      end
+
+      -- Same reorder for the `gv` diff popup's header legend. Its order is hardcoded
+      -- in diff/ui.lua get_default_banner ("Always Accept | Accept | Reject | ...")
+      -- and cached, so config can't change it -- but diff.ui.show() honours an
+      -- explicit `opts.banner`, so we inject a reordered legend (built from the live
+      -- keymaps so it stays correct) with "Always Accept" moved to the end.
+      local ok_dui, diff_ui = pcall(require, "codecompanion.diff.ui")
+      if ok_dui and type(diff_ui.show) == "function" then
+        local ok_banner, banner = pcall(function()
+          local sk = require("codecompanion.config").interactions.shared.keymaps
+          return string.format(
+            "%s Accept | %s Reject | %s Always Accept | %s/%s Next/Prev hunks | q Close",
+            sk.accept_change.modes.n,
+            sk.reject_change.modes.n,
+            sk.always_accept.modes.n,
+            sk.next_hunk.modes.n,
+            sk.previous_hunk.modes.n
+          )
+        end)
+        if ok_banner and banner then
+          local orig_show = diff_ui.show
+          diff_ui.show = function(diff, show_opts)
+            show_opts = show_opts or {}
+            if show_opts.banner == nil then
+              show_opts.banner = banner
+            end
+            return orig_show(diff, show_opts)
+          end
+        end
+      end
+
+      -- "AI is working" feedback via fidget (Cursor/VSCode-style indicator).
+      -- Driven off the request lifecycle with a refcount: the inline assistant
+      -- fires two requests (a hidden classification call, then generation), so
+      -- we keep one handle alive while any request is in flight and close it
+      -- once the count returns to zero. The deferred close bridges the brief gap
+      -- between the two calls so the spinner doesn't flicker; accept/reject fires
+      -- no request, so the spinner is always gone before you act on the diff.
+      local group = vim.api.nvim_create_augroup("CodeCompanionFidget", { clear = true })
+      local handle = nil
+      local count = 0
+
+      local function open()
+        if handle then
+          return
+        end
+        local ok, progress = pcall(require, "fidget.progress")
+        if not ok then
+          return
+        end
+        handle = progress.handle.create({
+          title = "CodeCompanion",
+          message = "Generating…",
+          lsp_client = { name = "codecompanion" },
+        })
+      end
+
+      local function close()
+        if handle then
+          handle.message = "Done"
+          handle:finish()
+          handle = nil
+        end
+      end
+
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "CodeCompanionRequestStarted",
+        callback = function()
+          count = count + 1
+          open()
+        end,
+      })
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "CodeCompanionRequestFinished",
+        callback = function()
+          count = math.max(0, count - 1)
+          if count == 0 then
+            -- Defer so a follow-up request (classify -> generate) reuses the
+            -- same handle instead of closing and reopening it.
+            vim.defer_fn(function()
+              if count == 0 then
+                close()
+              end
+            end, 200)
+          end
+        end,
+      })
+
+      -- Keep the chat panel fully rendered in every mode. CodeCompanion sets the
+      -- chat buffer to conceallevel=2 and lets treesitter conceal markdown symbols
+      -- (backticks/emphasis), but leaves concealcursor='' -- so the cursor line and
+      -- any visual selection flip to raw. Concealing in normal+visual+insert+command
+      -- stops that toggling. Scoped to the chat filetype; real .md files untouched.
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group,
+        pattern = "codecompanion",
+        callback = function()
+          vim.opt_local.concealcursor = "nvic"
+        end,
+      })
+
+      -- Inline cursor preservation. The inline assistant deliberately refocuses
+      -- the edit buffer and jumps the cursor to the diff (inline/init.lua:166-175)
+      -- so you can accept with g1/g2/g3 -- but if you've moved on to keep coding,
+      -- that yank-back interrupts you. We track your real position ONLY while an
+      -- inline op is in flight and restore it once the diff lands.
+      --
+      -- Timing: the CursorMoved fired by the plugin's own jump is deferred to the
+      -- main loop, so at InlineFinished `user_pos` is still your pre-jump position.
+      -- We read it, stop tracking (so the deferred jump can't overwrite it), then
+      -- schedule the restore. The tracker autocmd exists only during generation,
+      -- so there is no steady-state hot-path cost.
+      local track_au = nil
+      local user_pos = nil
+
+      local function record()
+        user_pos = {
+          win = vim.api.nvim_get_current_win(),
+          cursor = vim.api.nvim_win_get_cursor(0),
+          view = vim.fn.winsaveview(),
+        }
+      end
+
+      local function stop_tracking()
+        if track_au then
+          pcall(vim.api.nvim_del_autocmd, track_au)
+          track_au = nil
+        end
+      end
+
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "CodeCompanionInlineStarted",
+        callback = function()
+          record()
+          stop_tracking() -- clear any leaked tracker from a prior op
+          track_au = vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI", "WinEnter" }, {
+            group = group,
+            callback = record,
+          })
+        end,
+      })
+
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "CodeCompanionInlineFinished",
+        callback = function()
+          local pos = user_pos
+          stop_tracking()
+          if not pos or not vim.api.nvim_win_is_valid(pos.win) then
+            return
+          end
+          vim.schedule(function()
+            if not vim.api.nvim_win_is_valid(pos.win) then
+              return
+            end
+            vim.api.nvim_set_current_win(pos.win)
+            local lines = vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(pos.win))
+            if pos.cursor[1] <= lines then
+              pcall(vim.fn.winrestview, pos.view)
+            end
+          end)
+        end,
+      })
+
+      -- Auto-attach the current file to a NEW chat (the file you opened from).
+      -- CodeCompanion can't read a file from a pasted path -- it only sees what's
+      -- attached as context -- so we format the origin buffer's CONTENTS and add
+      -- it to the chat's context list (shown as a reference, like the CLAUDE.md
+      -- rules). Fires only on chat creation, so toggling an existing chat won't
+      -- re-add. All pcall-guarded: if a future API change breaks it, the chat
+      -- still opens, just without the auto-attached file (no error spam).
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "CodeCompanionChatCreated",
+        callback = function(args)
+          local bufnr = args.data and args.data.bufnr
+          if not bufnr then
+            return
+          end
+          vim.schedule(function()
+            local cc = require("codecompanion")
+            local chat = cc.buf_get_chat and cc.buf_get_chat(bufnr)
+            if not chat or not chat.buffer_context then
+              return
+            end
+            local origin = chat.buffer_context.bufnr
+            if not origin or not vim.api.nvim_buf_is_valid(origin) then
+              return
+            end
+            local path = vim.api.nvim_buf_get_name(origin)
+            -- Only real, on-disk files -- skip [No Name], pickers, terminals, etc.
+            if path == "" or vim.bo[origin].buftype ~= "" then
+              return
+            end
+            local ok, helpers = pcall(require, "codecompanion.interactions.chat.helpers")
+            if not ok then
+              return
+            end
+            local got, content, id = pcall(helpers.format_buffer_for_llm, origin, path, {
+              message = "Here is the content from a file (including line numbers)",
+            })
+            if not got then
+              return
+            end
+            pcall(function()
+              chat:add_context({ content = content }, "buffer", id, {
+                bufnr = origin,
+                path = path,
+                visible = false,
+              })
+            end)
+          end)
+        end,
+      })
+    end,
+    keys = {
+      -- Normal mode: select the current line first (`V`) so the inline assistant
+      -- has a selection to anchor to. Without a selection the classifier often
+      -- routes the response to a chat buffer instead of editing in place; with
+      -- one it reliably picks `replace`/`add`. `:` in visual mode auto-inserts
+      -- the `'<,'>` range, leaving `:'<,'>CodeCompanion ` prefilled for your prompt.
+      {
+        "<leader>ai",
+        "V:CodeCompanion ",
+        mode = "n",
+        desc = "CodeCompanion: Inline ask (current line)",
+      },
+      -- Visual mode: the existing selection is the target; `:` adds the range.
+      {
+        "<leader>ai",
+        ":CodeCompanion ",
+        mode = "x",
+        desc = "CodeCompanion: Inline ask (selection)",
+      },
+      -- Agentic chat: opens a chat preloaded with edit tools so "fix/implement
+      -- this" APPLIES to the buffer as an accept/reject diff instead of just
+      -- printing a code block. `read_file` also lets it pull in other files by
+      -- path. Auto-attaches the current file. No shell exec / create / delete --
+      -- type `@cmd_runner` / `@create_file` in the prompt per-request if needed.
+      {
+        "<leader>aa",
+        function()
+          -- Note: CodeCompanion.chat()'s `tools` arg is NOT forwarded to the
+          -- constructor, so we add the tools to the returned chat directly.
+          local chat = require("codecompanion").chat()
+          if chat and chat.tool_registry then
+            pcall(function()
+              chat.tool_registry:add("insert_edit_into_file")
+            end)
+            pcall(function()
+              chat.tool_registry:add("read_file")
+            end)
+          end
+        end,
+        mode = "n",
+        desc = "CodeCompanion: Agentic chat (applies edits)",
+      },
+      -- Plain chat buffer (toggle): conversational, no auto-edits -- it prints
+      -- code blocks you copy/apply yourself. Auto-attaches the current file.
+      -- Async: submit, switch back to your code, keep editing while it streams.
+      {
+        "<leader>af",
+        "<cmd>CodeCompanionChat Toggle<cr>",
+        mode = "n",
+        desc = "CodeCompanion: Chat buffer (plain)",
+      },
+      -- Add the current line (normal) or selection (visual) CONTENT to the chat as
+      -- context -- this sends the actual code, unlike <leader>al/<leader>as which
+      -- copy a path string (for Claude Code) that CodeCompanion cannot read.
+      {
+        "<leader>ae",
+        "<cmd>CodeCompanionChat Add<cr>",
+        mode = { "n", "x" },
+        desc = "CodeCompanion: Add line/selection to chat",
+      },
+      -- Reset the active chat's tool approvals -- undoes an accidental `g1`
+      -- (Always Accept) so the diff confirmation prompt comes back. Approvals are
+      -- per-chat, in-memory state; this clears them for the last chat buffer.
+      {
+        "<leader>ar",
+        function()
+          local chat = require("codecompanion").last_chat()
+          if not chat then
+            vim.notify("No active CodeCompanion chat", vim.log.levels.WARN, { title = "CodeCompanion" })
+            return
+          end
+          require("codecompanion.interactions.chat.tools.approvals"):reset(chat.bufnr)
+          vim.notify(
+            "Chat approvals reset — confirmation re-enabled",
+            vim.log.levels.INFO,
+            { title = "CodeCompanion" }
+          )
+        end,
+        mode = "n",
+        desc = "CodeCompanion: Reset chat approvals (undo g1)",
+      },
+    },
+  },
+}

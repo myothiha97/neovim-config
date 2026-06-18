@@ -45,6 +45,7 @@ Refactoring priorities:
 
 - Remove dead, duplicated, experimental, or rarely used config before adding
   new abstractions.
+- Lean down the config to be as lean as possible so that in future if i need to add more features, we can easily extend the config without making the config very bloated
 - Prefer LazyVim defaults, LazyVim extras, native Neovim options, and plugin
   `opts` over custom wrapper code.
 - Keep feature ownership clear:

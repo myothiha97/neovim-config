@@ -39,6 +39,7 @@ What makes this feel less like vanilla Neovim:
 |---|---|
 | 🖱️ **Hover docs on mouse-over** | LSP documentation appears when the pointer rests on a symbol (Zed/WebStorm parity), behind a throttled handler that's free while you type. |
 | 🤖 **AI inline + Next Edit Suggestions** | `copilot.lua` ghost text plus `copilot-lsp` NES — jump-and-apply multi-line edits with `<Tab>`, coexisting with the completion menu. |
+| 💬 **CodeCompanion (inline · agentic · chat)** | `<leader>ai` rewrites the line/selection in place; `<leader>aa` opens an agentic chat that applies edits as accept/reject diffs; `<leader>af` is a plain chat. Inline runs on Copilot, chat on the `claude_code` adapter (Sonnet) — both key-free, lazy-loaded for zero startup cost. |
 | 📋 **AI prompt-copy system** | `<leader>ac…` copies a context-aware prompt (commit, codebase analysis, explain, refactor, review) to the clipboard for an external CLI agent — or `<leader>aci` to pick a template / ask freeform interactively. |
 | 📌 **Persistent quickfix curation** | Mark lines with `<leader>m` while reading code; the list survives restarts, scoped per project. |
 | 🗂️ **Symbols outline** | `<leader>cs` opens an IDE-style structure pane that follows your cursor. |
@@ -52,7 +53,7 @@ What makes this feel less like vanilla Neovim:
 | Category | Plugin |
 |----------|--------|
 | **Completion** | blink.cmp — LSP · local snippets · path · buffer |
-| **AI** | copilot.lua (inline) + copilot-lsp (NES) + prompt-copy system |
+| **AI** | copilot.lua (inline) + copilot-lsp (NES) + CodeCompanion (inline/agentic/chat) + prompt-copy system |
 | **File nav** | Snacks — picker · explorer · dashboard · terminal · oil.nvim (fullscreen) |
 | **Code nav** | Trouble (symbols outline + quickfix views) · treesitter textobjects |
 | **Git** | neogit + diffview.nvim + custom blame floats |
@@ -153,6 +154,11 @@ language server scan the whole home directory.
 | `<M-w>` · `<M-l>` | Accept word · line |
 | `<M-]>` · `<M-[>` | Cycle suggestions |
 | `<leader>ab` · `<C-b>` | Toggle blink completion menu |
+| `<leader>ai` | CodeCompanion — inline ask (line / selection, edits in place) |
+| `<leader>aa` | CodeCompanion — agentic chat (applies edits as accept/reject diffs) |
+| `<leader>af` | CodeCompanion — plain chat buffer (toggle) |
+| `<leader>ae` | CodeCompanion — add line/selection content to chat |
+| `<leader>ar` | CodeCompanion — reset chat approvals (undo accidental "always accept") |
 | `<leader>as` · `<leader>al` | Copy file path · path:line (visual: line range) — for CLI agents |
 | `<leader>acc` · `aca` · `ace` | Prompt — commit · codebase analysis · explain file |
 | `<leader>acs` · `acd` (visual) | Prompt — explain symbol · explain selection |

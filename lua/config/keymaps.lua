@@ -50,6 +50,23 @@ local function hide_float_marker(win)
     vim.wo[win].winhighlight = (wh ~= "" and wh .. "," or "") .. add
   end
 end
+
+-- The `<<<` marker only ever appears on a WRAPPED line, so the padding gutter is
+-- only worth reserving when content actually wraps. Short LSP info (type defs,
+-- object shapes) fits within `width` on every line — there the gutter is just an
+-- ugly dead strip. Return true iff any line's display width exceeds `width`, i.e.
+-- the float will wrap at least one row and could show the marker.
+local function float_content_wraps(bufnr, width)
+  if not width or width <= 0 then
+    return false
+  end
+  for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
+    if vim.fn.strdisplaywidth(line) > width then
+      return true
+    end
+  end
+  return false
+end
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   opts = opts or {}
@@ -62,15 +79,17 @@ vim.lsp.util.open_floating_preview = function(contents, syntax, opts)
   -- then anchor to the popup's own cursor and dismiss it.
   local is_focus_reuse = winid and vim.api.nvim_get_current_win() == winid
   if winid and vim.api.nvim_win_is_valid(winid) and not is_focus_reuse then
-    local pad = 3 -- left padding; the smoothscroll marker parks in this gutter (>= 3 keeps text clear)
-    vim.wo[winid].foldcolumn = tostring(pad)
-    hide_float_marker(winid)
     local config = vim.api.nvim_win_get_config(winid)
-    if config.width then
+    -- Only reserve the gutter when content actually wraps; for short popups the
+    -- marker never shows, so the padding would just be dead space on the left.
+    if config.width and float_content_wraps(bufnr, config.width) then
+      local pad = 3 -- left padding; the smoothscroll marker parks in this gutter (>= 3 keeps text clear)
+      vim.wo[winid].foldcolumn = tostring(pad)
+      hide_float_marker(winid)
       -- Widen by the padding so the text area keeps its full width.
       config.width = config.width + pad
+      vim.api.nvim_win_set_config(winid, config)
     end
-    vim.api.nvim_win_set_config(winid, config)
   end
   -- Clean docs popup UI (Zed/WebStorm-style):
   -- - nospell: hide SpellBad squiggles on identifiers like `stdout`, `vm`, `runInThisContext`
@@ -96,7 +115,8 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "blink-cmp-documentation",
   callback = function(args)
     local win = vim.fn.bufwinid(args.buf)
-    if win ~= -1 then
+    -- Same wrap gate as the hover path: skip the gutter for short, non-wrapping docs.
+    if win ~= -1 and float_content_wraps(args.buf, vim.api.nvim_win_get_width(win)) then
       vim.wo[win].foldcolumn = "3"
       hide_float_marker(win)
     end
