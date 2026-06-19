@@ -56,7 +56,7 @@ What makes this feel less like vanilla Neovim:
 | **AI** | copilot.lua (inline) + copilot-lsp (NES) + CodeCompanion (inline/agentic/chat) + prompt-copy system |
 | **File nav** | Snacks — picker · explorer · dashboard · terminal · oil.nvim (fullscreen) |
 | **Code nav** | Trouble (symbols outline + quickfix views) · treesitter textobjects |
-| **Git** | neogit + diffview.nvim + custom blame floats |
+| **Git** | gitsigns (hunks) + diffview.nvim + custom blame floats |
 | **Search** | grug-far — project/file search-replace & rename |
 | **Multi-cursor** | vim-visual-multi |
 | **Folding** | nvim-ufo — treesitter + indent, async |
@@ -176,8 +176,11 @@ language server scan the whole home directory.
 | `<leader>gl` · `<leader>gL` | File history — current file · repo |
 | `<leader>gf` | File history (open commit diff on enter) |
 | `<leader>gw` · `<leader>gb` | Git who (compact blame) · blame line (full diff) |
-| `<leader>gn` · `<leader>gN` | Neogit status · log |
-| `<leader>gc` · `gp` · `gP` | Neogit commit · pull · push |
+| `]c` · `[c` | Next · previous hunk (gitsigns) |
+| `<leader>ghs` · `<leader>ghr` | Stage · reset hunk |
+| `<leader>ghS` · `<leader>ghR` | Stage · reset buffer |
+| `<leader>ghu` · `<leader>ghp` | Undo stage hunk · preview hunk |
+| `<leader>ghb` | Toggle inline blame |
 
 </details>
 

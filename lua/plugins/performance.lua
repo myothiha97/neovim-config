@@ -94,6 +94,11 @@ return {
         return not (component == "diff" or (type(component) == "table" and component[1] == "diff"))
       end, opts.sections.lualine_x or {})
       opts.sections.lualine_b = opts.sections.lualine_b or {}
+
+      -- Solarized palette, used for the change-count badge added to lualine_c below.
+      local ok_colors, sol = pcall(require, "solarized-osaka.colors")
+      local palette = ok_colors and sol.setup({ transform = true }) or {}
+
       table.insert(opts.sections.lualine_b, {
         function()
           return "● unsaved"
@@ -123,6 +128,7 @@ return {
           break
         end
       end
+      local filename_index
       for i = #lualine_c, 1, -1 do
         local component = lualine_c[i]
         if
@@ -136,9 +142,60 @@ return {
             path = 0,
             color = { fg = "#89b4fa", gui = "bold" },
             padding = { left = 0, right = 0 },
+            separator = "", -- no thin arrow between filename and the git markers
+            file_status = false, -- suppress built-in [+]/[-]; we render our own green [+]
           }
+          filename_index = i
           break
         end
+      end
+
+      -- Git change markers after the filename: a "[+]" dirty flag plus the hunk
+      -- count. Both hidden on a clean file, green to stay clear of diagnostic red.
+      -- The dirty check reads `b:gitsigns_status_dict` (zero-cost buffer var). The
+      -- hunk count calls gitsigns.get_hunks() — only when the file is dirty and
+      -- only on lualine's throttled 1000ms refresh, so it's not a hot path.
+      local green = palette.green or "#859900"
+      local function git_is_dirty()
+        local gs = vim.b.gitsigns_status_dict
+        if not gs then
+          return false
+        end
+        return ((gs.added or 0) + (gs.changed or 0) + (gs.removed or 0)) > 0
+      end
+      local function git_hunk_count()
+        if not vim.b.gitsigns_status_dict then
+          return 0
+        end
+        local hunks = require("gitsigns").get_hunks()
+        return hunks and #hunks or 0
+      end
+
+      local dirty_marker = {
+        function()
+          return "[+]"
+        end,
+        cond = git_is_dirty,
+        color = { fg = green, gui = "bold" },
+        separator = "",
+        padding = { left = 1, right = 0 },
+      }
+      local hunk_badge = {
+        function()
+          return tostring(git_hunk_count())
+        end,
+        cond = git_is_dirty,
+        color = { fg = green, gui = "bold" },
+        separator = "",
+        padding = { left = 1, right = 0 },
+      }
+      if filename_index then
+        -- Insert at the same index in reverse so final order is: filename [+] hunks
+        table.insert(lualine_c, filename_index + 1, hunk_badge)
+        table.insert(lualine_c, filename_index + 1, dirty_marker)
+      else
+        table.insert(lualine_c, dirty_marker)
+        table.insert(lualine_c, hunk_badge)
       end
       opts.sections.lualine_c = lualine_c
 

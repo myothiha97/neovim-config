@@ -1,9 +1,21 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
-    opts = {
-      select = { lookahead = true },
-    },
+    opts = function(_, opts)
+      opts.select = opts.select or {}
+      opts.select.lookahead = true
+      -- Free ]c/[c for gitsigns hunk navigation (see plugins/git.lua). These were
+      -- LazyVim's treesitter class-start moves; class nav is rarely used now, so we
+      -- drop just the start keys ([C/]C class-end moves are left intact).
+      if opts.move and opts.move.keys then
+        if opts.move.keys.goto_next_start then
+          opts.move.keys.goto_next_start["]c"] = nil
+        end
+        if opts.move.keys.goto_previous_start then
+          opts.move.keys.goto_previous_start["[c"] = nil
+        end
+      end
+    end,
     init = function()
       local function sel(query)
         return function()

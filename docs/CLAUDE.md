@@ -12,7 +12,8 @@
 - Silently ensure performance safety — do NOT remind the user about performance checks unless there is an actual issue.
 - Before committing, always review ALL changed files for performance safety (no per-keystroke work, no expensive autocmds, no blocking operations)
 - Prefer in-process solutions (snippets, treesitter) over external LSP servers when possible
-- Disabled plugins for performance: noice, nvim-lint, gitsigns, bufferline, persistence, mini.ai, treesitter-context
+- Disabled plugins for performance: noice, nvim-lint, bufferline, persistence, mini.ai, treesitter-context
+- gitsigns: ENABLED (replaced neogit), `LazyFile`-deferred load, signs/hunks only, `current_line_blame` off for perf
 - Lualine throttled to 500ms refresh
 
 ## Completion (blink.cmp)
