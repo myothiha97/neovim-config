@@ -661,6 +661,7 @@ vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" }
 -- after LazyVim's keymaps and Trouble's plugin keys, so these win. `:Trouble` lazy-loads
 -- the plugin on first use.
 vim.keymap.set("n", "<leader>cc", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
+-- vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
 vim.keymap.set("n", "<leader>ce", "<cmd>Trouble loclist toggle<cr>", { desc = "Location List (Trouble)" })
 
 -- Manually curate the quickfix list while reading code: <leader>m marks the current line

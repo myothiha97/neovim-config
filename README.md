@@ -115,7 +115,7 @@ language server scan the whole home directory.
 | Key | Action |
 |-----|--------|
 | `<leader>cs` | Symbols outline (press `a` inside to include variables) |
-| `<leader>ce` · `<leader>cE` | Quickfix · location list (Trouble) |
+| `<leader>cc` · `<leader>ce` | Quickfix · location list (Trouble) |
 | `<leader>m` | Mark line/selection into quickfix — persists across restarts |
 | `<leader>cx` | Clear quickfix list |
 | `<leader>bu` | List unsaved buffers (jump / save) |

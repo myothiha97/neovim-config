@@ -64,4 +64,15 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
   end,
 })
 
+-- ── Native quickfix window delete actions ────────────────────────────────
+-- Keep the stock quickfix buffer nomodifiable, but make delete-style motions
+-- remove real entries from the list instead of erroring on rendered text.
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("native_quickfix_window", { clear = true }),
+  pattern = "qf",
+  callback = function(args)
+    require("config.quickfix-window").setup_buffer(args.buf)
+  end,
+})
+
 require("config.mouse-hover").setup()
