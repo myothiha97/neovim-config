@@ -156,10 +156,10 @@ return {
       --   0    -> diff opens in the SOURCE buffer (Cursor-style inline hunks); most
       --           intrusive, mutates the buffer you may be editing.
       --   6    -> plugin default: tiny diffs preview in chat, bigger edits show
-      --           nothing inline and need `gv`.
+      --           nothing inline and need `cp`.
       --   1000 -> ALWAYS render the full diff inline in the chat. Non-intrusive, but
       --           a large edit becomes a huge, hard-to-scan wall of diff -- which is
-      --           why we override present_diff to show a short "review with gv" line
+      --           why we override present_diff to show a short "review with cp" line
       --           instead. To switch back to inline previews, delete that override
       --           and uncomment the block below.
       -- display = { diff = { threshold_for_chat = 1000 } },
@@ -167,31 +167,9 @@ return {
     config = function(_, opts)
       require("codecompanion").setup(opts)
 
-      -- Surgically remap ONLY the edit-confirmation keys -- not a full reset of the
-      -- keymap table. We touch just `modes` + `index` and leave every callback,
-      -- description, and opt intact. These keymaps live in `interactions.shared.keymaps`
-      -- (what the tool prompt/diff labels actually read), so we patch them there
-      -- after setup. Goal: move the destructive "Always accept" off g1 (it sat right
-      -- next to "Accept", easy to hit by accident) out to g4. `index` sets the menu
-      -- order so it matches. gv (view diff) and }/{ (next/prev hunk) are untouched.
-      --   g1 Accept · g2 Reject · g3 Cancel · g4 Always accept
-      local shared_keys = require("codecompanion.config").interactions.shared.keymaps
-      local remap = {
-        accept_change = { key = "g1", index = 1 },
-        reject_change = { key = "g2", index = 2 },
-        cancel = { key = "g3", index = 3 },
-        always_accept = { key = "g4", index = 4 },
-      }
-      for name, m in pairs(remap) do
-        if shared_keys[name] then
-          shared_keys[name].modes = { n = m.key }
-          shared_keys[name].index = m.index
-        end
-      end
-
       -- Agentic edit confirmation: don't dump the diff into the chat. A small diff
       -- is fine but a large edit becomes an unreadable wall of diff, and we review
-      -- with `gv` anyway. Replace the chat-side diff preview with a short message so
+      -- with `cp` anyway. Replace the chat-side diff preview with a short message so
       -- it's never a blank prompt. present_diff is an exported module function whose
       -- `prompt` field is what renders above the option list; we wrap it and fall
       -- back to the original if the internal contract ever changes (update-safe).
@@ -218,7 +196,7 @@ return {
       -- accept -> reject -> cancel) and ignores the keymap `index`, so we reorder the
       -- choices on the exported request() instead -- the one place every approval
       -- prompt funnels through. Keeps the destructive option visually last to match
-      -- its g4 key. pcall-guarded; on any failure the original order passes through.
+      -- its c4 key. pcall-guarded; on any failure the original order passes through.
       if ok_ap and type(approval.request) == "function" then
         local labels = require("codecompanion.interactions.chat.tools.labels")
         local orig_request = approval.request
@@ -227,6 +205,22 @@ return {
             if request_opts and type(request_opts.choices) == "table" then
               local reordered, always = {}, nil
               for _, c in ipairs(request_opts.choices) do
+                -- Scope c1/c2/c3/c4 to post-edit confirmation prompts only.
+                -- Do not mutate `interactions.shared.keymaps`: other
+                -- CodeCompanion UI reads that table too.
+                if request_opts.title and request_opts.title:match("^Proposed edits") then
+                  if c.label == labels.accept then
+                    c.keymap = "c1"
+                  elseif c.label == labels.reject then
+                    c.keymap = "c2"
+                  elseif c.label == labels.cancel then
+                    c.keymap = "c3"
+                  elseif c.label == labels.always_accept then
+                    c.keymap = "c4"
+                  elseif c.label == labels.view then
+                    c.keymap = "cp"
+                  end
+                end
                 if c.label == labels.always_accept then
                   always = c
                 else
@@ -243,33 +237,97 @@ return {
         end
       end
 
-      -- Same reorder for the `gv` diff popup's header legend. Its order is hardcoded
-      -- in diff/ui.lua get_default_banner ("Always Accept | Accept | Reject | ...")
-      -- and cached, so config can't change it -- but diff.ui.show() honours an
-      -- explicit `opts.banner`, so we inject a reordered legend (built from the live
-      -- keymaps so it stays correct) with "Always Accept" moved to the end.
+      local ok_inline, inline = pcall(require, "codecompanion.interactions.inline")
+      if ok_inline and type(inline.build_diff_banner) == "function" then
+        inline.build_diff_banner = function()
+          return "c1 Accept | c2 Reject | c4 Always Accept"
+        end
+      end
+
+      -- Same scoped mapping for post-edit diff UIs: agent preview diff popups and
+      -- inline assistant confirmations. We remove only the buffer-local
+      -- accept/reject/always maps in those confirmation buffers, not the shared
+      -- CodeCompanion keymap table or unrelated UI maps.
       local ok_dui, diff_ui = pcall(require, "codecompanion.diff.ui")
       if ok_dui and type(diff_ui.show) == "function" then
-        local ok_banner, banner = pcall(function()
-          local sk = require("codecompanion.config").interactions.shared.keymaps
-          return string.format(
-            "%s Accept | %s Reject | %s Always Accept | %s/%s Next/Prev hunks | q Close",
-            sk.accept_change.modes.n,
-            sk.reject_change.modes.n,
-            sk.always_accept.modes.n,
-            sk.next_hunk.modes.n,
-            sk.previous_hunk.modes.n
-          )
-        end)
-        if ok_banner and banner then
-          local orig_show = diff_ui.show
-          diff_ui.show = function(diff, show_opts)
-            show_opts = show_opts or {}
-            if show_opts.banner == nil then
-              show_opts.banner = banner
+        local orig_show = diff_ui.show
+        diff_ui.show = function(diff, show_opts)
+          show_opts = show_opts or {}
+          local is_agent_edit = show_opts.tool_name == "insert_edit_into_file"
+          local is_inline_confirmation = show_opts.keymaps
+            and show_opts.keymaps.on_accept
+            and show_opts.keymaps.on_reject
+            and show_opts.keymaps.on_always_accept
+            and not is_agent_edit
+          local is_acp_confirmation = show_opts.skip_default_keymaps == true
+            and show_opts.chat_bufnr
+            and show_opts.keymaps
+            and show_opts.keymaps.on_reject
+            and type(show_opts.banner) == "string"
+            and show_opts.banner:find("Accept", 1, true)
+          local is_confirmation = is_agent_edit or is_inline_confirmation or is_acp_confirmation
+          if is_confirmation then
+            local sk = require("codecompanion.config").interactions.shared.keymaps
+            if show_opts.inline then
+              show_opts.banner = "c1 Accept | c2 Reject | c4 Always Accept"
+            elseif is_acp_confirmation then
+              show_opts.banner = string.format(
+                "c4 Always Accept | c1 Accept | c2 Reject | %s/%s Next/Prev | q Close",
+                sk.next_hunk.modes.n,
+                sk.previous_hunk.modes.n
+              )
+            elseif show_opts.banner == nil then
+              show_opts.banner = string.format(
+                "c1 Accept | c2 Reject | c4 Always Accept | %s/%s Next/Prev hunks | q Close",
+                sk.next_hunk.modes.n,
+                sk.previous_hunk.modes.n
+              )
             end
-            return orig_show(diff, show_opts)
           end
+          local ui = orig_show(diff, show_opts)
+          if is_acp_confirmation and ui and ui.bufnr then
+            vim.schedule(function()
+              if not vim.api.nvim_buf_is_valid(ui.bufnr) then
+                return
+              end
+              local sk = require("codecompanion.config").interactions.shared.keymaps
+              local remap = {
+                { from = sk.always_accept.modes.n, to = "c4" },
+                { from = sk.accept_change.modes.n, to = "c1" },
+                { from = sk.reject_change.modes.n, to = "c2" },
+              }
+              for _, m in ipairs(remap) do
+                local old = vim.api.nvim_buf_call(ui.bufnr, function()
+                  return vim.fn.maparg(m.from, "n", false, true)
+                end)
+                if old and old.buffer == 1 and old.callback then
+                  vim.keymap.set("n", m.to, old.callback, {
+                    buffer = ui.bufnr,
+                    desc = old.desc,
+                    silent = true,
+                    nowait = true,
+                  })
+                  pcall(vim.keymap.del, "n", m.from, { buffer = ui.bufnr })
+                end
+              end
+            end)
+          elseif is_confirmation and ui and ui.bufnr then
+            local km = require("codecompanion.diff.keymaps")
+            local sk = require("codecompanion.config").interactions.shared.keymaps
+            pcall(vim.keymap.del, "n", sk.accept_change.modes.n, { buffer = ui.bufnr })
+            pcall(vim.keymap.del, "n", sk.reject_change.modes.n, { buffer = ui.bufnr })
+            pcall(vim.keymap.del, "n", sk.always_accept.modes.n, { buffer = ui.bufnr })
+            vim.keymap.set("n", "c1", function()
+              km.accept_change.callback(ui)
+            end, { buffer = ui.bufnr, desc = "Accept all changes", silent = true, nowait = true })
+            vim.keymap.set("n", "c2", function()
+              km.reject_change.callback(ui)
+            end, { buffer = ui.bufnr, desc = "Reject all changes", silent = true, nowait = true })
+            vim.keymap.set("n", "c4", function()
+              km.always_accept.callback(ui)
+            end, { buffer = ui.bufnr, desc = "Always accept changes from this chat buffer", silent = true, nowait = true })
+          end
+          return ui
         end
       end
 
@@ -347,7 +405,7 @@ return {
 
       -- Inline cursor preservation. The inline assistant deliberately refocuses
       -- the edit buffer and jumps the cursor to the diff (inline/init.lua:166-175)
-      -- so you can accept with g1/g2/g3 -- but if you've moved on to keep coding,
+      -- so you can accept with c1/c2/c4 -- but if you've moved on to keep coding,
       -- that yank-back interrupts you. We track your real position ONLY while an
       -- inline op is in flight and restore it once the diff lands.
       --
@@ -520,7 +578,7 @@ return {
         mode = { "n", "x" },
         desc = "CodeCompanion: Add line/selection to chat",
       },
-      -- Reset the active chat's tool approvals -- undoes an accidental `g1`
+      -- Reset the active chat's tool approvals -- undoes an accidental `c4`
       -- (Always Accept) so the diff confirmation prompt comes back. Approvals are
       -- per-chat, in-memory state; this clears them for the last chat buffer.
       {
@@ -539,7 +597,7 @@ return {
           )
         end,
         mode = "n",
-        desc = "CodeCompanion: Reset chat approvals (undo g1)",
+        desc = "CodeCompanion: Reset chat approvals (undo c4)",
       },
     },
   },
