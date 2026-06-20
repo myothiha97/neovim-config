@@ -17,6 +17,35 @@ under [References](#references).
 
 ---
 
+## Status — config is "done enough" (set 2026-06-20)
+
+The major build-out is **complete**. The full **fullstack + DevOps** workflow
+(Go · Node/TS · React/RN/Electron · Python · DevOps) is configured and in daily
+use. The config has moved from *building* to *maintenance*.
+
+From here on:
+
+- **Any major change must be planned with a timeline** — collected in `todos/`
+  and handled in a scheduled batch session, never on impulse.
+- **The config is only touched if an issue is actively blocking or degrading the
+  current workflow** — a real bug or broken flow (rule #2 / the 30-minute rule).
+  "Nicer", "cleaner", "more beautiful", or "slightly better" is never a reason.
+
+### ❄️ Freeze window: 2026-06-20 → 2026-09-20 (~3 months)
+
+The config is **frozen until ~2026-09-20**. This is a *review checkpoint*, not a
+hard ban: workflow-blocking fixes are still allowed throughout (rule #2), but no
+features, polish, or preference changes until the freeze lifts. At the checkpoint,
+batch-review the ideas collected in `todos/` and decide what — if anything — is
+worth doing, then set the next freeze window.
+
+> **Enforcement (AI agents / Claude Code):** apply the change-gate in
+> [`neovim-config-change-gate.md`](neovim-config-change-gate.md) to **every**
+> config-change request — evaluate necessity first, and reject or defer anything
+> that is not unblocking the current workflow. Default answer is *no*.
+
+---
+
 ## Rules
 
 1. **Do not change the config on impulse.**
@@ -75,6 +104,9 @@ under [References](#references).
 
 The detailed, reasoning-heavy versions of the rules above:
 
+- **Change-gate (AI-facing)** — the necessity check Claude Code applies to every
+  change request before touching the config.
+  [`neovim-config-change-gate.md`](neovim-config-change-gate.md)
 - **Config freeze policy** — default stance, allowed reasons, the batch
   schedule, the Lua-level `:Lazy` lock, and its single-session escape hatch.
   [`notes/config-freeze-policy.md`](notes/config-freeze-policy.md)

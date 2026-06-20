@@ -29,6 +29,12 @@ quietly regressing speed.
 > [`notes/safe-config-editing-guide.md`](notes/safe-config-editing-guide.md) for
 > the performance rules every change is held to.
 
+> **For Claude Code / AI agents:** read [`rules.md`](rules.md) **first** — before
+> proposing or making any change — then the docs under `docs/` as usual. It holds
+> the discipline rules and the active **config-freeze window**, which govern
+> whether a change should happen at all (default answer is *no* unless it unblocks
+> the current workflow).
+
 ---
 
 ## Highlights
