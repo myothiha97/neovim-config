@@ -710,3 +710,14 @@ vim.keymap.set("n", "<leader>M", function()
   end
   vim.cmd("Mason")
 end, { desc = "Mason (toggle)" })
+
+-- Relocate LazyVim's Inspect tools off <leader>ui / <leader>uI so <leader>ui can
+-- drive the markdown browser preview (see lua/plugins/markdown-preview.lua).
+-- Both remain available as the :Inspect / :InspectTree ex-commands regardless.
+pcall(vim.keymap.del, "n", "<leader>ui")
+pcall(vim.keymap.del, "n", "<leader>uI")
+vim.keymap.set("n", "<leader>uj", vim.show_pos, { desc = "Inspect Pos" })
+vim.keymap.set("n", "<leader>uk", function()
+  vim.treesitter.inspect_tree()
+  vim.api.nvim_input("I")
+end, { desc = "Inspect Tree" })
