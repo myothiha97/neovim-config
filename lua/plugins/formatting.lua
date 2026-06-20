@@ -16,52 +16,19 @@ return {
         markdown = { "prettierd" },
         yaml = { "prettierd" },
         graphql = { "prettierd" },
+        sh = { "shfmt" },
+        bash = { "shfmt" },
       },
-      -- Configure prettierd to use project-local config with fallback to default
+      -- prettierd natively resolves project-local config (walking up from the file,
+      -- same as VS Code). For files with no project config (e.g. this nvim repo),
+      -- fall back to the global config via prettierd's own env var.
+      -- NOTE: prettierd is a daemon and does NOT support prettier's `--config` flag
+      -- — passing it errors. The fallback MUST go through PRETTIERD_DEFAULT_CONFIG.
       formatters = {
         prettierd = {
-          -- Walk up from the file's directory, same as VS Code prettier resolution
-          prepend_args = function(_, ctx)
-            local config_files = {
-              ".prettierrc",
-              ".prettierrc.json",
-              ".prettierrc.yml",
-              ".prettierrc.yaml",
-              ".prettierrc.json5",
-              ".prettierrc.js",
-              ".prettierrc.cjs",
-              ".prettierrc.mjs",
-              ".prettierrc.toml",
-              "prettier.config.js",
-              "prettier.config.cjs",
-              "prettier.config.mjs",
-            }
-
-            local dir = ctx.dirname
-            while dir and dir ~= "/" do
-              for _, file in ipairs(config_files) do
-                if vim.fn.filereadable(dir .. "/" .. file) == 1 then
-                  return {} -- Found config, let prettierd auto-detect
-                end
-              end
-              local pkg = dir .. "/package.json"
-              if vim.fn.filereadable(pkg) == 1 then
-                local content = table.concat(vim.fn.readfile(pkg), "\n")
-                if content:match('"prettier"') then
-                  return {} -- Config in package.json
-                end
-              end
-              dir = vim.fn.fnamemodify(dir, ":h")
-            end
-
-            -- No project config found, fall back to global
-            local default_config = vim.fn.expand("~/.config/prettier/.prettierrc")
-            if vim.fn.filereadable(default_config) == 1 then
-              return { "--config", default_config }
-            end
-
-            return {}
-          end,
+          env = {
+            PRETTIERD_DEFAULT_CONFIG = vim.fn.expand("~/.config/prettier/.prettierrc"),
+          },
         },
       },
     },
