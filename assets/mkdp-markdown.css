@@ -3,6 +3,27 @@
  * https://github.com/iamcco/markdown.css/blob/master/dest/github/markdown.css
  */
 
+/* ============================================================================
+ * WHY THIS FILE EXISTS
+ * ----------------------------------------------------------------------------
+ * This is the stylesheet for the markdown-preview.nvim BROWSER preview (opened
+ * with <leader>ui). It is wired in via `vim.g.mkdp_markdown_css` in
+ * lua/plugins/markdown-preview.lua.
+ *
+ * IMPORTANT: mkdp_markdown_css REPLACES mkdp's bundled stylesheet wholesale —
+ * it does NOT merge. So this file must be a COMPLETE copy of mkdp's github
+ * markdown.css (everything above the "GitHub-parity overrides" section at the
+ * bottom is that verbatim copy). Deleting rules here = losing that styling in
+ * the preview.
+ *
+ * What WE actually customized (everything else is upstream/original):
+ *   1. `.markdown-body` font-family + line-height below (marked "CHANGED").
+ *   2. The "GitHub-parity overrides" block at the very bottom of this file
+ *      (column width, optional zoom, full-viewport-height fix).
+ * To restyle the preview, edit those spots and just refresh the browser tab
+ * (mkdp serves this file live per request — no nvim restart needed).
+ * ============================================================================ */
+
 :root {
     --color-text-primary: #333;
     --color-text-tertiary: #777;
@@ -48,10 +69,12 @@
   margin-bottom: 0;
 }
 .markdown-body {
+  /* CHANGED from upstream: use GitHub's -apple-system/SF stack (was "Helvetica
+     Neue" first, which renders heavier/larger than GitHub on macOS). */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   font-size: 16px;
   color: var(--color-text-primary);
-  line-height: 1.5;
+  line-height: 1.5; /* CHANGED from upstream 1.6 → 1.5 to match GitHub's tighter spacing */
   word-wrap: break-word;
   padding: 45px;
   background: var(--color-bg-primary);
@@ -311,16 +334,39 @@
 }
 
 /* --- GitHub-parity overrides (see lua/plugins/markdown-preview.lua) --- */
-/* Optional global scale: uncomment to render at e.g. 90% so the browser's 100%
-   zoom looks smaller (scales text + spacing + tables proportionally, like real
-   browser zoom). Left at default 100% — flip this on and tweak to taste. */
-  body { 
-   zoom: 93%; 
- }  
+/* Global preview scale — SINGLE SOURCE OF TRUTH.
+   Renders the whole preview at 0.93 (= 93%), scaling text + spacing + tables
+   together like a real browser zoom. CSS `zoom` accepts arbitrary fractional
+   values, unlike Chrome's Page-Zoom menu which only steps 90% -> 100% -> 110%.
+   The full-viewport-height fix below reuses --preview-zoom, so the zoom and its
+   height compensation can never drift apart. Change this ONE number to rescale;
+   set it to 1 to disable scaling. */
+:root {
+  --preview-zoom: 0.93;
+}
+body {
+  zoom: var(--preview-zoom);
+}
 
 /* Widen the content column to match GitHub's container-xl (~1280px). page.css
    caps #page-ctn at 900px and isn't overridable via mkdp; !important wins since
    that rule isn't !important. Tweak this one number to taste. */
 #page-ctn {
   max-width: 1280px !important;
+}
+
+/* Fill the full viewport height even for short docs, so the bordered reading
+   area always reaches the bottom instead of floating as a short box. page.css
+   already gives main/body min-height:100vh; here #page-ctn becomes a full-height
+   flex column and .markdown-body grows to fill the space below the header.
+   The min-height is divided by --preview-zoom because browser `zoom` scales vh
+   too — plain 100vh would render short by the zoom amount. Reusing the same
+   variable as body{zoom} guarantees the two stay in sync automatically. */
+#page-ctn {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh / var(--preview-zoom));
+}
+.markdown-body {
+  flex: 1 0 auto;
 }
