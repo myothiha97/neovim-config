@@ -18,6 +18,17 @@ return {
       -- winhighlight, so the band returns in Oil without touching buffers.
       hl.OilCursorLine = { bg = c.base02 }
 
+      -- Markdown headings only. The theme links the GENERIC `@markup.heading`
+      -- group to `Title` (orange500 = red-orange), and `Title` is shared by help
+      -- files, pickers, `:set all` output, etc. Overriding the markdown-specific
+      -- `@markup.heading.{1..6}.markdown` variants recolors `.md` titles to
+      -- solarized green WITHOUT touching `Title` or any other filetype's
+      -- headings. render-markdown leaves heading fg to treesitter
+      -- (`foregrounds = {}` in render-markdown.lua), so this is what paints them.
+      for level = 1, 6 do
+        hl["@markup.heading." .. level .. ".markdown"] = { fg = c.green, bold = true }
+      end
+
       hl.BlinkCmpMenu = { fg = c.base1, bg = c.bg_float }
       hl.BlinkCmpMenuBorder = { fg = c.base02, bg = c.bg_float }
       hl.BlinkCmpMenuSelection = { fg = c.base2, bg = c.base02, bold = true }
@@ -40,8 +51,22 @@ return {
       -- grug-far matched-keyword highlight. Defaults to linking DiffText,
       -- which in this theme is a near-black green band (c.green900) -> the
       -- match looks faded. Override with a vivid bg + dark fg so the matched
-      -- keyword stands out clearly in the results list.
-      hl.GrugFarResultsMatch = { fg = c.base04, bg = c.magenta300, bold = false }
+      -- keyword stands out clearly in the results list. Cyan (not red/yellow)
+      -- is deliberately chosen so it never reads like a vim `/`/`?` search hit:
+      -- Search is yellow (#b28500), IncSearch is orange (#c94c16).
+      hl.GrugFarResultsMatch = { fg = c.base04, bg = c.cyan300, bold = false }
+
+      -- grug-far results summary ("N matches in M files"). Defaults to linking
+      -- Comment, which is dim/faded against the panel -> the total is hard to
+      -- read. Force the theme's lightest fg so the count is legible.
+      hl.GrugFarResultsStats = { fg = c.base2 }
+
+      -- TODO: brighten the snacks picker match highlight (currently a faded
+      -- olive band). Setting `hl.SnacksPickerMatch` here does NOT take effect —
+      -- something re-applies it to `DiffText` AFTER this on_highlights runs
+      -- (snacks registers picker hl groups lazily on its own ColorScheme hook).
+      -- Needs investigating: likely set it via a late ColorScheme autocmd or in
+      -- the snacks plugin spec instead of the theme. Scope: snacks picker only.
     end,
   },
 }
