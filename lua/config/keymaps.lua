@@ -165,13 +165,18 @@ end, { desc = "Dismiss hover docs / Clear highlights" })
 -- Save file (Ctrl+S, works in normal and insert mode)
 vim.keymap.set({ "n", "i" }, "<C-s>", "<cmd>w<cr>", { desc = "Save File" })
 
+local scroll_depth = 3
+
 -- Mouse/trackpad: scroll viewport without moving cursor (VSCode/WebStorm behavior)
 -- <C-e> scrolls viewport down, <C-y> scrolls viewport up — cursor stays in place
--- Adjust the multiplier (3) if trackpad feels too slow or too fast
-vim.keymap.set({ "n", "v" }, "<ScrollWheelDown>", "3<C-e>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>", "3<C-y>", { noremap = true })
-vim.keymap.set("i", "<ScrollWheelDown>", "<C-o>3<C-e>", { noremap = true })
-vim.keymap.set("i", "<ScrollWheelUp>", "<C-o>3<C-y>", { noremap = true })
+-- Adjust the multiplier (3) if trackpad feels too slow or too fast.
+-- TODO(smooth-scroll): The timer-based experiment is parked in
+-- lua/config/smooth-scroll.lua but intentionally not enabled. It improved
+-- transition feel in some files, then stuttered/paused in heavier TSX buffers.
+vim.keymap.set({ "n", "v" }, "<ScrollWheelDown>", scroll_depth .. "<C-e>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<ScrollWheelUp>", scroll_depth .. "<C-y>", { noremap = true })
+vim.keymap.set("i", "<ScrollWheelDown>", "<C-o>" .. scroll_depth .. "<C-e>", { noremap = true })
+vim.keymap.set("i", "<ScrollWheelUp>", "<C-o>" .. scroll_depth .. "<C-y>", { noremap = true })
 
 -- Horizontal mouse/trackpad scroll: override Neovim's default 6-column jump
 -- with native sideways scrolling at a small 3-column step.
@@ -660,10 +665,9 @@ vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" }
 -- Quickfix / location list under the <leader>c cluster (Trouble views). This file loads
 -- after LazyVim's keymaps and Trouble's plugin keys, so these win. `:Trouble` lazy-loads
 -- the plugin on first use.
-vim.keymap.set("n", "<leader>cc", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
--- vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
+-- vim.keymap.set("n", "<leader>cc", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" }) -- vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
+vim.keymap.set("n", "<leader>cc", "<cmd>TodoQuickFix<cr>", { desc = "Todo Quickfix" })
 vim.keymap.set("n", "<leader>ce", "<cmd>Trouble loclist toggle<cr>", { desc = "Location List (Trouble)" })
-
 -- Manually curate the quickfix list while reading code: <leader>m marks the current line
 -- (normal) or each selected line (visual); browse with <leader>cc, clear with <leader>cx.
 -- Inside the Trouble window, `dd` (or visual `d`) removes a single entry for good.

@@ -93,7 +93,8 @@ return {
               defaults = {
                 auth_method = "chatgpt",
                 session_config_options = {
-                  model = "gpt-5.5",
+                  -- model = "gpt-5.5", -- for serious coding tasks
+                  model = "gpt-5.4", -- for every day tasks and token efficiency
                 },
               },
             })
@@ -112,8 +113,8 @@ return {
           -- model. Here claude_code is pinned to Sonnet (currently 4.6). Model ids
           -- the ACP bridge accepts: "default" | "sonnet" | "sonnet[1m]" (1M context)
           -- | "opus" | "haiku". (Copilot form would be { name = "copilot", model = .. }.)
-          adapter = { name = "claude_code", model = "sonnet" },
-          -- adapter = { name = "codex" },
+          -- adapter = { name = "claude_code", model = "sonnet" },
+          adapter = { name = "codex" },
           -- adapter = {
           -- name = "copilot", -- currently having error when open the chat panel with leader aa
           -- },
@@ -149,6 +150,17 @@ return {
         },
       },
 
+      display = {
+        chat = {
+          window = {
+            -- Keep the base config numeric. We clamp the real split width in a
+            -- ChatOpened autocmd below because CodeCompanion still assumes this
+            -- field is a raw number in some code paths.
+            width = 0.3,
+          },
+        },
+      },
+
       -- Diff rendering REFERENCE (not used at runtime -- the present_diff override
       -- in config() below is what we actually use). `threshold_for_chat` is the max
       -- changed-line count that renders the diff as an inline `````diff````` preview
@@ -166,6 +178,36 @@ return {
     },
     config = function(_, opts)
       require("codecompanion").setup(opts)
+
+      local function clamp_chat_width()
+        local min_width = 48
+        local max_width = 72
+        local target_width = math.floor(vim.o.columns * 0.3)
+        return math.max(min_width, math.min(max_width, target_width))
+      end
+
+      vim.api.nvim_create_autocmd("User", {
+        group = vim.api.nvim_create_augroup("CodeCompanionChatWidth", { clear = true }),
+        pattern = "CodeCompanionChatOpened",
+        callback = function(args)
+          local bufnr = args.data and args.data.bufnr
+          if type(bufnr) ~= "number" or not vim.api.nvim_buf_is_valid(bufnr) then
+            return
+          end
+
+          local window = require("codecompanion.config").display.chat.window
+          if window.layout ~= "vertical" then
+            return
+          end
+
+          local winnr = vim.fn.bufwinid(bufnr)
+          if winnr == -1 or not vim.api.nvim_win_is_valid(winnr) then
+            return
+          end
+
+          vim.api.nvim_win_set_width(winnr, clamp_chat_width())
+        end,
+      })
 
       -- Agentic edit confirmation: don't dump the diff into the chat. A small diff
       -- is fine but a large edit becomes an unreadable wall of diff, and we review
@@ -323,9 +365,14 @@ return {
             vim.keymap.set("n", "c2", function()
               km.reject_change.callback(ui)
             end, { buffer = ui.bufnr, desc = "Reject all changes", silent = true, nowait = true })
-            vim.keymap.set("n", "c4", function()
-              km.always_accept.callback(ui)
-            end, { buffer = ui.bufnr, desc = "Always accept changes from this chat buffer", silent = true, nowait = true })
+            vim.keymap.set(
+              "n",
+              "c4",
+              function()
+                km.always_accept.callback(ui)
+              end,
+              { buffer = ui.bufnr, desc = "Always accept changes from this chat buffer", silent = true, nowait = true }
+            )
           end
           return ui
         end
