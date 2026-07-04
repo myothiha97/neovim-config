@@ -19,6 +19,9 @@ return {
       diagnostics = {
         update_in_insert = false,
         severity_sort = true,
+        -- Hide end-of-line diagnostic text; keep the sign-column color + underline.
+        -- Read the full message via the hover/line-diagnostic float (<leader>k).
+        virtual_text = false,
       },
       servers = {
         -- Free <C-k> in insert mode for our Copilot toggle.
