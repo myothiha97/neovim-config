@@ -30,29 +30,26 @@ return {
         end,
         desc = "Prev Todo",
       },
-      -- Swap defaults: <leader>st = specific (TODO/HACK/WARN), <leader>sT = all
+      -- Show todos in the Trouble bottom panel (grouped by file, jump-with-<cr> keeps the
+      -- panel open, toggle to close) instead of a floating picker that closes on select.
+      -- This is todo-comments' own data via its built-in `Trouble todo` source; filter by the
+      -- canonical tag with Trouble's `filter.tag=` syntax. Disable LazyVim's picker defaults.
       { "<leader>st", false },
       { "<leader>sT", false },
       {
         "<leader>st",
-        function()
-          Snacks.picker.todo_comments({ keywords = { "todo" } }) -- "Todo", "TODO"
-        end,
-        desc = "Todo list",
+        "<cmd>Trouble todo toggle filter.tag=TODO<cr>",
+        desc = "Todo list (Trouble)",
       },
       {
         "<leader>se",
-        function()
-          Snacks.picker.todo_comments({ keywords = { "FIX", "fix", "Fix", "Issue", "ISSUE", "issue" } })
-        end,
-        desc = "Issues/Fixes list",
+        "<cmd>Trouble todo toggle filter.tag=ISSUE<cr>",
+        desc = "Issues list (Trouble)",
       },
       {
         "<leader>sT",
-        function()
-          Snacks.picker.todo_comments({ keywords = vim.tbl_keys(keywords) })
-        end,
-        desc = "Todo (all)",
+        "<cmd>Trouble todo toggle<cr>",
+        desc = "Todo all (Trouble)",
       },
     },
   },

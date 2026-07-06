@@ -7,32 +7,55 @@
 -- Toggle with <leader>cs. The ONLY display override is making the followed-symbol highlight
 -- visible (your themes set the global CursorLine bg to NONE, which hides Trouble's marker).
 --
--- Filtering: DEFAULT view = LazyVim's standard symbol kinds (functions, methods, classes,
--- fields, properties, enums, ...) — variables are NOT shown. Press `a` inside the panel to
--- ALSO include variables/constants/everything, `a` again to go back. (Variables are opt-in
--- because vtsls reports React arrow components/handlers as Variable too, so showing them by
--- default buries the structure in state/data.)
+-- Filtering: the outline has THREE detail levels, cycled by pressing `a` inside the panel:
+--   1. STRUCTURE (default) — only functions, methods, classes and React components. No data
+--      members at all, so the outline reads as pure structure.
+--   2. + MEMBERS     — level 1 plus fields, properties and enum members (object/class shape),
+--      but NOT loose local variables/constants.
+--   3. ALL           — everything the LSP reports, unfiltered (adds local variables/constants).
+-- `a` steps 1 → 2 → 3 → 1. (Members/variables are opt-in because vtsls reports every piece of
+-- component state/props as Field/Variable, which buries the actual structure.)
 
--- LazyVim's default symbol kinds (always shown). Package is dropped on purpose — it's the
--- file/package declaration (and lua_ls control-flow blocks): never a useful outline entry.
-local DEFAULT_KINDS = {
+-- Level 1: structural symbols only — callables + type/containers. Package is dropped on
+-- purpose (file/package declaration + lua_ls control-flow blocks: never a useful entry).
+local STRUCTURE_KINDS = {
   Class = true,
   Constructor = true,
   Enum = true,
-  EnumMember = true,
-  Field = true,
   Function = true,
   Interface = true,
   Method = true,
   Module = true,
   Namespace = true,
-  Property = true,
   Struct = true,
   Trait = true,
 }
 
--- Toggled by `a`; read by the symbols `filter` on every refresh.
-local show_all = false
+-- Level 2 adds these on top of STRUCTURE_KINDS: object/class members (the shape of a type),
+-- but deliberately NOT Variable/Constant — loose locals only appear at level 3.
+local MEMBER_KINDS = {
+  EnumMember = true,
+  Field = true,
+  Property = true,
+}
+
+-- The PascalCase-Variable/Constant "React component" heuristic is JS/TS-specific: only there
+-- do arrow-function components get reported as Variable. Gating it to these filetypes stops
+-- e.g. Go's exported (PascalCase) package vars/consts from leaking into the structure view.
+local COMPONENT_FILETYPES = {
+  javascript = true,
+  javascriptreact = true,
+  typescript = true,
+  typescriptreact = true,
+}
+
+-- Current detail level (1/2/3); cycled by `a`, read by the symbols `filter` on every refresh.
+local level = 1
+local LEVEL_LABEL = {
+  [1] = "structure (functions / classes / components)",
+  [2] = "+ fields & properties",
+  [3] = "all symbols (incl. variables)",
+}
 
 -- Remove the quickfix row(s) under the cursor (or visual selection) from the ACTUAL
 -- quickfix list, not just Trouble's in-memory tree. Trouble's built-in `dd`/`delete`
@@ -91,25 +114,39 @@ return {
         focus = false,
         follow = true,
         auto_refresh = true,
-        -- Default: standard kinds only. `a` flips `show_all` to include variables/everything.
+        -- Default level 1 (structure only). `a` cycles the detail level; see the top comment.
         filter = function(items)
-          if show_all then
+          if level >= 3 then
             return items
           end
           return vim.tbl_filter(function(item)
-            return DEFAULT_KINDS[item.kind] == true
+            if STRUCTURE_KINDS[item.kind] then
+              return true
+            end
+            if level >= 2 and MEMBER_KINDS[item.kind] then
+              return true
+            end
+            -- React components are reported as Variable/Constant by vtsls (arrow functions),
+            -- but are conventionally PascalCase — keep those at levels 1 & 2 so components
+            -- always show alongside functions/classes, not only in the full view. JS/TS only
+            -- (see COMPONENT_FILETYPES) so other languages' PascalCase data isn't pulled in.
+            if
+              COMPONENT_FILETYPES[vim.bo[item.buf or 0].filetype]
+              and (item.kind == "Variable" or item.kind == "Constant")
+            then
+              local name = item.symbol and item.symbol.name
+              return type(name) == "string" and name:match("^%u") ~= nil
+            end
+            return false
           end, items)
         end,
         keys = {
           a = {
-            desc = "Outline: toggle variables / all symbols",
+            desc = "Outline: cycle detail level (structure / +members / all)",
             action = function(view)
-              show_all = not show_all
+              level = level % 3 + 1
               view:refresh()
-              vim.notify(
-                "Outline: " .. (show_all and "all symbols (incl. variables)" or "default kinds"),
-                vim.log.levels.INFO
-              )
+              vim.notify("Outline: " .. LEVEL_LABEL[level], vim.log.levels.INFO)
             end,
           },
         },
@@ -128,6 +165,20 @@ return {
             end
             return { { text = "<anonymous>", hl = "Comment" } }
           end,
+        },
+      },
+      -- Todo list (todo-comments' built-in Trouble source; opened via <leader>st/se/sT and
+      -- <leader>cc). Two tweaks over the source defaults:
+      --   * auto_preview=false — moving over rows no longer navigates the editor; opening the
+      --     list keeps you where you were. Jump only on <cr>.
+      --   * add {count} to the tag group header so the "TODO" title shows its total (like the
+      --     filename rows already do). Groups must be respecified in full — a deep-merge on a
+      --     list would leave the source's original entries at the untouched indexes.
+      todo = {
+        auto_preview = false,
+        groups = {
+          { "tag", format = "{todo_icon} {tag} {count}" },
+          { "filename", format = "{file_icon} {filename} {count}" },
         },
       },
       -- Quickfix list (you use it as code pins, harpoon-style). Rebind delete so it
