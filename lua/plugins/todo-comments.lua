@@ -38,12 +38,12 @@ return {
       { "<leader>sT", false },
       {
         "<leader>st",
-        "<cmd>Trouble todo toggle filter.tag=TODO<cr>",
+        "<cmd>Trouble todo toggle filter.tag=todo<cr>",
         desc = "Todo list (Trouble)",
       },
       {
         "<leader>se",
-        "<cmd>Trouble todo toggle filter.tag=ISSUE<cr>",
+        "<cmd>Trouble todo toggle filter.tag=issue<cr>",
         desc = "Issues list (Trouble)",
       },
       {
