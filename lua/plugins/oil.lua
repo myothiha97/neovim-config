@@ -135,7 +135,15 @@ return {
       winhighlight = "CursorLine:OilCursorLine",
     },
     keymaps = {
-      ["<C-l>"] = "actions.select",
+      -- Keep LazyVim's normal-mode window navigation available in Oil.
+      -- Oil defaults <C-h> to horizontal open and <C-l> to refresh; <CR>
+      -- remains the conventional way to select an entry.
+      ["<C-h>"] = false,
+      ["<C-j>"] = false,
+      ["<C-k>"] = false,
+      ["<C-l>"] = false,
+      -- for selecting item we can use <C-o> the same key that we use for selecting suggestion from blink cmp menu
+      ["<C-o>"] = "actions.select",
     },
     float = {
       max_width = 0.8,

@@ -20,6 +20,70 @@ local snacks_keymaps = {
   },
 }
 
+local function explorer_window_keys()
+  local function focus(direction)
+    return function()
+      local current = vim.api.nvim_get_current_win()
+      local row, col = unpack(vim.api.nvim_win_get_position(current))
+      local current_bounds = {
+        top = row,
+        bottom = row + vim.api.nvim_win_get_height(current) - 1,
+        left = col,
+        right = col + vim.api.nvim_win_get_width(current) - 1,
+      }
+      local target, target_gap, target_offset
+
+      -- Explorer panes are floats inside a split root. Raw wincmd can enter
+      -- that root and Snacks may then redirect focus in the wrong direction.
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local config = vim.api.nvim_win_get_config(win)
+        if win ~= current and config.relative == "" and vim.bo[buf].filetype ~= "snacks_layout_box" then
+          local win_row, win_col = unpack(vim.api.nvim_win_get_position(win))
+          local bounds = {
+            top = win_row,
+            bottom = win_row + vim.api.nvim_win_get_height(win) - 1,
+            left = win_col,
+            right = win_col + vim.api.nvim_win_get_width(win) - 1,
+          }
+          local horizontal_overlap = bounds.left <= current_bounds.right and bounds.right >= current_bounds.left
+          local vertical_overlap = bounds.top <= current_bounds.bottom and bounds.bottom >= current_bounds.top
+          local gap, offset
+
+          if direction == "h" and vertical_overlap and bounds.right < current_bounds.left then
+            gap = current_bounds.left - bounds.right
+            offset = math.abs((bounds.top + bounds.bottom) - (current_bounds.top + current_bounds.bottom))
+          elseif direction == "j" and horizontal_overlap and bounds.top > current_bounds.bottom then
+            gap = bounds.top - current_bounds.bottom
+            offset = math.abs((bounds.left + bounds.right) - (current_bounds.left + current_bounds.right))
+          elseif direction == "k" and horizontal_overlap and bounds.bottom < current_bounds.top then
+            gap = current_bounds.top - bounds.bottom
+            offset = math.abs((bounds.left + bounds.right) - (current_bounds.left + current_bounds.right))
+          elseif direction == "l" and vertical_overlap and bounds.left > current_bounds.right then
+            gap = bounds.left - current_bounds.right
+            offset = math.abs((bounds.top + bounds.bottom) - (current_bounds.top + current_bounds.bottom))
+          end
+
+          if gap and (not target_gap or gap < target_gap or (gap == target_gap and offset < target_offset)) then
+            target, target_gap, target_offset = win, gap, offset
+          end
+        end
+      end
+
+      if target then
+        vim.api.nvim_set_current_win(target)
+      end
+    end
+  end
+
+  return {
+    ["<C-h>"] = { focus("h"), mode = "n", desc = "Focus left window" },
+    ["<C-j>"] = { focus("j"), mode = "n", desc = "Focus lower window" },
+    ["<C-k>"] = { focus("k"), mode = "n", desc = "Focus upper window" },
+    ["<C-l>"] = { focus("l"), mode = "n", desc = "Focus right window" },
+  }
+end
+
 return {
   "folke/snacks.nvim",
   ---@type snacks.Config
@@ -237,18 +301,18 @@ return {
             end,
           },
           win = {
+            -- Snacks normally uses <C-j>/<C-k> for picker-list movement.
+            -- In Explorer, reserve the complete Ctrl-hjkl set for window
+            -- navigation, matching LazyVim everywhere else.
+            input = {
+              keys = explorer_window_keys(),
+            },
             list = {
-              keys = {
+              keys = vim.tbl_extend("force", explorer_window_keys(), {
                 ["<Esc>"] = false, -- don't close on Esc
                 ["q"] = { "close", mode = { "n" }, desc = "Close explorer" },
                 ["/"] = false, -- use vim search instead of explorer filter
                 ["?"] = false, -- use vim search instead of help
-                ["<C-l>"] = {
-                  function()
-                    vim.cmd.wincmd("l")
-                  end,
-                  desc = "Focus right window",
-                },
                 ["<C-f>"] = { "explorer_close_all", mode = { "n" } },
                 ["<C-c>"] = { "close", mode = { "n" } },
                 ["."] = { "explorer_toggle_focus", mode = { "n" }, desc = "Toggle focus folder" },
@@ -266,7 +330,7 @@ return {
                 -- ["<LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
                 -- ["<3-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
                 -- ["<4-LeftMouse>"] = { "explorer_single_click", mode = { "n" }, desc = "Open or toggle" },
-              },
+              }),
             },
           },
         },

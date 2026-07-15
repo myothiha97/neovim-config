@@ -45,6 +45,8 @@ When a map conflicts with a native binding, choose the *safest* resolution, not 
 - visual `s` — vim-surround; `s` ≡ `c` in visual, so no real loss.
 - normal `<Esc>` — clear highlights / close floats; only a tiny pending-count edge case.
 - `<S-arrows>` — resize; shadows rarely-used native scroll/word-motion.
+- Arrow keys — intentionally scroll normal editor viewports one line/column for ergonomic
+  code review; special/plugin and floating windows keep native cursor movement.
 
 ## ⚠️ Non-native but real self-collisions (fix in the same pass)
 - ✅ `<leader>m` — Resolved. Quickfix "Add line to Quickfix" (`keymaps.lua:669`) is the

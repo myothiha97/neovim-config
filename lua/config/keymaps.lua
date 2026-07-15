@@ -198,6 +198,7 @@ vim.keymap.del("n", "<S-l>")
 
 vim.keymap.set("n", "<leader>L", "<cmd>restart<cr>", { desc = "Restart Neovim" })
 vim.keymap.set("n", "<leader>R", "<cmd>Lazy log<cr>", { desc = "Lazy Log" })
+vim.keymap.set("n", "<leader>we", "<cmd>split<cr>", { desc = "Split Window Horizontal" })
 
 local comment_key = "<M-/>"
 
@@ -278,6 +279,37 @@ end, { desc = "Scroll Popup Down / Viewport Down" })
 vim.keymap.set("n", "<C-y>", function()
   scroll_popup_or(popup_scroll_up, "<C-y>")
 end, { desc = "Scroll Popup Up / Viewport Up" })
+
+-- Arrow keys are the ergonomic, fine-grained reading controls in normal,
+-- non-floating file windows. Sidebars, panels, terminals, help, Oil, Snacks,
+-- and floats retain native arrow-key cursor movement.
+local function is_editor_window()
+  return vim.bo.buftype == "" and vim.api.nvim_win_get_config(0).relative == ""
+end
+
+local function editor_scroll_or_arrow(scroll_key, arrow_key)
+  return function()
+    return is_editor_window() and scroll_key or arrow_key
+  end
+end
+
+vim.keymap.set("n", "<Down>", editor_scroll_or_arrow("<C-e>", "<Down>"), {
+  expr = true,
+  desc = "Scroll Viewport Down",
+})
+vim.keymap.set("n", "<Up>", editor_scroll_or_arrow("<C-y>", "<Up>"), {
+  expr = true,
+  desc = "Scroll Viewport Up",
+})
+vim.keymap.set("n", "<Right>", editor_scroll_or_arrow("zl", "<Right>"), {
+  expr = true,
+  desc = "Scroll Viewport Right",
+})
+vim.keymap.set("n", "<Left>", editor_scroll_or_arrow("zh", "<Left>"), {
+  expr = true,
+  desc = "Scroll Viewport Left",
+})
+
 vim.keymap.set({ "n", "v" }, "<C-f>", "<C-f>zz", { desc = "Scroll Down Page and Recenter" })
 vim.keymap.set({ "n", "v" }, "<C-b>", "<C-b>zz", { desc = "Scroll Up Page and Recenter" })
 

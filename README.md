@@ -199,6 +199,8 @@ language server scan the whole home directory.
 | `<C-->` | Terminal (right split) |
 | `<C-d>` · `<C-u>` | Half-page scroll + recenter |
 | `<C-e>` · `<C-y>` | Scroll popup, else viewport |
+| `<Down>` · `<Up>` | Scroll editor viewport down · up one line |
+| `<Right>` · `<Left>` | Scroll editor viewport right · left one column |
 | `<leader>uH` | Toggle mouse-hover docs |
 | `<leader>M` | Mason (toggle) |
 | `<leader>L` · `<leader>R` | Restart Neovim · Lazy log |
