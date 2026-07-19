@@ -694,14 +694,15 @@ end
 
 vim.keymap.set("n", "<leader>bu", show_unsaved_files, { desc = "Unsaved Files" })
 
--- Quickfix / location list under the <leader>c cluster (Trouble views). This file loads
--- after LazyVim's keymaps and Trouble's plugin keys, so these win. `:Trouble` lazy-loads
--- the plugin on first use.
--- vim.keymap.set("n", "<leader>cc", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" }) -- vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
--- Todo list as a persistent bottom panel (todo-comments' Trouble source). Same window +
--- behavior as `Trouble qflist`: bottom split, jump-with-<cr> keeps the panel open, toggle
--- to close — so you can walk multiple todos without reopening (unlike the <leader>st popup).
-vim.keymap.set("n", "<leader>cc", "<cmd>Trouble todo toggle<cr>", { desc = "Todo List (Trouble)" })
+-- Native quickfix toggle, matching LazyVim's default <leader>xq behavior.
+vim.keymap.set("n", "<leader>cc", function()
+  local success, err = pcall(vim.fn.getqflist({ winid = 0 }).winid ~= 0 and vim.cmd.cclose or vim.cmd.copen)
+  if not success and err then
+    vim.notify(err, vim.log.levels.ERROR)
+  end
+end, { desc = "Quickfix List" })
+
+-- Location list under the <leader>c cluster (Trouble view).
 vim.keymap.set("n", "<leader>ce", "<cmd>Trouble loclist toggle<cr>", { desc = "Location List (Trouble)" })
 -- Manually curate the quickfix list while reading code: <leader>m marks the current line
 -- (normal) or each selected line (visual); browse with <leader>cc, clear with <leader>cx.

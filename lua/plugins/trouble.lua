@@ -167,20 +167,6 @@ return {
           end,
         },
       },
-      -- Todo list (todo-comments' built-in Trouble source; opened via <leader>st/se/sT and
-      -- <leader>cc). Two tweaks over the source defaults:
-      --   * auto_preview=false — moving over rows no longer navigates the editor; opening the
-      --     list keeps you where you were. Jump only on <cr>.
-      --   * add {count} to the tag group header so the "TODO" title shows its total (like the
-      --     filename rows already do). Groups must be respecified in full — a deep-merge on a
-      --     list would leave the source's original entries at the untouched indexes.
-      todo = {
-        auto_preview = false,
-        groups = {
-          { "tag", format = "{todo_icon} {tag} {count}" },
-          { "filename", format = "{file_icon} {filename} {count}" },
-        },
-      },
       -- Quickfix list (you use it as code pins, harpoon-style). Rebind delete so it
       -- removes the entry from the real list + persisted state, not just the tree.
       qflist = {

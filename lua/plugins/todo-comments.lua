@@ -1,7 +1,7 @@
 local keywords = {
   -- Two distinct keywords on purpose. Matching is case-sensitive (highlight.lua uses `\C`),
   -- so `TODO:` and `todo:` resolve to separate tags and can be filtered independently:
-  --   TODO -> teammates' shouty uppercase comments, kept OUT of <leader>st
+  --   TODO -> teammates' shouty uppercase comments, listed by <leader>sT
   --   todo -> your own personal marker, this is what <leader>st lists
   TODO = { icon = " ", color = "hint" },
   todo = { icon = " ", color = "info", alt = { "Todo" } },
@@ -40,29 +40,27 @@ return {
         end,
         desc = "Prev Todo",
       },
-      -- Show todos in the Trouble bottom panel (grouped by file, jump-with-<cr> keeps the
-      -- panel open, toggle to close) instead of a floating picker that closes on select.
-      -- This is todo-comments' own data via its built-in `Trouble todo` source; filter by the
-      -- canonical tag with Trouble's `filter.tag=` syntax. Tags are case-sensitive here (see the
-      -- keywords table above), so `filter.tag=todo` lists only your personal lowercase `todo:`
-      -- markers and never teammates' uppercase `TODO:`. `sT` (no filter) still shows everything.
-      -- Disable LazyVim's picker defaults.
+      -- Use todo-comments' native location-list integration instead of a floating picker.
+      -- The list opens in a bottom split and stays open after <cr>, so multiple items can be
+      -- visited without reopening it. A location list keeps these results separate from the
+      -- normal quickfix list on <leader>cc. Keyword filters are case-sensitive.
+      -- Disable LazyVim's picker defaults first.
       { "<leader>st", false },
       { "<leader>sT", false },
       {
         "<leader>st",
-        "<cmd>Trouble todo toggle filter.tag=todo<cr>",
-        desc = "Todo list (Trouble)",
+        "<cmd>TodoLocList keywords=todo<cr>",
+        desc = "Personal todos",
       },
       {
         "<leader>se",
-        "<cmd>Trouble todo toggle filter.tag=issue<cr>",
-        desc = "Issues list (Trouble)",
+        "<cmd>TodoLocList keywords=issue<cr>",
+        desc = "Personal issues",
       },
       {
         "<leader>sT",
-        "<cmd>Trouble todo toggle<cr>",
-        desc = "Todo all (Trouble)",
+        "<cmd>TodoLocList keywords=TODO<cr>",
+        desc = "Team todos",
       },
     },
   },
