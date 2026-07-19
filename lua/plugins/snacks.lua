@@ -11,6 +11,28 @@ local function clear_smart_picker_history()
   vim.notify("Cleared Snacks smart picker history", vim.log.levels.INFO)
 end
 
+-- Active-file band for the Explorer list (same color as OilCursorLine).
+-- The themes disable CursorLine globally (bg NONE — see
+-- colorschemes/solarized-osaka.lua), so the row that snacks' `follow_file`
+-- parks on the active file renders invisible. A winhighlight remap (the
+-- oil.nvim approach) doesn't work here: snacks rewrites the list window's
+-- CursorLine winhighlight entry on every render, which also replaces the
+-- window's highlight namespace. Instead, the explorer `format` wrapper below
+-- appends a full-width line_hl_group extmark to the active file's row —
+-- explorer-scoped by construction, one string compare per rendered row.
+local explorer_active_file ---@type string?
+
+local function explorer_track_active(picker, file)
+  file = file and file ~= "" and vim.fs.normalize(file) or nil
+  if not file or file == explorer_active_file then
+    return
+  end
+  explorer_active_file = file
+  if picker and not picker.closed then
+    picker.list:update({ force = true })
+  end
+end
+
 local snacks_keymaps = {
   ["<C-f>"] = { "close", mode = { "n", "i" } },
   ["<C-l>"] = {
@@ -97,6 +119,10 @@ return {
     local function set_snacks_hl()
       vim.api.nvim_set_hl(0, "SnacksPickerMatch", { link = "DiffText" })
       vim.api.nvim_set_hl(0, "SnacksIndent", { fg = INDENT_GUIDE_FG, nocombine = true })
+      -- Full-width band on the active file's row in the Explorer. Matches
+      -- OilCursorLine (#073642 = solarized base02); only used by the explorer
+      -- format wrapper, so no other picker or window is affected.
+      vim.api.nvim_set_hl(0, "SnacksExplorerActiveFile", { bg = "#073642" })
     end
     set_snacks_hl()
     -- Re-apply on theme switch: snacks links its own groups with default=true,
@@ -165,6 +191,39 @@ return {
               width = 0.25,
             },
           },
+          -- Default file format plus the active-file band (see
+          -- explorer_track_active at the top of this file).
+          format = function(item, picker)
+            local ret = Snacks.picker.format.file(item, picker)
+            if explorer_active_file and item.file == explorer_active_file then
+              ret[#ret + 1] = { col = 0, line_hl_group = "SnacksExplorerActiveFile" }
+            end
+            return ret
+          end,
+          -- Mirror snacks' own follow_file autocmd (registered on the list
+          -- window's augroup, so it dies with the window): re-render the band
+          -- when the edited buffer changes. Runs only while the explorer is
+          -- open, and only re-renders when the active file actually changed.
+          on_show = function(picker)
+            local ref = picker:ref()
+            picker.list.win:on({ "WinEnter", "BufEnter" }, function()
+              vim.schedule(function()
+                local p = ref()
+                if not p or p.closed then
+                  return
+                end
+                local buf = vim.api.nvim_get_current_buf()
+                if vim.bo[buf].buftype ~= "" then
+                  return
+                end
+                local win = vim.api.nvim_get_current_win()
+                if vim.api.nvim_win_get_config(win).relative ~= "" then
+                  return
+                end
+                explorer_track_active(p, vim.api.nvim_buf_get_name(buf))
+              end)
+            end)
+          end,
           actions = {
             explorer_single_click = function(picker)
               local pos = vim.fn.getmousepos()
@@ -228,6 +287,10 @@ return {
                 end
               end
 
+              -- nvim_win_set_buf doesn't fire BufEnter, so move the
+              -- active-file band explicitly.
+              explorer_track_active(picker, path)
+
               if vim.api.nvim_win_is_valid(list_win) then
                 vim.api.nvim_set_current_win(list_win)
               end
@@ -276,6 +339,10 @@ return {
                   return
                 end
               end
+
+              -- nvim_win_set_buf doesn't fire BufEnter, so move the
+              -- active-file band explicitly.
+              explorer_track_active(picker, path)
             end,
             explorer_toggle_focus = function(picker)
               local root = vim.uv.cwd()
@@ -463,6 +530,12 @@ return {
     {
       "<leader>r",
       function()
+        -- Seed the active-file band before the first render (the BufEnter
+        -- hook in on_show only covers later buffer switches).
+        local name = vim.api.nvim_buf_get_name(0)
+        if name ~= "" and vim.bo.buftype == "" then
+          explorer_active_file = vim.fs.normalize(name)
+        end
         require("snacks").picker.explorer()
       end,
       desc = "Toggle Explorer",
