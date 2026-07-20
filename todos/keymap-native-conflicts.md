@@ -34,8 +34,9 @@ When a map conflicts with a native binding, choose the *safest* resolution, not 
 - `<C-i>` / `<Tab>` (insert) — `blink-cmp.lua:44` `["<C-i>"] = { "show", "hide" }` has **no
   `"fallback"`**. Same byte as `<Tab>`; collides with the `<Tab>` map in `keymaps.lua:235`.
   Fix = add `"fallback"` (mirror the `<C-h>` fix), then test Tab-indent still works.
-- `<S-h>` / `<S-l>` — buffer cycle (`bufferline.lua:105-106`) shadows native `H`/`L`
-  (top/bottom of screen). Intentional; relocate buffers to `[b`/`]b` if `H`/`L` wanted back.
+- `<S-h>` / `<S-l>` — no active override. The static-tabline experiment that used these
+  keys is parked in `config/_unstable_tabline.lua`; decide whether to keep LazyVim's
+  defaults or reclaim native `H`/`L` when that experiment is resumed.
 - `<C-j>` (insert) — Copilot trigger (`copilot.lua:153`) shadows native newline. Low harm;
   move to `<M-j>` if needed.
 
