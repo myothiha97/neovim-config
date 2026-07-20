@@ -135,22 +135,21 @@ return {
       winhighlight = "CursorLine:OilCursorLine",
     },
     keymaps = {
-      -- Keep LazyVim's normal-mode window navigation available in Oil.
-      -- Oil defaults <C-h> to horizontal open and <C-l> to refresh; <CR>
-      -- remains the conventional way to select an entry.
+      -- Keep LazyVim's window navigation on <C-h>/<C-j>/<C-k>. Oil defaults
+      -- <C-h> to horizontal open and <C-l> to refresh; <CR> remains the
+      -- conventional way to select an entry.
       ["<C-h>"] = false,
       ["<C-j>"] = false,
       ["<C-k>"] = false,
+
+      -- Earlier alternative: disable Oil's <C-l> mapping so LazyVim's <C-l>
+      -- could focus the right pane, then use <C-o> as another selection key:
       -- ["<C-l>"] = false,
-      -- for selecting item we can use <C-o> the same key that we use for selecting suggestion from blink cmp menu
-      -- to prevent conflicts with <C-l> for switching focus between right side panel or pane,
-      -- so instead we can use <C-o> for selecting items in oil nvim window
       -- ["<C-o>"] = "actions.select",
 
-      -- latest update (20 jul 2026), after tryting to use c-o for selecting items ,
-      -- i found out its not very as ergonomic as c-l even though c-l might conflicts with switching focus between right side panel or pane
-      -- thats the trade of using c-l instead of c-o but overall its pros outweight the conds
-      -- in future we might need to think of another alternate solution to  resolve this conflict with keymapping between switching focus between pane and oil nvim selecting item
+      -- Decision (20 Jul 2026): <C-o> proved less ergonomic for frequent
+      -- selection, so <C-l> is used below. This intentionally gives up
+      -- Oil-local <C-l> right-pane navigation; use <C-w>l when needed.
       ["<C-l>"] = "actions.select",
     },
     float = {
