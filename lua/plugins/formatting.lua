@@ -38,6 +38,9 @@ return {
   {
     "mason-org/mason.nvim",
     opts = function(_, opts)
+      opts.ui = opts.ui or {}
+      opts.ui.border = "rounded"
+
       opts.ensure_installed = opts.ensure_installed or {}
       -- Add prettierd
       table.insert(opts.ensure_installed, "prettierd")
