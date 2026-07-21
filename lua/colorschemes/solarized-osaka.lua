@@ -24,6 +24,16 @@ return {
       -- Keep module keywords consistent with the selected red accent.
       hl["@keyword.import"] = { fg = c.orange500 }
 
+      -- Sync plain-variable color across the JS/TS family. The theme
+      -- (solarized-osaka/groups/treesitter.lua) sets a yellow override for
+      -- `@variable.typescript` / `@variable.javascript`, but has NO equivalent
+      -- for `@variable.tsx` / `@variable.jsx`, so `.tsx`/`.jsx` fall back to the
+      -- base `@variable` (base foreground). That made `.ts` variables yellow
+      -- while `.tsx` variables stayed white. Link the ts/js variants back to
+      -- `@variable` so a plain variable reads the same in every JS/TS file.
+      hl["@variable.typescript"] = { link = "@variable" }
+      hl["@variable.javascript"] = { link = "@variable" }
+
       -- Go package names, such as `main` in `package main`.
       -- hl["@module.go"] = { fg = "#fdf6e3" }
       hl["@module.go"] = { fg = "#eee8d5" }
