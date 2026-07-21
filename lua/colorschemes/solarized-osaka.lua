@@ -1,3 +1,5 @@
+local palette = require("colorschemes.solarized-osaka-palette")
+
 return {
   "craftzdog/solarized-osaka.nvim",
   lazy = false,
@@ -6,7 +8,26 @@ return {
     -- Terminal-transparent so Ghostty's `background` + `background-opacity`
     -- blend the wallpaper through. Set to false to force solid #001419.
     transparent = true,
+    on_colors = function(c)
+      c.yellow = palette.yellow
+      c.yellow500 = palette.yellow
+
+      -- NOTE: Solarized Osaka maps syntax accents to orange/orange500; both intentionally use our selected red.
+      c.orange = palette.red
+      c.orange500 = palette.red
+
+      -- blue color override
+      c.blue = palette.blue
+      c.blue500 = palette.blue
+    end,
     on_highlights = function(hl, c)
+      -- Keep module keywords consistent with the selected red accent.
+      hl["@keyword.import"] = { fg = c.orange500 }
+
+      -- Go package names, such as `main` in `package main`.
+      -- hl["@module.go"] = { fg = "#fdf6e3" }
+      hl["@module.go"] = { fg = "#eee8d5" }
+
       hl.Visual = { bg = "#3b4261" }
       hl.VisualNOS = { bg = "#3b4261" }
 
@@ -53,7 +74,7 @@ return {
       -- match looks faded. Override with a vivid bg + dark fg so the matched
       -- keyword stands out clearly in the results list. Cyan (not red/yellow)
       -- is deliberately chosen so it never reads like a vim `/`/`?` search hit:
-      -- Search is yellow (#b28500), IncSearch is orange (#c94c16).
+      -- Search is yellow (#b28500), IncSearch is muted rose-red (#c75b6b).
       hl.GrugFarResultsMatch = { fg = c.base04, bg = c.cyan300, bold = false }
 
       -- grug-far results summary ("N matches in M files"). Defaults to linking
