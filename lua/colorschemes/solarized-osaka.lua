@@ -1,3 +1,5 @@
+local palette = require("colorschemes.solarized-osaka-palette")
+
 return {
   "craftzdog/solarized-osaka.nvim",
   lazy = false,
@@ -7,67 +9,19 @@ return {
     -- blend the wallpaper through. Set to false to force solid #001419.
     transparent = true,
     on_colors = function(c)
-      -- c.orange = "#e03857"
-      -- c.orange500 = "#e03857"
+      c.yellow = palette.yellow
+      c.yellow500 = palette.yellow
 
-      -- yellow - #bdb020 brighter
-      -- c.yellow = "#baac0d"
-      -- c.yellow500 = "#baac0d"
+      -- NOTE: Solarized Osaka maps syntax accents to orange/orange500; both intentionally use our selected red.
+      c.orange = palette.red
+      c.orange500 = palette.red
 
-      -- yellow -  #a3970b darker
-      c.yellow = "#a3970b"
-      c.yellow500 = "#a3970b"
-
-      -- orange #ab3a4f more brighter
-
-      -- c.orange = "#ab3a4f"
-      -- c.orange500 = "#ab3a4f"
-
-      -- orange #b83e55 similar to #ab3a4f but lighter
-      -- c.orange = "#b83e55"
-      -- c.orange500 = "#b83e55"
-
-      -- c.red = c.red300
-      -- c.red500 = c.red300
-
-      -- red b83549 brighter
-      -- c.orange = "#b83549"
-      -- c.orange500 = "#b83549"
-
-      -- red #ad4454 lower contrast
-      -- c.orange = "#ad4454"
-      -- c.orange500 = "#ad4454"
-
-      -- red #c75b6b muted with stronger contrast
-      c.orange = "#c75b6b"
-      c.orange500 = "#c75b6b"
-
-      -- red #993141 darker
-      -- c.orange = "#993141"
-      -- c.orange500 = "#993141"
-
-      -- blue - #49AEF5
-      -- c.blue = "#49aef5"
-      -- c.blue500 = "#49aef5"
-
-      -- blue - #4488AB lighter
-      c.blue = "#4488ab"
-      c.blue500 = "#4488ab"
-
-      --  blue - #268BD2 brighter
-      -- c.blue = "#268bd2"
-      -- c.blue500 = "#268bd2"
-
-      -- orange #B02669
-      -- c.orange500 = "#B02669"
-      -- c.orange = "#B02669"
-
-      -- orange #bf2c47
-      -- c.orange500 = "#bf2c47"
-      -- c.orange = "#bf2c47"
+      -- blue color override
+      c.blue = palette.blue
+      c.blue500 = palette.blue
     end,
     on_highlights = function(hl, c)
-      -- Keep module keywords consistent with the custom orange accent.
+      -- Keep module keywords consistent with the selected red accent.
       hl["@keyword.import"] = { fg = c.orange500 }
 
       -- Go package names, such as `main` in `package main`.
