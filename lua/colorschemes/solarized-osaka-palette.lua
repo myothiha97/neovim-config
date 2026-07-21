@@ -14,19 +14,33 @@ local variants = {
     darker = "#993141",
     magenta = "#b02669",
     crimson = "#bf2c47",
+    red300 = "#F6524F",
+    red700 = "#B7211F",
+    -- hsl(12, 42, 50). Less saturated than both stock orange (#c94c16) and
+    -- muted_contrast, with hue pulled back out of the pink range.
+    terracotta = "#b55f4a",
   },
   blue = {
     blue300 = "#49aef5",
     balanced = "#4488ab",
     brighter = "#268bd2",
+    -- hsl(205, 80, 56). Saturated like blue300, but held level with
+    -- green/cyan/yellow in perceived lightness so blue stays in the accent band.
+    vivid = "#359ee9",
+    -- hsl(205, 80, 53). Same hue and saturation as vivid, three points darker so
+    -- blue sits level with cyan/green instead of leading the accent band.
+    deeper = "#2797e7",
+    -- hsl(198, 75, 46). Leans toward cyan and drops chroma about a fifth versus
+    -- deeper, staying clearly blue and level with green in the accent band.
+    azure = "#1d98cd",
   },
 }
 
 -- Change only these selections to try another saved color.
 return {
   yellow = variants.yellow.darker,
-  red = variants.red.muted_contrast,
-  blue = variants.blue.balanced,
+  red = variants.red.terracotta,
+  blue = variants.blue.azure,
 }
 
 -- Theme-native red alternative kept from earlier testing:
