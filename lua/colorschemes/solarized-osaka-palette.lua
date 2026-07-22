@@ -112,7 +112,7 @@ local variants = {
 
 -- Change only these selections to try another saved color.
 return {
-  yellow = variants.yellow.balanced,
+  yellow = variants.yellow.gold,
   green = variants.green.solarized,
   red = variants.red.terracotta,
   blue = variants.blue.azure,
