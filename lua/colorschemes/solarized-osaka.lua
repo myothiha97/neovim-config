@@ -12,6 +12,19 @@ return {
       c.yellow = palette.yellow
       c.yellow500 = palette.yellow
 
+      -- Currently a no-op: `palette.green` is the theme's own value. Kept as
+      -- the single seam for changing green, since `lua/plugins/performance.lua`
+      -- also reads `palette.green` for the lualine git marker.
+      --
+      -- NOTE: green and yellow measurably collide (dE2000 9.9) and that is a
+      -- deliberate, informed choice — see the long comment in
+      -- solarized-osaka-palette.lua before changing either.
+      --
+      -- Only `green`/`green500` are overridden; `green700`/`green900` remain
+      -- the theme's dark background bands (mkdCode, DiffText).
+      c.green = palette.green
+      c.green500 = palette.green
+
       -- NOTE: Solarized Osaka maps syntax accents to orange/orange500; both intentionally use our selected red.
       c.orange = palette.red
       c.orange500 = palette.red
