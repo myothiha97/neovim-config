@@ -52,8 +52,26 @@ The one genuine weak spot the benchmark surfaced is not yellow:
   WCAG AA 4.5:1 floor for body text.
 - `Comment` `#576d74` sits at 3.54:1, though dim comments are intentional.
 
-Neither is worth acting on unless they cause real trouble — noted so the next
-session does not rediscover them.
+### Terracotta is the accent-band outlier, not yellow
+
+Sorted by perceived lightness (Helmholtz-Kohlrausch corrected):
+
+| accent | perceived L\* | contrast |
+| --- | --- | --- |
+| yellow | 70.8 | 7.27:1 |
+| blue | 66.9 | 5.91:1 |
+| green | 66.8 | 6.02:1 |
+| cyan | 66.3 | 6.18:1 |
+| **terracotta** | **57.3** | **4.33:1** |
+
+Four accents cluster inside 4.5 points; yellow leads the next by only 3.9.
+Terracotta trails the cluster by **9.0**. So a lingering sense that "yellow looks
+bright" is mostly terracotta reading dim beside it — the sub-AA contrast above is
+the same finding from a different direction.
+
+**If the palette is ever reopened, terracotta is the lead, not yellow.** Raising
+it toward the cluster would close the gap and fix the AA shortfall at once.
+Untouched for now because the config is frozen and nothing is blocked.
 
 ### The 2026-07-22 green/yellow fix
 
@@ -73,8 +91,15 @@ Yellow could not be moved back, and its chroma is not a lever:
   reaches dE2000 12.0, because 13 degrees of hue is the entire problem. Worse,
   a lower-chroma yellow *reduces* the chroma-gap term, so green then has to sit
   at hue 136 instead of 134 to clear it.
-- Lightness is not a lever either, at least not usably: at hue 98 the pair does
-  not clear dE2000 20 until L\* 85, a near-fluorescent lemon.
+- Lightness cannot *solve* it: at hue 98 the pair does not clear dE2000 20 until
+  L\* 85, a near-fluorescent lemon.
+
+  But it does help, and this pair is the one place lightness is worth using.
+  Green and yellow share nearly the same hue (12.7 degrees apart) and nearly the
+  same chroma (0.4 apart), so with both of the usual axes flat, lightness is the
+  only variable left and becomes the salient difference. Moving `darker` ->
+  `balanced` widened the L\* gap 2.0 -> 5.8 and was clearly perceptible, despite
+  measuring only dE2000 8.6 -> 9.9. Do not generalise this to other pairs.
 
 That left only green, and green could not move to anywhere acceptable either.
 
